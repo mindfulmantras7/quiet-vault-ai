@@ -1,0 +1,74 @@
+name: Quiet Vault AI Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-gemini:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test Gemini API
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python - <<'PY'
+          import os
+          import json
+          import urllib.request
+
+          api_key = os.environ["GEMINI_API_KEY"]
+
+          prompt = """
+          Create ONE original 10-15 second horror Short concept for
+          The Quiet Vault YouTube channel.
+
+          Requirements:
+          - Realistic cinematic horror
+          - Fictional adult characters only
+          - No celebrities or real-person likenesses
+          - A recognizable everyday location
+          - The disturbing visual must be apparent immediately
+          - One simple physical contradiction
+          - No gore
+          - No monsters
+          - Strong twist ending
+          - Designed for vertical 9:16 video
+
+          Return:
+          TITLE:
+          STORY:
+          VISUAL HOOK:
+          FINAL TWIST:
+          """
+
+          url = (
+              "https://generativelanguage.googleapis.com/v1beta/"
+              "models/gemini-2.5-flash:generateContent"
+              "?key=" + api_key
+          )
+
+          data = {
+              "contents": [
+                  {
+                      "parts": [
+                          {"text": prompt}
+                      ]
+                  }
+              ]
+          }
+
+          request = urllib.request.Request(
+              url,
+              data=json.dumps(data).encode(),
+              headers={"Content-Type": "application/json"},
+              method="POST"
+          )
+
+          with urllib.request.urlopen(request) as response:
+              result = json.loads(response.read())
+
+          print("\n===== QUIET VAULT AI TEST =====\n")
+          print(result["candidates"][0]["content"]["parts"][0]["text"])
+          print("\n===== TEST COMPLETE =====")
+          PY
