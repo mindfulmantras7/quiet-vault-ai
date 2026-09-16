@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  test-gemini:
+  test-groq:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Test Gemini API
+      - name: Test Groq API
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           python - <<'PY'
           import os
@@ -18,7 +18,7 @@ jobs:
           import urllib.request
           import urllib.error
 
-          api_key = os.environ["GEMINI_API_KEY"]
+          api_key = os.environ["GROQ_API_KEY"]
 
           prompt = """
           Create ONE original 10-15 second horror Short concept for
@@ -44,19 +44,17 @@ jobs:
           FINAL TWIST:
           """
 
-          url = (
-              "https://generativelanguage.googleapis.com/v1beta/"
-              "models/gemini-3.5-flash:generateContent"
-          )
+          url = "https://api.groq.com/openai/v1/chat/completions"
 
           data = {
-              "contents": [
+              "model": "openai/gpt-oss-20b",
+              "messages": [
                   {
-                      "parts": [
-                          {"text": prompt}
-                      ]
+                      "role": "user",
+                      "content": prompt
                   }
-              ]
+              ],
+              "temperature": 0.8
           }
 
           request = urllib.request.Request(
@@ -64,7 +62,7 @@ jobs:
               data=json.dumps(data).encode("utf-8"),
               headers={
                   "Content-Type": "application/json",
-                  "x-goog-api-key": api_key
+                  "Authorization": "Bearer " + api_key
               },
               method="POST"
           )
@@ -74,50 +72,11 @@ jobs:
                   result = json.loads(response.read())
 
               print("\n===== QUIET VAULT AI TEST =====\n")
-              print(
-                  result["candidates"][0]["content"]["parts"][0]["text"]
-              )
+              print(result["choices"][0]["message"]["content"])
               print("\n===== TEST COMPLETE =====")
 
           except urllib.error.HTTPError as e:
               print("HTTP ERROR:", e.code)
               print(e.read().decode("utf-8"))
               raise
-          PY
-          Return:
-          TITLE:
-          STORY:
-          VISUAL HOOK:
-          FINAL TWIST:
-          """
-
-          url = (
-              "https://generativelanguage.googleapis.com/v1beta/"
-              "models/gemini-3.5-flash:generateContent"
-              "?key=" + api_key
-          )
-
-          data = {
-              "contents": [
-                  {
-                      "parts": [
-                          {"text": prompt}
-                      ]
-                  }
-              ]
-          }
-
-          request = urllib.request.Request(
-              url,
-              data=json.dumps(data).encode(),
-              headers={"Content-Type": "application/json"},
-              method="POST"
-          )
-
-          with urllib.request.urlopen(request) as response:
-              result = json.loads(response.read())
-
-          print("\n===== QUIET VAULT AI TEST =====\n")
-          print(result["candidates"][0]["content"]["parts"][0]["text"])
-          print("\n===== TEST COMPLETE =====")
           PY
