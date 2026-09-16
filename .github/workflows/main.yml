@@ -16,6 +16,7 @@ jobs:
           import os
           import json
           import urllib.request
+          import urllib.error
 
           api_key = os.environ["GEMINI_API_KEY"]
 
@@ -27,14 +28,62 @@ jobs:
           - Realistic cinematic horror
           - Fictional adult characters only
           - No celebrities or real-person likenesses
-          - A recognizable everyday location
-          - The disturbing visual must be apparent immediately
+          - Recognizable everyday location
+          - Disturbing visual apparent immediately
           - One simple physical contradiction
           - No gore
           - No monsters
           - Strong twist ending
           - Designed for vertical 9:16 video
 
+          Return exactly:
+
+          TITLE:
+          STORY:
+          VISUAL HOOK:
+          FINAL TWIST:
+          """
+
+          url = (
+              "https://generativelanguage.googleapis.com/v1beta/"
+              "models/gemini-3.5-flash:generateContent"
+          )
+
+          data = {
+              "contents": [
+                  {
+                      "parts": [
+                          {"text": prompt}
+                      ]
+                  }
+              ]
+          }
+
+          request = urllib.request.Request(
+              url,
+              data=json.dumps(data).encode("utf-8"),
+              headers={
+                  "Content-Type": "application/json",
+                  "x-goog-api-key": api_key
+              },
+              method="POST"
+          )
+
+          try:
+              with urllib.request.urlopen(request) as response:
+                  result = json.loads(response.read())
+
+              print("\n===== QUIET VAULT AI TEST =====\n")
+              print(
+                  result["candidates"][0]["content"]["parts"][0]["text"]
+              )
+              print("\n===== TEST COMPLETE =====")
+
+          except urllib.error.HTTPError as e:
+              print("HTTP ERROR:", e.code)
+              print(e.read().decode("utf-8"))
+              raise
+          PY
           Return:
           TITLE:
           STORY:
