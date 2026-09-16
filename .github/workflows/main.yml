@@ -61,8 +61,10 @@ jobs:
               url,
               data=json.dumps(data).encode("utf-8"),
               headers={
-                  "Content-Type": "application/json",
-                  "Authorization": "Bearer " + api_key
+    "Content-Type": "application/json",
+    "Authorization": "Bearer " + api_key,
+    "User-Agent": "QuietVaultAI/1.0"
+}
               },
               method="POST"
           )
