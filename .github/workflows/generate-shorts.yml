@@ -1,4 +1,4 @@
-name: Quiet Vault AI V8.1 - Human Horror
+name: Quiet Vault AI V8.2 - Stronger Horror DNA
 
 on:
   workflow_dispatch:
@@ -29,239 +29,319 @@ jobs:
           MODEL = "openai/gpt-oss-20b"
 
           # ============================================================
-          # V8.1
-          # HAND-WRITTEN HUMAN HORROR SKELETONS
+          # QUIET VAULT V8.2
           #
-          # Groq ONLY makes these natural.
-          # It does not invent the horror mechanism.
+          # The horror mechanisms are completely pre-written.
+          # Groq is only responsible for natural wording.
+          #
+          # DESIGN:
+          # visible threat
+          # + concrete contradiction
+          # + relationship/personal detail
+          # + final line that creates a second question
           # ============================================================
 
           SKELETONS = [
 
+              # --------------------------------------------------------
+              # 1
+              # --------------------------------------------------------
+
               {
                   "id": 1,
                   "title": "Someone Let Him In",
-                  "location": "apartment living room",
+                  "location": "apartment entrance and living room",
+                  "characters": "two fictional adults",
                   "visual": (
-                      "A woman opens her apartment door and immediately "
-                      "sees an unfamiliar adult man already sitting inside."
+                      "An adult woman opens her apartment door and "
+                      "immediately sees an unfamiliar adult man sitting "
+                      "calmly on her sofa."
                   ),
-                  "script_core": (
-                      "She asks how he got inside. He says she let him in "
-                      "ten minutes ago. She says she has been standing "
-                      "outside the locked door for ten minutes."
+                  "core": (
+                      "She asks how he got inside. He says she opened "
+                      "the door for him ten minutes ago. She says she "
+                      "has been standing outside the locked door for "
+                      "ten minutes."
                   ),
                   "final": (
-                      "He looks toward the hallway and says, "
-                      "\"Then who opened it?\""
+                      "He looks past her into the hallway and asks, "
+                      "\"Then who was standing behind you?\""
                   )
               },
 
+              # --------------------------------------------------------
+              # 2
+              # --------------------------------------------------------
+
               {
                   "id": 2,
-                  "title": "The Man in My Bedroom",
-                  "location": "home bedroom doorway",
+                  "title": "The Man at Dinner",
+                  "location": "family dining room",
+                  "characters": "three fictional adults",
                   "visual": (
-                      "An adult man stands in his bedroom doorway while an "
-                      "unfamiliar adult woman calmly sits on his bed."
+                      "An adult woman walks into her dining room and "
+                      "sees an unfamiliar adult man sitting in her "
+                      "husband's usual chair."
                   ),
-                  "script_core": (
-                      "He asks who she is. She says his wife invited her "
-                      "inside. He says his wife is currently downstairs."
+                  "core": (
+                      "She asks who invited him. He says her husband did. "
+                      "Her husband is standing directly beside her and "
+                      "says he has never seen the man."
                   ),
                   "final": (
-                      "The woman whispers, \"No. She told me to wait "
-                      "for you upstairs.\""
+                      "The stranger studies the husband and says, "
+                      "\"That's not the man who invited me.\""
                   )
               },
+
+              # --------------------------------------------------------
+              # 3
+              # --------------------------------------------------------
 
               {
                   "id": 3,
                   "title": "The Dead Man's Key",
                   "location": "front doorway of a house",
+                  "characters": "two fictional adults",
                   "visual": (
                       "An unfamiliar adult man stands inside the doorway "
-                      "holding a house key that belonged to the protagonist's "
-                      "father."
+                      "holding an old house key that the protagonist "
+                      "recognizes as his dead father's."
                   ),
-                  "script_core": (
+                  "core": (
                       "The protagonist asks where he got it. The stranger "
-                      "says the father gave it to him yesterday."
+                      "says the father handed it to him yesterday."
                   ),
                   "final": (
-                      "The protagonist says, \"My father died four years ago.\" "
-                      "The stranger quietly replies, \"I know.\""
+                      "The protagonist says, \"My father died four years "
+                      "ago.\" The stranger quietly says, \"I know. "
+                      "He told me you'd ask that.\""
                   )
               },
 
+              # --------------------------------------------------------
+              # 4
+              # --------------------------------------------------------
+
               {
                   "id": 4,
-                  "title": "The Dinner Guest",
-                  "location": "family dining room",
+                  "title": "The Bedroom Guest",
+                  "location": "home bedroom doorway",
+                  "characters": "three fictional adults",
                   "visual": (
-                      "An adult woman walks into her dining room and sees "
-                      "an unfamiliar adult man sitting in her husband's "
-                      "usual chair."
+                      "An adult man enters his bedroom and finds an "
+                      "unfamiliar adult woman sitting on the bed holding "
+                      "his wife's handbag."
                   ),
-                  "script_core": (
-                      "She asks who invited him. He says her husband did. "
-                      "Her husband is standing beside her and says he "
-                      "has never seen the man."
+                  "core": (
+                      "He asks how she got inside. She says his wife "
+                      "invited her. His wife is standing in the hallway "
+                      "and says she has never seen the woman."
                   ),
                   "final": (
-                      "The stranger looks at the husband and says, "
-                      "\"That's not the man who invited me.\""
+                      "The stranger looks at the wife and says, "
+                      "\"You weren't wearing that dress when you called me.\""
                   )
               },
+
+              # --------------------------------------------------------
+              # 5
+              # --------------------------------------------------------
 
               {
                   "id": 5,
                   "title": "The Locked Office",
                   "location": "private home office",
+                  "characters": "two fictional adults",
                   "visual": (
-                      "An adult woman opens her locked office and sees "
-                      "an unfamiliar adult man sitting in her chair."
+                      "An adult woman opens her locked home office and "
+                      "sees an unfamiliar adult man sitting at her desk "
+                      "reading her private notebook."
                   ),
-                  "script_core": (
-                      "He is reading a notebook she wrote that morning. "
+                  "core": (
                       "She asks how he got inside. He says she gave him "
-                      "the notebook before leaving."
+                      "the notebook before leaving. She says she never "
+                      "left the house."
                   ),
                   "final": (
-                      "She looks at the notebook and sees the last sentence "
-                      "has not been written yet."
+                      "He turns the notebook toward her and says, "
+                      "\"You haven't written the last page yet.\""
                   )
               },
 
+              # --------------------------------------------------------
+              # 6
+              # --------------------------------------------------------
+
               {
                   "id": 6,
-                  "title": "The Neighbor's Copy",
+                  "title": "The Neighbor's Key",
                   "location": "front doorway",
+                  "characters": "two fictional adults",
                   "visual": (
-                      "An adult man opens his front door and sees his "
-                      "neighbor holding a working copy of his house key."
+                      "An adult man opens his front door and finds his "
+                      "neighbor standing there holding a working copy "
+                      "of his house key."
                   ),
-                  "script_core": (
+                  "core": (
                       "He asks where the neighbor got it. The neighbor "
-                      "says his wife gave him the copy yesterday."
+                      "says his wife gave him the copy yesterday. "
+                      "The wife died six months ago."
                   ),
                   "final": (
-                      "The man says, \"My wife died six months ago.\" "
-                      "The neighbor answers, \"Yes. Yesterday.\""
+                      "The neighbor looks confused and says, "
+                      "\"Yesterday? She gave it to me this morning.\""
                   )
               },
+
+              # --------------------------------------------------------
+              # 7
+              # --------------------------------------------------------
 
               {
                   "id": 7,
                   "title": "The Photograph",
                   "location": "apartment hallway",
+                  "characters": "two fictional adults",
                   "visual": (
-                      "An unfamiliar adult woman stands inside an apartment "
-                      "holding a printed photograph of the protagonist asleep."
+                      "An unfamiliar adult woman is standing inside an "
+                      "apartment holding a printed photograph of the "
+                      "protagonist asleep in his own bed."
                   ),
-                  "script_core": (
-                      "The protagonist asks where she got it. She says "
-                      "he gave it to her last night."
+                  "core": (
+                      "He asks where she got the photograph. She says "
+                      "he gave it to her last night. He says he spent "
+                      "last night alone."
                   ),
                   "final": (
-                      "He says, \"I was alone last night.\" "
-                      "She answers, \"You weren't.\""
+                      "She turns the photograph over and says, "
+                      "\"You wrote the time on the back.\""
                   )
               },
+
+              # --------------------------------------------------------
+              # 8
+              # --------------------------------------------------------
 
               {
                   "id": 8,
                   "title": "The Spare Room",
-                  "location": "home spare bedroom",
+                  "location": "locked spare bedroom",
+                  "characters": "two fictional adults",
                   "visual": (
-                      "An adult man opens a locked spare bedroom and sees "
-                      "an unfamiliar adult woman calmly making the bed."
+                      "An adult man opens a locked spare bedroom and "
+                      "finds an unfamiliar adult woman calmly making "
+                      "the bed."
                   ),
-                  "script_core": (
+                  "core": (
                       "He asks who let her in. She says his wife did. "
                       "His wife has been away for three days."
                   ),
                   "final": (
-                      "She points to the pillow and says, "
+                      "The woman points to the pillow and says, "
                       "\"She slept here last night.\""
                   )
               },
 
+              # --------------------------------------------------------
+              # 9
+              # --------------------------------------------------------
+
               {
                   "id": 9,
-                  "title": "The Garage",
+                  "title": "The Garage Visitor",
                   "location": "private home garage",
+                  "characters": "two fictional adults",
                   "visual": (
                       "An adult man enters his locked garage and sees "
-                      "an unfamiliar adult working on his father's motorcycle."
+                      "an unfamiliar adult working on his father's "
+                      "old motorcycle."
                   ),
-                  "script_core": (
-                      "He demands to know who sent him. The stranger says "
-                      "his father did."
+                  "core": (
+                      "He demands to know who sent him. The stranger "
+                      "says his father did. The father died before the "
+                      "motorcycle was purchased."
                   ),
                   "final": (
-                      "The man says his father died before the motorcycle "
-                      "was ever purchased. The stranger stops working."
+                      "The stranger stops working and asks, "
+                      "\"Then why did he give me your address?\""
                   )
               },
+
+              # --------------------------------------------------------
+              # 10
+              # --------------------------------------------------------
 
               {
                   "id": 10,
                   "title": "The Private Name",
-                  "location": "apartment entryway",
+                  "location": "apartment entrance",
+                  "characters": "two fictional adults",
                   "visual": (
-                      "An unfamiliar adult man is standing inside a woman's "
-                      "locked apartment."
+                      "An unfamiliar adult man is already standing inside "
+                      "a woman's locked apartment."
                   ),
-                  "script_core": (
+                  "core": (
                       "He greets her using a private childhood nickname "
                       "that only her late sister ever used."
                   ),
                   "final": (
-                      "She asks who told him that name. "
-                      "He says, \"Your sister. This morning.\""
+                      "She asks who told him that name. He answers, "
+                      "\"Your sister. She said you'd recognize it.\""
                   )
               },
+
+              # --------------------------------------------------------
+              # 11
+              # --------------------------------------------------------
 
               {
                   "id": 11,
                   "title": "The Kitchen Visitor",
                   "location": "home kitchen",
+                  "characters": "three fictional adults",
                   "visual": (
                       "An adult woman enters her kitchen and sees an "
                       "unfamiliar adult man preparing the family's dinner."
                   ),
-                  "script_core": (
-                      "He says her husband asked him to cook. "
-                      "Her husband is currently sitting in the next room."
+                  "core": (
+                      "He says her husband asked him to cook. Her husband "
+                      "is sitting in the next room and says he has never "
+                      "seen the man."
                   ),
                   "final": (
-                      "The husband looks at the stranger and says, "
-                      "\"I have never seen you before.\""
+                      "The stranger looks toward the husband and says, "
+                      "\"You were wearing a different face when you called me.\""
                   )
               },
+
+              # --------------------------------------------------------
+              # 12
+              # --------------------------------------------------------
 
               {
                   "id": 12,
                   "title": "The Person at My Desk",
                   "location": "private office",
+                  "characters": "two fictional adults",
                   "visual": (
-                      "An adult man enters his office and sees an unfamiliar "
-                      "adult woman sitting at his desk reading his private notes."
+                      "An adult man enters his office and sees an "
+                      "unfamiliar adult woman sitting in his chair "
+                      "reading his private notes."
                   ),
-                  "script_core": (
-                      "She says he asked her to read them. "
-                      "He says he has never met her."
+                  "core": (
+                      "She says he asked her to read them. He says he "
+                      "has never met her."
                   ),
                   "final": (
                       "She closes the notebook and says, "
-                      "\"You will tomorrow.\""
+                      "\"You will tomorrow. You already invited me.\""
                   )
               }
           ]
 
           # ============================================================
-          # SELECT FIVE SKELETONS
+          # SELECT FIVE
           # ============================================================
 
           start = ((RUN_NUMBER - 1) * 5) % len(SKELETONS)
@@ -272,8 +352,8 @@ jobs:
           ]
 
           print("==========================================")
-          print("QUIET VAULT AI V8.1")
-          print("HUMAN HORROR ENGINE")
+          print("QUIET VAULT AI V8.2")
+          print("STRONGER HORROR DNA")
           print("==========================================")
           print(f"RUN: {RUN_NUMBER}")
           print()
@@ -281,11 +361,11 @@ jobs:
           for i, s in enumerate(selected, 1):
               print(
                   f"{i}. {s['title']} "
-                  f"({s['location']})"
+                  f"| {s['characters']}"
               )
 
           # ============================================================
-          # GROQ API
+          # GROQ
           # ============================================================
 
           def groq_call(prompt, retries=3):
@@ -296,10 +376,10 @@ jobs:
                       {
                           "role": "system",
                           "content": (
-                              "You are an editor for ultra-short realistic "
-                              "horror videos. You must preserve the supplied "
-                              "story events and final reveal exactly. "
-                              "Do not invent a new twist."
+                              "You are a short-form horror script editor. "
+                              "Preserve the supplied story exactly. "
+                              "Do not invent a new horror mechanism, "
+                              "new character, or new ending."
                           )
                       },
                       {
@@ -307,7 +387,7 @@ jobs:
                           "content": prompt
                       }
                   ],
-                  "temperature": 0.4,
+                  "temperature": 0.35,
                   "max_completion_tokens": 2200,
                   "reasoning_effort": "low",
                   "reasoning_format": "hidden",
@@ -316,7 +396,9 @@ jobs:
                   }
               }
 
-              body = json.dumps(payload).encode(
+              body = json.dumps(
+                  payload
+              ).encode(
                   "utf-8"
               )
 
@@ -417,14 +499,14 @@ jobs:
           # GENERATION PROMPT
           # ============================================================
 
-          story_blocks = ""
+          blocks = ""
 
           for i, s in enumerate(
               selected,
               1
           ):
 
-              story_blocks += f"""
+              blocks += f"""
 
           STORY {i}
 
@@ -434,130 +516,166 @@ jobs:
           LOCATION:
           {s['location']}
 
-          FRAME 1:
+          CHARACTERS:
+          {s['characters']}
+
+          EXACT FIRST-FRAME VISUAL:
           {s['visual']}
 
           STORY CORE:
-          {s['script_core']}
+          {s['core']}
 
-          FINAL REVEAL:
+          REQUIRED FINAL BEAT:
           {s['final']}
 
           """
 
           prompt = f"""
-          Turn these five hand-written horror skeletons into five
-          extremely short YouTube Shorts.
+          Convert these five hand-written horror skeletons into
+          five extremely short YouTube Shorts.
 
-          {story_blocks}
+          {blocks}
 
           ============================================================
-          ABSOLUTE RULES
+          THE SKELETON IS THE STORY
           ============================================================
 
-          The skeleton is already the story.
+          Preserve the exact situation.
 
-          DO NOT invent a different ending.
+          Preserve the exact contradiction.
 
-          DO NOT invent a supernatural explanation.
+          Preserve the final reveal.
 
-          DO NOT add a monster, ghost, demon, clone, twin,
-          doppelganger or magical object.
+          You may shorten, rearrange or naturalize dialogue.
 
-          DO NOT change who is alive or dead.
+          You may NOT:
 
-          DO NOT add characters.
+          - invent a new twist
+          - invent a new character
+          - change who is alive or dead
+          - change the location
+          - add supernatural creatures
+          - add a second explanation
+          - add a magical object
+          - turn the story into a dream
+          - turn the story into a simulation
+          - introduce a double or clone
 
-          DO NOT add another twist.
+          ============================================================
+          LENGTH
+          ============================================================
 
-          DO NOT change the location.
+          30-45 spoken words.
 
-          You may make the wording more natural and cinematic.
+          Designed for approximately 9-12 seconds.
 
-          Each script must be approximately 30-45 spoken words.
+          Short sentences.
 
-          Keep dialogue extremely short.
-
-          The first sentence should immediately place the viewer
-          inside the visual situation.
-
-          The final beat must preserve the supplied FINAL REVEAL.
+          Natural spoken English.
 
           No exposition.
+
+          No long narration.
 
           No "something felt wrong."
 
           No "I realized."
 
-          No explanation after the final reveal.
+          No generic descriptions such as:
 
-          Hard cut immediately after the final line.
+          "It was creepy."
+
+          "I felt scared."
+
+          "Something wasn't right."
+
+          The viewer should understand the situation
+          from the first sentence.
+
+          ============================================================
+          FINAL LINE
+          ============================================================
+
+          The supplied REQUIRED FINAL BEAT must remain
+          the final spoken idea.
+
+          Do not explain what it means afterward.
+
+          CUT immediately.
 
           ============================================================
           BANNED
           ============================================================
 
           children
-          minors
-          babies
-          ghosts
-          demons
-          monsters
-          zombies
-          mirrors
-          reflections
+          child
+          kids
+          baby
+          minor
+          ghost
+          demon
+          monster
+          zombie
+          vampire
+          mirror
+          reflection
+          twin
           twins
-          doubles
-          doppelgangers
-          clones
+          double
+          doppelganger
+          clone
+          cloning
           gore
           blood
-          body transformation
-          disappearing people
-          magical objects
-          object transformations
+          corpse
           CCTV
           surveillance
-          phone-screen horror
+          phone screen
           video call
+          disappearing
+          vanished
+          teleport
+          transformation
+          distorted face
+          distorted body
 
           ============================================================
           OUTPUT
           ============================================================
 
-          Return ONLY valid JSON:
+          Return ONLY valid JSON.
 
           {{
             "stories": [
               {{
                 "id": 1,
-                "title": "short title",
-                "script": "30-45 words",
-                "visual_hook": "exact frame 1"
+                "title": "short curiosity-driven title",
+                "script": "30-45 spoken words",
+                "visual_hook": "exact first-frame visual"
               }},
               {{
                 "id": 2,
-                "title": "short title",
-                "script": "30-45 words",
-                "visual_hook": "exact frame 1"
+                "title": "short curiosity-driven title",
+                "script": "30-45 spoken words",
+                "visual_hook": "exact first-frame visual"
               }},
               {{
                 "id": 3,
-                "title": "short title",
-                "script": "30-45 words",
-                "visual_hook": "exact frame 1"
+                "title": "short curiosity-driven title",
+                "script": "30-45 spoken words",
+                "visual_hook": "exact first-frame visual"
               }},
               {{
                 "id": 4,
-                "title": "short title",
-                "script": "30-45 words",
-                "visual_hook": "exact frame 1"
+                "title": "short curiosity-driven title",
+                "script": "30-45 spoken words",
+                "visual_hook": "exact first-frame visual"
               }},
               {{
                 "id": 5,
-                "title": "short title",
-                "script": "30-45 words",
-                "visual_hook": "exact frame 1"
+                "title": "short curiosity-driven title",
+                "script": "30-45 spoken words",
+                "visual_hook": "exact first-frame visual"
               }}
             ]
           }}
@@ -612,37 +730,64 @@ jobs:
           )
 
           # ============================================================
-          # BASIC VALIDATION ONLY
+          # BASIC VALIDATION
           # ============================================================
 
-          banned = [
+          banned_words = [
               "child",
               "children",
               "kid",
+              "kids",
               "baby",
               "minor",
               "ghost",
               "demon",
               "monster",
               "zombie",
+              "vampire",
               "mirror",
               "reflection",
+              "reflected",
+              "twin",
+              "twins",
+              "double",
               "doppelganger",
               "doppelgänger",
-              "twin",
               "clone",
+              "cloning",
+              "gore",
+              "blood",
+              "corpse",
               "cctv",
               "surveillance",
               "phone screen",
               "video call",
-              "gore",
-              "blood",
-              "corpse",
               "disappear",
+              "disappeared",
+              "disappearing",
               "vanish",
+              "vanished",
               "teleport",
+              "transformation",
               "distorted face",
               "distorted body"
+          ]
+
+          weak_phrases = [
+              "something felt wrong",
+              "something was wrong",
+              "something wasn't right",
+              "something was not right",
+              "i felt watched",
+              "he felt watched",
+              "she felt watched",
+              "creepy feeling",
+              "strange feeling",
+              "eerie feeling",
+              "i realized",
+              "he realized",
+              "she realized",
+              "i couldn't explain"
           ]
 
           def validate(
@@ -657,13 +802,29 @@ jobs:
               ]
 
               if not all(
-                  x in story
-                  for x in required
+                  key in story
+                  for key in required
               ):
 
                   return (
                       False,
                       "missing field"
+                  )
+
+              try:
+                  story_id = int(
+                      story["id"]
+                  )
+              except:
+                  return (
+                      False,
+                      "invalid id"
+                  )
+
+              if story_id < 1 or story_id > 5:
+                  return (
+                      False,
+                      "id must be 1-5"
                   )
 
               script = str(
@@ -674,19 +835,17 @@ jobs:
                   story["visual_hook"]
               ).strip()
 
-              count = len(
+              word_count = len(
                   script.split()
               )
 
-              if count < 25:
-
+              if word_count < 25:
                   return (
                       False,
                       "too short"
                   )
 
-              if count > 52:
-
+              if word_count > 52:
                   return (
                       False,
                       "too long"
@@ -698,7 +857,7 @@ jobs:
                   hook
               ).lower()
 
-              for word in banned:
+              for word in banned_words:
 
                   if re.search(
                       r"\b" +
@@ -712,7 +871,17 @@ jobs:
                           f"banned: {word}"
                       )
 
-              if not any(
+              for phrase in weak_phrases:
+
+                  if phrase in combined:
+
+                      return (
+                          False,
+                          f"weak phrase: {phrase}"
+                      )
+
+              # First frame must visibly contain an adult.
+              visible_adult = any(
                   word in hook.lower()
                   for word in [
                       "man",
@@ -723,11 +892,13 @@ jobs:
                       "visitor",
                       "person"
                   ]
-              ):
+              )
+
+              if not visible_adult:
 
                   return (
                       False,
-                      "no visible human"
+                      "no visible adult"
                   )
 
               return (
@@ -743,7 +914,33 @@ jobs:
           )
           print()
 
+          seen_ids = set()
+
           for story in stories:
+
+              story_id = story.get(
+                  "id"
+              )
+
+              try:
+                  story_id = int(
+                      story_id
+                  )
+              except:
+                  story_id = None
+
+              if story_id in seen_ids:
+
+                  print(
+                      f"REJECT: duplicate id "
+                      f"{story_id}"
+                  )
+
+                  continue
+
+              seen_ids.add(
+                  story_id
+              )
 
               ok, reason = validate(
                   story
@@ -768,14 +965,14 @@ jobs:
                   )
 
           # ============================================================
-          # REQUIRE AT LEAST THREE
+          # REQUIRE THREE
           # ============================================================
 
           if len(approved) < 3:
 
               raise RuntimeError(
-                  "V8.1 FAILED: fewer than 3 "
-                  "stories passed basic validation. "
+                  "V8.2 FAILED: fewer than 3 stories "
+                  "passed basic validation. "
                   "No weak replacement stories will be created."
               )
 
@@ -787,26 +984,19 @@ jobs:
           )
 
           # ============================================================
-          # IMPORTANT FIX:
+          # MAP STORY POSITION TO SELECTED SKELETON
           #
-          # Groq IDs are 1-5 based on the generated story position.
+          # Groq returns 1-5 based on response position.
+          # selected[] also contains exactly those five skeletons.
           #
-          # The original skeleton IDs can be 1-12.
-          #
-          # Therefore DO NOT map:
-          #     story["id"] -> skeleton["id"]
-          #
-          # Instead:
-          #     story id 1 -> selected[0]
-          #     story id 2 -> selected[1]
-          #     etc.
+          # This avoids the previous 1-12 ID mapping bug.
           # ============================================================
 
           if len(stories) < 5:
 
               raise RuntimeError(
-                  f"Expected 5 generated stories, "
-                  f"got {len(stories)}"
+                  f"Expected 5 stories, "
+                  f"received {len(stories)}"
               )
 
           # ============================================================
@@ -822,74 +1012,139 @@ jobs:
           Create a 9-12 second vertical 9:16
           photorealistic live-action horror Short.
 
-          Fictional adult characters only.
-          No children.
-          No celebrity or real-person likeness.
+          IMPORTANT:
+          This is a fictional scene with fictional adult actors.
+          Do not resemble any real person or celebrity.
 
-          CRITICAL FIRST FRAME:
+          ============================================================
+          CHARACTERS
+          ============================================================
 
-          {skeleton['visual']}
+          {skeleton['characters']}
 
-          The threatening adult must be clearly visible
-          in the first frame.
+          Adults only.
 
-          LOCATION:
+          ============================================================
+          LOCATION
+          ============================================================
 
           {skeleton['location']}
 
-          SCRIPT:
+          ============================================================
+          FRAME 1 — MOST IMPORTANT
+          ============================================================
+
+          {skeleton['visual']}
+
+          Start on this situation immediately.
+
+          No establishing shot.
+
+          The unfamiliar/ threatening adult must be clearly visible
+          in the FIRST FRAME.
+
+          The viewer should instantly understand:
+
+          "That person should not be there."
+
+          ============================================================
+          ACTION
+          ============================================================
 
           {story['script']}
 
-          FINAL REVEAL:
+          Use natural adult movement.
+
+          Keep the camera close enough to clearly see faces,
+          body language and the important object/action.
+
+          ============================================================
+          FINAL REVEAL
+          ============================================================
 
           {skeleton['final']}
 
-          VISUAL STYLE:
+          End immediately after the final line.
+
+          Hard cut.
+
+          ============================================================
+          STYLE
+          ============================================================
 
           Photorealistic live action.
-          Real adult actors.
-          Natural facial expressions.
-          Realistic home/apartment/office environment.
+
+          Realistic adult actors.
+
+          Natural skin and facial expressions.
+
+          Real home/apartment/office environment.
+
           Believable lighting.
-          Restrained cinematic camera movement.
 
-          IMPORTANT:
+          Subtle cinematic camera movement.
 
-          Do not start with an establishing shot.
+          Realistic room ambience.
 
-          Do not add another character.
+          No exaggerated acting.
 
-          Do not add another plot point.
+          No cartoon appearance.
 
-          Do not invent another twist.
+          No CGI-looking characters.
 
-          Keep the threatening adult physically visible.
+          ============================================================
+          DO NOT ADD
+          ============================================================
+
+          No children.
 
           No ghosts.
+
           No demons.
+
           No monsters.
+
+          No zombies.
+
           No mirrors.
+
           No reflections.
+
           No twins.
+
           No doppelgangers.
+
           No clones.
-          No children.
+
           No gore.
+
           No blood.
+
           No CCTV.
+
+          No surveillance.
+
           No phone-screen horror.
+
           No disappearing people.
+
+          No body transformation.
+
+          No distorted faces.
+
           No magical objects.
-          No distorted bodies.
 
-          Keep the horror grounded in the human situation.
+          No extra character.
 
-          End immediately after the final reveal.
+          No extra twist.
+
+          No extra plot.
+
+          Do not change the supplied story.
           """
 
           # ============================================================
-          # CREATE OUTPUT DIRECTORY
+          # OUTPUT DIRECTORY
           # ============================================================
 
           out = Path(
@@ -903,7 +1158,7 @@ jobs:
           final = []
 
           # ============================================================
-          # CREATE THE THREE SHORTS
+          # BUILD THREE SHORTS
           # ============================================================
 
           for index, story in enumerate(
@@ -926,9 +1181,6 @@ jobs:
                       f"{story_position}"
                   )
 
-              # FIX:
-              # Map Groq's 1-5 response position to the
-              # corresponding selected skeleton.
               skeleton = selected[
                   story_position - 1
               ]
@@ -948,33 +1200,36 @@ jobs:
                   ],
                   "description": (
                       "A realistic human horror encounter "
-                      "with one detail that should not be possible. "
-                      "Watch until the final line."
+                      "where one impossible detail changes "
+                      "everything. Watch until the final line."
                   ),
                   "keywords": (
                       "horror, horror shorts, scary stories, "
                       "scary shorts, horror stories, psychological "
                       "horror, realistic horror, creepy stories, "
                       "suspense horror, short horror stories, "
-                      "horror storytelling, The Quiet Vault"
+                      "horror storytelling, scary encounters, "
+                      "The Quiet Vault"
                   ),
                   "hashtags": (
                       "#horror #horrorshorts #scarystories "
                       "#psychologicalhorror #creepy #shorts"
                   ),
                   "thumbnail_frame": (
-                      "Use the opening frame showing the "
-                      "visible adult threat. "
+                      "Use the exact opening frame where "
+                      "the unfamiliar adult is already visible. "
                       f"Optional text: {story['title']}"
                   ),
                   "sound_design": (
-                      "Natural room ambience, subtle footsteps "
-                      "or movement, restrained tension, clear "
-                      "dialogue, then hard cut to silence "
-                      "after the final reveal."
+                      "Natural room ambience. "
+                      "Quiet realistic movement sounds. "
+                      "Clear dialogue. "
+                      "Very restrained tension underneath. "
+                      "Hard cut to silence immediately after "
+                      "the final line."
                   ),
                   "pinned_comment": (
-                      "Did you catch the contradiction before "
+                      "Did you catch what was wrong before "
                       "the final line?"
                   )
               }
@@ -1039,8 +1294,7 @@ jobs:
               "provider": "groq",
               "model": MODEL,
               "engine": (
-                  "V8.1 Human Horror "
-                  "Script Skeleton Engine"
+                  "V8.2 Stronger Horror DNA"
               ),
               "generated": len(stories),
               "approved": len(final),
@@ -1059,9 +1313,13 @@ jobs:
               encoding="utf-8"
           )
 
+          # ============================================================
+          # FINAL LOG
+          # ============================================================
+
           print()
           print("==========================================")
-          print("QUIET VAULT V8.1 COMPLETE")
+          print("QUIET VAULT V8.2 COMPLETE")
           print("==========================================")
           print(
               f"Generated: {len(stories)}"
@@ -1091,5 +1349,5 @@ jobs:
       - name: Upload Shorts
         uses: actions/upload-artifact@v4
         with:
-          name: quiet-vault-v81-shorts
+          name: quiet-vault-v82-shorts
           path: quiet-vault-output/
