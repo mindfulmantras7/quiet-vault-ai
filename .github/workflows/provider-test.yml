@@ -1,0 +1,140 @@
+name: Provider Diagnostic Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  provider-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test Groq
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: |
+          echo "=============================="
+          echo "TESTING GROQ"
+          echo "=============================="
+
+          python - <<'PY'
+          import os
+          import json
+          import urllib.request
+          import urllib.error
+
+          api_key = os.environ["GROQ_API_KEY"]
+
+          url = "https://api.groq.com/openai/v1/chat/completions"
+
+          payload = {
+              "model": "openai/gpt-oss-20b",
+              "messages": [
+                  {
+                      "role": "user",
+                      "content": "Reply with exactly: GROQ_OK"
+                  }
+              ],
+              "max_tokens": 10,
+              "temperature": 0
+          }
+
+          req = urllib.request.Request(
+              url,
+              data=json.dumps(payload).encode(),
+              headers={
+                  "Content-Type": "application/json",
+                  "Authorization": f"Bearer {api_key}",
+                  "User-Agent": "QuietVaultProviderTest/1.0"
+              },
+              method="POST"
+          )
+
+          try:
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  data = json.loads(response.read().decode())
+                  text = data["choices"][0]["message"]["content"].strip()
+                  print("Groq HTTP:", response.status)
+                  print("Groq response:", text)
+                  print("GROQ_TEST_SUCCESS")
+          except urllib.error.HTTPError as e:
+              body = e.read().decode()
+              print("Groq HTTP ERROR:", e.code)
+              print("Groq response:", body)
+              raise
+          PY
+
+
+      - name: Test Gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          echo "=============================="
+          echo "TESTING GEMINI"
+          echo "=============================="
+
+          python - <<'PY'
+          import os
+          import json
+          import urllib.request
+          import urllib.error
+
+          api_key = os.environ["GEMINI_API_KEY"]
+
+          model = "gemini-2.5-flash-lite"
+
+          url = (
+              f"https://generativelanguage.googleapis.com/"
+              f"v1beta/models/{model}:generateContent?key={api_key}"
+          )
+
+          payload = {
+              "contents": [
+                  {
+                      "parts": [
+                          {
+                              "text": "Reply with exactly: GEMINI_OK"
+                          }
+                      ]
+                  }
+              ],
+              "generationConfig": {
+                  "maxOutputTokens": 10,
+                  "temperature": 0
+              }
+          }
+
+          req = urllib.request.Request(
+              url,
+              data=json.dumps(payload).encode(),
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "QuietVaultProviderTest/1.0"
+              },
+              method="POST"
+          )
+
+          try:
+              with urllib.request.urlopen(req, timeout=30) as response:
+                  data = json.loads(response.read().decode())
+
+                  text = (
+                      data["candidates"][0]["content"]["parts"][0]["text"]
+                      .strip()
+                  )
+
+                  print("Gemini HTTP:", response.status)
+                  print("Gemini response:", text)
+                  print("GEMINI_TEST_SUCCESS")
+
+          except urllib.error.HTTPError as e:
+              body = e.read().decode()
+              print("Gemini HTTP ERROR:", e.code)
+              print("Gemini response:", body)
+              raise
+          PY
+
+      - name: Diagnostic Complete
+        run: |
+          echo "=============================="
+          echo "PROVIDER DIAGNOSTIC COMPLETE"
+          echo "=============================="
