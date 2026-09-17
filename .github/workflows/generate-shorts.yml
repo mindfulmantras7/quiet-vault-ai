@@ -21,109 +21,128 @@ jobs:
           import urllib.error
 
           API_KEY = os.environ["GROQ_API_KEY"]
-
           URL = "https://api.groq.com/openai/v1/chat/completions"
           MODEL = "openai/gpt-oss-20b"
 
           # ============================================================
-          # FIXED VISUAL SEEDS
+          # FIXED HORROR LIBRARY
+          #
+          # Groq cannot invent the visual mechanism.
+          # It can only turn these into a short story.
           # ============================================================
 
           SEEDS = [
+
               {
                   "id": 1,
                   "location": "apartment bedroom",
-                  "frame": (
-                      "Vertical photorealistic live-action frame. "
+                  "visual": (
                       "A fictional adult woman stands in her bedroom doorway. "
                       "An unfamiliar adult man is already sitting openly on her bed, "
                       "holding her house keys in one hand and a kitchen knife in the other. "
-                      "Both adults are fully visible. "
-                      "The woman has just discovered him."
+                      "Both adults are clearly visible."
                   ),
-                  "story_goal": (
-                      "The stranger knows something about the woman or her home "
-                      "that he should not know."
+                  "mechanism": (
+                      "The stranger claims someone inside the apartment invited him "
+                      "and insists this is not his first visit."
+                  ),
+                  "payoff": (
+                      "The woman realizes the stranger knows about a previous visit "
+                      "that she genuinely cannot remember."
                   )
               },
 
               {
                   "id": 2,
                   "location": "private office",
-                  "frame": (
-                      "Vertical photorealistic live-action frame. "
+                  "visual": (
                       "A fictional adult man stands inside his private office. "
-                      "An unfamiliar adult woman is already seated in his desk chair, "
+                      "An unfamiliar adult woman is seated in his desk chair, "
                       "holding his access badge in one hand and large office scissors "
-                      "in the other. Both adults are clearly visible."
+                      "in the other. Both adults are fully visible."
                   ),
-                  "story_goal": (
-                      "The stranger has knowledge about the office or its access "
-                      "that should be impossible."
+                  "mechanism": (
+                      "The woman calmly claims she was sent to collect something "
+                      "the man has supposedly already handed over."
+                  ),
+                  "payoff": (
+                      "She names a private object and exact location that only the man "
+                      "should know about."
                   )
               },
 
               {
                   "id": 3,
                   "location": "apartment kitchen",
-                  "frame": (
-                      "Vertical photorealistic live-action frame. "
+                  "visual": (
                       "A fictional adult couple stand together in their kitchen. "
                       "An unfamiliar adult man is openly seated at their kitchen table, "
                       "holding their apartment key and staring directly at them. "
                       "All three adults are visible."
                   ),
-                  "story_goal": (
-                      "The stranger possesses knowledge or access connected to the couple "
-                      "that creates a disturbing contradiction."
+                  "mechanism": (
+                      "The stranger says one of the couple gave him the key earlier."
+                  ),
+                  "payoff": (
+                      "Both partners deny ever meeting him, but the stranger reveals "
+                      "one private detail about their relationship that proves he has "
+                      "been inside their home before."
                   )
               },
 
               {
                   "id": 4,
                   "location": "hospital room",
-                  "frame": (
-                      "Vertical photorealistic live-action frame. "
+                  "visual": (
                       "A fictional adult man enters a private hospital room. "
                       "An unfamiliar adult man is already sitting beside the visitor chair, "
                       "holding the patient's phone and staring directly at him. "
                       "Both adults are clearly visible."
                   ),
-                  "story_goal": (
-                      "The stranger knows something about the patient that he could only "
-                      "know from being inside the room earlier."
+                  "mechanism": (
+                      "The stranger says the patient asked him to deliver a message "
+                      "before the visitor arrived."
+                  ),
+                  "payoff": (
+                      "The message contains a private sentence that the visitor "
+                      "has never told anyone."
                   )
               },
 
               {
                   "id": 5,
-                  "location": "apartment hallway",
-                  "frame": (
-                      "Vertical photorealistic live-action frame. "
-                      "A fictional adult woman has just opened her apartment door. "
-                      "An unfamiliar adult woman is visibly standing inside the apartment, "
-                      "holding the homeowner's spare key and wearing a coat belonging "
-                      "to the homeowner's husband. Both adults are fully visible."
-                  ),
-                  "story_goal": (
-                      "The stranger's possession of the key and coat has a disturbing "
-                      "but grounded explanation."
-                  )
-              },
-
-              {
-                  "id": 6,
                   "location": "restaurant private dining room",
-                  "frame": (
-                      "Vertical photorealistic live-action frame. "
+                  "visual": (
                       "A fictional adult woman enters a private dining room where her husband "
                       "is seated. An unfamiliar adult man is already sitting opposite the husband, "
                       "holding the husband's wedding ring in his open palm. "
                       "All three adults are clearly visible."
                   ),
-                  "story_goal": (
-                      "The stranger knows exactly where the wedding ring came from "
-                      "and the husband has not told his wife."
+                  "mechanism": (
+                      "The stranger claims the husband left the ring with him "
+                      "during an earlier meeting."
+                  ),
+                  "payoff": (
+                      "The husband denies meeting him, and the stranger casually states "
+                      "where the husband was that night instead."
+                  )
+              },
+
+              {
+                  "id": 6,
+                  "location": "apartment laundry room",
+                  "visual": (
+                      "A fictional adult man opens the laundry room door. "
+                      "An unfamiliar adult man is already inside, holding the first man's wallet "
+                      "and standing near the only exit. Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "The stranger says he found the wallet upstairs and has been waiting "
+                      specifically for its owner."
+                  ),
+                  "payoff": (
+                      "The stranger says the man's full name before the man introduces himself, "
+                      "then reveals something that was inside the wallet."
                   )
               }
           ]
@@ -132,12 +151,12 @@ jobs:
           # GROQ API
           # ============================================================
 
-          def groq_call(messages, schema, max_tokens=2500, retries=5):
+          def groq_call(messages, schema, max_tokens=2200, retries=5):
 
               payload = {
                   "model": MODEL,
                   "messages": messages,
-                  "temperature": 0.75,
+                  "temperature": 0.65,
                   "max_completion_tokens": max_tokens,
                   "reasoning_effort": "low",
                   "response_format": {
@@ -186,15 +205,11 @@ jobs:
                           errors="ignore"
                       )
 
-                      print(
-                          f"GROQ HTTP ERROR {e.code}: {body}"
-                      )
+                      print(f"GROQ HTTP {e.code}: {body}")
 
                       if e.code == 429 and attempt < retries - 1:
 
-                          retry_after = e.headers.get(
-                              "retry-after"
-                          )
+                          retry_after = e.headers.get("retry-after")
 
                           try:
                               wait = max(
@@ -205,8 +220,7 @@ jobs:
                               wait = 65
 
                           print(
-                              f"Rate limit detected. "
-                              f"Waiting {wait} seconds..."
+                              f"Rate limit. Waiting {wait} seconds..."
                           )
 
                           time.sleep(wait)
@@ -216,9 +230,7 @@ jobs:
 
                   except Exception as e:
 
-                      print(
-                          f"GROQ ERROR: {e}"
-                      )
+                      print(f"GROQ ERROR: {e}")
 
                       if attempt < retries - 1:
 
@@ -228,7 +240,7 @@ jobs:
                       raise
 
           # ============================================================
-          # STAGE 1 — GENERATE STORIES AROUND FIXED VISUALS
+          # STAGE 1 — CREATE STORY BLUEPRINTS
           # ============================================================
 
           seed_text = ""
@@ -241,21 +253,24 @@ jobs:
           LOCATION:
           {seed['location']}
 
-          EXACT FIRST FRAME:
-          {seed['frame']}
+          FIXED VISUAL:
+          {seed['visual']}
 
-          STORY GOAL:
-          {seed['story_goal']}
+          FIXED HORROR MECHANISM:
+          {seed['mechanism']}
+
+          FIXED PAYOFF DIRECTION:
+          {seed['payoff']}
 
           ----------------------------------------
           """
 
-          generator_schema = {
-              "name": "quiet_vault_concepts",
+          blueprint_schema = {
+              "name": "quiet_vault_blueprints",
               "schema": {
                   "type": "object",
                   "properties": {
-                      "concepts": {
+                      "stories": {
                           "type": "array",
                           "items": {
                               "type": "object",
@@ -266,101 +281,103 @@ jobs:
                                   "title": {
                                       "type": "string"
                                   },
-                                  "premise": {
+                                  "hook_line": {
                                       "type": "string"
                                   },
-                                  "ending": {
+                                  "middle_line": {
+                                      "type": "string"
+                                  },
+                                  "ending_line": {
                                       "type": "string"
                                   }
                               },
                               "required": [
                                   "id",
                                   "title",
-                                  "premise",
-                                  "ending"
+                                  "hook_line",
+                                  "middle_line",
+                                  "ending_line"
                               ],
                               "additionalProperties": False
                           }
                       }
                   },
                   "required": [
-                      "concepts"
+                      "stories"
                   ],
                   "additionalProperties": False
               }
           }
 
           generator_prompt = f"""
-          You write realistic cinematic horror Shorts.
-
-          Create EXACTLY ONE concept for each of the six fixed seeds below.
+          You write ultra-short realistic horror stories for YouTube Shorts.
 
           IMPORTANT:
 
-          The FIRST FRAME is already designed.
+          The visual and horror mechanism are FIXED.
 
-          Do NOT change it.
+          DO NOT invent a different horror mechanism.
 
-          Do NOT invent a different visual hook.
+          DO NOT replace the stranger.
 
-          Do NOT remove the visible adult stranger.
+          DO NOT add another major character.
 
-          Do NOT introduce:
-
+          DO NOT add:
           - children
           - babies
           - minors
+          - ghosts
+          - demons
+          - monsters
           - mirrors
           - reflections
           - twins
           - doppelgangers
           - CCTV
-          - surveillance footage
+          - surveillance
           - elevators
           - cars
           - hotels
           - trains
-          - ghosts
-          - demons
-          - monsters
-          - zombies
           - gore
           - blood
           - supernatural mythology
-          - disappearing people
 
-          Every story must be:
+          Write each story as exactly THREE spoken lines:
 
-          - realistic
-          - adult-only
-          - cinematic
-          - easy to understand
-          - 9–12 seconds
-          - based on the visible human threat
-          - built around ONE disturbing contradiction
-          - capable of working without a long explanation
+          HOOK:
+          Immediately tells the viewer what is wrong.
 
-          IMPORTANT CREATIVE RULE:
+          MIDDLE:
+          Introduces the fixed contradiction.
 
-          Do NOT simply write:
+          ENDING:
+          Delivers the disturbing payoff.
 
-          "A stranger broke into the house."
+          Total spoken content should be short enough for approximately
+          9–12 seconds.
 
-          The stranger must have one specific disturbing reason
-          for possessing the object shown in the seed.
+          Do not explain the entire backstory.
 
-          The ending should make the viewer rethink the first frame.
+          Do not use phrases like:
+          "little did she know"
+          "what happened next"
+          "you won't believe"
+          "everything changed"
 
-          Keep the ending short.
+          The horror must remain grounded.
 
-          Seeds:
+          MOST IMPORTANT:
+          Preserve the supplied mechanism and payoff direction.
+
+          SEEDS:
 
           {seed_text}
           """
 
           print("")
           print("==============================================")
-          print("GENERATING FIXED-SEED CONCEPTS")
+          print("STAGE 1: STORY BLUEPRINTS")
           print("==============================================")
 
           generated = groq_call(
@@ -368,8 +385,8 @@ jobs:
                   {
                       "role": "system",
                       "content": (
-                          "You are a realistic cinematic horror writer. "
-                          "Follow the supplied visual seeds exactly."
+                          "You are a concise cinematic horror writer. "
+                          "You follow fixed story mechanisms."
                       )
                   },
                   {
@@ -377,18 +394,18 @@ jobs:
                       "content": generator_prompt
                   }
               ],
-              generator_schema,
-              max_tokens=2500
+              blueprint_schema,
+              max_tokens=2200
           )
 
-          raw_concepts = generated["concepts"]
+          stories = generated["stories"]
 
           print(
-              f"Groq returned {len(raw_concepts)} concepts."
+              f"Generated {len(stories)} story blueprints."
           )
 
           # ============================================================
-          # REATTACH FIXED FIRST FRAME
+          # RECONNECT EACH STORY TO ITS FIXED SEED
           # ============================================================
 
           seed_map = {
@@ -398,27 +415,31 @@ jobs:
 
           candidates = []
 
-          for concept in raw_concepts:
+          for story in stories:
 
-              sid = concept.get("id")
+              sid = story.get("id")
 
               if sid not in seed_map:
                   continue
 
+              seed = seed_map[sid]
+
               candidates.append({
                   "id": sid,
-                  "title": concept["title"].strip(),
-                  "premise": concept["premise"].strip(),
-                  "ending": concept["ending"].strip(),
+                  "title": story["title"].strip(),
+                  "hook_line": story["hook_line"].strip(),
+                  "middle_line": story["middle_line"].strip(),
+                  "ending_line": story["ending_line"].strip(),
 
-                  # Python controls this.
-                  "static_frame_1": seed_map[sid]["frame"],
-
-                  "location": seed_map[sid]["location"]
+                  # These NEVER come from Groq.
+                  "location": seed["location"],
+                  "static_frame_1": seed["visual"],
+                  "fixed_mechanism": seed["mechanism"],
+                  "fixed_payoff": seed["payoff"]
               })
 
           # ============================================================
-          # OBJECTIVE FILTER
+          # OBJECTIVE FILTER ONLY
           # ============================================================
 
           banned_terms = [
@@ -450,10 +471,7 @@ jobs:
               "zombie",
               "gore",
               "blood",
-              "supernatural",
-              "teleport",
-              "teleports",
-              "teleported"
+              "supernatural"
           ]
 
           def contains_banned(text):
@@ -479,36 +497,44 @@ jobs:
 
               combined = " ".join([
                   candidate["title"],
-                  candidate["premise"],
-                  candidate["ending"]
+                  candidate["hook_line"],
+                  candidate["middle_line"],
+                  candidate["ending_line"]
               ])
 
               if contains_banned(combined):
 
                   print(
-                      f"OBJECTIVE REJECT "
-                      f"{candidate['id']}: "
-                      f"banned element"
+                      f"REJECT {candidate['id']}: "
+                      f"prohibited term"
                   )
 
                   continue
 
-              if len(candidate["premise"]) < 25:
+              spoken = " ".join([
+                  candidate["hook_line"],
+                  candidate["middle_line"],
+                  candidate["ending_line"]
+              ])
+
+              word_count = len(
+                  spoken.split()
+              )
+
+              if word_count > 55:
 
                   print(
-                      f"OBJECTIVE REJECT "
-                      f"{candidate['id']}: "
-                      f"premise too short"
+                      f"REJECT {candidate['id']}: "
+                      f"too many words ({word_count})"
                   )
 
                   continue
 
-              if len(candidate["ending"]) < 20:
+              if word_count < 15:
 
                   print(
-                      f"OBJECTIVE REJECT "
-                      f"{candidate['id']}: "
-                      f"ending too short"
+                      f"REJECT {candidate['id']}: "
+                      f"too few words ({word_count})"
                   )
 
                   continue
@@ -524,24 +550,26 @@ jobs:
           if len(clean) < 3:
 
               raise RuntimeError(
-                  "Fewer than 3 usable concepts were generated. "
-                  "No subjective AI quality gate was used."
+                  "Fewer than 3 usable story blueprints remained."
               )
 
           # ============================================================
-          # SELECT THREE
+          # SELECT FIRST THREE VALID STORIES
           #
           # No AI ranking.
-          # We simply take the first three valid concepts.
+          # No AI quality score.
+          # No subjective gate.
           # ============================================================
 
           selected = clean[:3]
 
           print("")
-          print("SELECTED:")
+          print("SELECTED STORIES:")
+
           for item in selected:
+
               print(
-                  f"  {item['id']} - "
+                  f"{item['id']} - "
                   f"{item['title']}"
               )
 
@@ -557,7 +585,7 @@ jobs:
           time.sleep(65)
 
           # ============================================================
-          # FINAL PACKAGE SCHEMA
+          # FINAL PACKAGE
           # ============================================================
 
           final_schema = {
@@ -634,101 +662,127 @@ jobs:
               }
           }
 
-          # ============================================================
-          # FINALIZE THREE SHORTS
-          # ============================================================
-
           final_outputs = []
 
           for index, candidate in enumerate(selected):
 
               print("")
               print(
-                  f"FINALIZING "
-                  f"{index + 1}/3: "
-                  f"{candidate['title']}"
+                  f"STAGE 2: FINALIZING "
+                  f"{index + 1}/3"
               )
 
               final_prompt = f"""
-          Create the final YouTube Short package for The Quiet Vault.
-
-          APPROVED CONCEPT:
-
-          {json.dumps(candidate, indent=2)}
+          Create the final production package for one realistic
+          horror YouTube Short.
 
           ============================================================
-          SCRIPT
+          FIXED STORY
           ============================================================
 
-          Write a 9–12 second spoken horror Short.
+          TITLE:
+          {candidate['title']}
 
-          Requirements:
+          HOOK:
+          {candidate['hook_line']}
 
-          - hook immediately
-          - no long introduction
-          - no exposition dump
-          - visible threat immediately
-          - simple escalation
-          - disturbing final reveal
-          - hard cut ending
-          - natural human wording
-          - realistic horror
-          - no cheesy dialogue
+          MIDDLE:
+          {candidate['middle_line']}
+
+          ENDING:
+          {candidate['ending_line']}
 
           ============================================================
-          GOOGLE FLOW PROMPT
+          FIXED VISUAL
           ============================================================
-
-          Create ONE production-ready Google Flow prompt.
-
-          Requirements:
-
-          - vertical 9:16
-          - photorealistic live action
-          - fictional adults only
-          - no real-person likeness
-          - no celebrities
-          - preserve the exact first-frame situation
-          - realistic human faces
-          - realistic movement
-          - realistic lighting
-          - cinematic camera
-          - no monsters
-          - no ghosts
-          - no gore
-          - no children
-          - no mirrors
-          - no reflections
-          - no CCTV
-
-          The first frame MUST show:
 
           {candidate['static_frame_1']}
 
-          Do not replace this visual.
-
           ============================================================
-          FINAL TWIST
+          FIXED MECHANISM
           ============================================================
 
-          State the actual final reveal in one or two sentences.
+          {candidate['fixed_mechanism']}
+
+          ============================================================
+          FIXED PAYOFF
+          ============================================================
+
+          {candidate['fixed_payoff']}
+
+          ============================================================
+          SCRIPT REQUIREMENTS
+          ============================================================
+
+          Write a natural spoken script lasting approximately
+          9–12 seconds.
+
+          Keep it extremely concise.
+
+          Do not add new plot points.
+
+          Do not add another character.
+
+          Do not add mythology.
+
+          Do not explain the backstory.
+
+          The first spoken sentence must immediately establish
+          what is wrong.
+
+          The final sentence must deliver the payoff.
+
+          ============================================================
+          GOOGLE FLOW
+          ============================================================
+
+          Create ONE Google Flow-ready prompt.
+
+          It must:
+
+          - be vertical 9:16
+          - be photorealistic live action
+          - use fictional adults only
+          - use no celebrity or real-person likeness
+          - preserve the exact first-frame composition
+          - show both adults clearly
+          - use realistic human movement
+          - use realistic lighting
+          - use cinematic but believable camera movement
+          - maintain character consistency
+          - contain no children
+          - contain no mirrors
+          - contain no reflections
+          - contain no CCTV
+          - contain no monsters
+          - contain no ghosts
+          - contain no gore
+
+          EXACT FIRST FRAME:
+
+          {candidate['static_frame_1']}
+
+          Do not replace this first frame.
+
+          The visual progression should simply act out the
+          three spoken lines.
 
           ============================================================
           THUMBNAIL
           ============================================================
 
-          Give:
+          Choose the strongest frame.
 
-          1. strongest frame/time
-          2. optional 2–4 word thumbnail text
+          Thumbnail text:
+          maximum 4 words.
 
-          Do not reveal the twist.
+          Do not reveal the ending.
 
           ============================================================
           DESCRIPTION
           ============================================================
 
-          Natural YouTube description.
+          Short natural YouTube description.
 
           ============================================================
           KEYWORDS
@@ -740,20 +794,20 @@ jobs:
           HASHTAGS
           ============================================================
 
-          Compact.
+          4–6 relevant hashtags.
 
           ============================================================
           SOUND
           ============================================================
 
-          Give simple sound design cues.
+          Give simple cinematic sound cues.
 
           ============================================================
           PINNED COMMENT
           ============================================================
 
-          Ask a question that encourages viewers to comment
-          without revealing the ending.
+          Ask a question that encourages comments without revealing
+          the ending.
           """
 
               final = groq_call(
@@ -762,7 +816,8 @@ jobs:
                           "role": "system",
                           "content": (
                               "You are the final production editor "
-                              "for a realistic cinematic horror Shorts channel."
+                              "for The Quiet Vault. "
+                              "Do not change the supplied story."
                           )
                       },
                       {
@@ -785,7 +840,7 @@ jobs:
                   time.sleep(12)
 
           # ============================================================
-          # SAVE OUTPUT
+          # SAVE JSON
           # ============================================================
 
           os.makedirs(
@@ -812,7 +867,7 @@ jobs:
               )
 
           # ============================================================
-          # HUMAN-READABLE FILE
+          # SAVE HUMAN-READABLE FILE
           # ============================================================
 
           with open(
@@ -826,19 +881,9 @@ jobs:
                   1
               ):
 
-                  file.write(
-                      "=" * 70
-                      + "\n"
-                  )
-
-                  file.write(
-                      f"SHORT {number}\n"
-                  )
-
-                  file.write(
-                      "=" * 70
-                      + "\n\n"
-                  )
+                  file.write("=" * 70 + "\n")
+                  file.write(f"SHORT {number}\n")
+                  file.write("=" * 70 + "\n\n")
 
                   file.write(
                       "TITLE:\n"
@@ -904,27 +949,13 @@ jobs:
                       "PINNED COMMENT:\n"
                       + short["pinned_comment"]
                       + "\n\n"
-                  )
 
           print("")
-          print(
-              "=============================================="
-          )
-          print(
-              "QUIET VAULT AI GENERATION SUCCESS"
-          )
-          print(
-              "=============================================="
-          )
-          print(
-              f"Generated {len(final_outputs)} Shorts."
-          )
-          print(
-              "Artifacts ready."
-          )
-          print(
-              "=============================================="
-          )
+          print("==============================================")
+          print("QUIET VAULT AI GENERATION SUCCESS")
+          print("==============================================")
+          print(f"Generated {len(final_outputs)} Shorts.")
+          print("==============================================")
           PY
 
       - name: Upload generated Shorts package
