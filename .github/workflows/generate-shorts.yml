@@ -261,7 +261,7 @@ jobs:
           ]
 
           # ============================================================
-          # SELECT FIVE
+          # SELECT FIVE SKELETONS
           # ============================================================
 
           start = ((RUN_NUMBER - 1) * 5) % len(SKELETONS)
@@ -285,7 +285,7 @@ jobs:
               )
 
           # ============================================================
-          # GROQ
+          # GROQ API
           # ============================================================
 
           def groq_call(prompt, retries=3):
@@ -316,7 +316,9 @@ jobs:
                   }
               }
 
-              body = json.dumps(payload).encode("utf-8")
+              body = json.dumps(payload).encode(
+                  "utf-8"
+              )
 
               for attempt in range(retries):
 
@@ -338,8 +340,13 @@ jobs:
                           timeout=90
                       ) as response:
 
-                          raw = response.read().decode("utf-8")
-                          result = json.loads(raw)
+                          raw = response.read().decode(
+                              "utf-8"
+                          )
+
+                          result = json.loads(
+                              raw
+                          )
 
                           content = (
                               result["choices"][0]["message"]
@@ -355,7 +362,7 @@ jobs:
 
                   except urllib.error.HTTPError as e:
 
-                      body_text = e.read().decode(
+                      error_body = e.read().decode(
                           "utf-8",
                           errors="ignore"
                       )
@@ -379,15 +386,20 @@ jobs:
                               f"Waiting {wait:.1f}s..."
                           )
 
-                          time.sleep(wait)
+                          time.sleep(
+                              wait
+                          )
+
                           continue
 
                       print(
                           f"GROQ HTTP {e.code}"
                       )
+
                       print(
-                          body_text[:1000]
+                          error_body[:1000]
                       )
+
                       raise
 
                   except Exception as e:
@@ -402,12 +414,15 @@ jobs:
                           raise
 
           # ============================================================
-          # GENERATION
+          # GENERATION PROMPT
           # ============================================================
 
           story_blocks = ""
 
-          for i, s in enumerate(selected, 1):
+          for i, s in enumerate(
+              selected,
+              1
+          ):
 
               story_blocks += f"""
 
@@ -437,7 +452,7 @@ jobs:
           {story_blocks}
 
           ============================================================
-          RULES
+          ABSOLUTE RULES
           ============================================================
 
           The skeleton is already the story.
@@ -477,6 +492,34 @@ jobs:
           No explanation after the final reveal.
 
           Hard cut immediately after the final line.
+
+          ============================================================
+          BANNED
+          ============================================================
+
+          children
+          minors
+          babies
+          ghosts
+          demons
+          monsters
+          zombies
+          mirrors
+          reflections
+          twins
+          doubles
+          doppelgangers
+          clones
+          gore
+          blood
+          body transformation
+          disappearing people
+          magical objects
+          object transformations
+          CCTV
+          surveillance
+          phone-screen horror
+          video call
 
           ============================================================
           OUTPUT
@@ -526,14 +569,29 @@ jobs:
           )
           print()
 
-          raw = groq_call(prompt)
+          raw = groq_call(
+              prompt
+          )
 
           try:
-              data = json.loads(raw)
+
+              data = json.loads(
+                  raw
+              )
+
           except Exception as e:
-              print("INVALID JSON FROM GROQ")
-              print(raw[:3000])
-              raise RuntimeError(str(e))
+
+              print(
+                  "INVALID JSON FROM GROQ"
+              )
+
+              print(
+                  raw[:3000]
+              )
+
+              raise RuntimeError(
+                  str(e)
+              )
 
           stories = data.get(
               "stories",
@@ -544,6 +602,7 @@ jobs:
               stories,
               list
           ):
+
               raise RuntimeError(
                   "stories is not a list"
               )
@@ -586,7 +645,9 @@ jobs:
               "distorted body"
           ]
 
-          def validate(story):
+          def validate(
+              story
+          ):
 
               required = [
                   "id",
@@ -599,7 +660,11 @@ jobs:
                   x in story
                   for x in required
               ):
-                  return False, "missing field"
+
+                  return (
+                      False,
+                      "missing field"
+                  )
 
               script = str(
                   story["script"]
@@ -614,26 +679,39 @@ jobs:
               )
 
               if count < 25:
-                  return False, "too short"
+
+                  return (
+                      False,
+                      "too short"
+                  )
 
               if count > 52:
-                  return False, "too long"
+
+                  return (
+                      False,
+                      "too long"
+                  )
 
               combined = (
-                  script + " " + hook
+                  script +
+                  " " +
+                  hook
               ).lower()
 
               for word in banned:
 
                   if re.search(
-                      r"\b" + re.escape(word) + r"\b",
+                      r"\b" +
+                      re.escape(word) +
+                      r"\b",
                       combined
                   ):
-                      return False, (
+
+                      return (
+                          False,
                           f"banned: {word}"
                       )
 
-              # Frame 1 must describe a visible person.
               if not any(
                   word in hook.lower()
                   for word in [
@@ -646,11 +724,16 @@ jobs:
                       "person"
                   ]
               ):
-                  return False, (
+
+                  return (
+                      False,
                       "no visible human"
                   )
 
-              return True, "PASS"
+              return (
+                  True,
+                  "PASS"
+              )
 
           approved = []
 
@@ -685,7 +768,7 @@ jobs:
                   )
 
           # ============================================================
-          # REQUIRE THREE
+          # REQUIRE AT LEAST THREE
           # ============================================================
 
           if len(approved) < 3:
@@ -698,16 +781,33 @@ jobs:
 
           approved = approved[:3]
 
+          print()
+          print(
+              f"APPROVED: {len(approved)}"
+          )
+
           # ============================================================
-          # MAP BACK TO SKELETON
+          # IMPORTANT FIX:
+          #
+          # Groq IDs are 1-5 based on the generated story position.
+          #
+          # The original skeleton IDs can be 1-12.
+          #
+          # Therefore DO NOT map:
+          #     story["id"] -> skeleton["id"]
+          #
+          # Instead:
+          #     story id 1 -> selected[0]
+          #     story id 2 -> selected[1]
+          #     etc.
           # ============================================================
 
-          skeleton_map = {
-              s["id"]: s
-              for s in selected
-          }
+          if len(stories) < 5:
 
-          final = []
+              raise RuntimeError(
+                  f"Expected 5 generated stories, "
+                  f"got {len(stories)}"
+              )
 
           # ============================================================
           # FLOW PROMPT
@@ -730,8 +830,8 @@ jobs:
 
           {skeleton['visual']}
 
-          The viewer must see the threatening adult
-          immediately.
+          The threatening adult must be clearly visible
+          in the first frame.
 
           LOCATION:
 
@@ -750,9 +850,9 @@ jobs:
           Photorealistic live action.
           Real adult actors.
           Natural facial expressions.
-          Realistic apartment/home/office environment.
+          Realistic home/apartment/office environment.
           Believable lighting.
-          Restrained handheld or locked camera movement.
+          Restrained cinematic camera movement.
 
           IMPORTANT:
 
@@ -783,11 +883,13 @@ jobs:
           No magical objects.
           No distorted bodies.
 
+          Keep the horror grounded in the human situation.
+
           End immediately after the final reveal.
           """
 
           # ============================================================
-          # BUILD OUTPUT
+          # CREATE OUTPUT DIRECTORY
           # ============================================================
 
           out = Path(
@@ -798,19 +900,38 @@ jobs:
               exist_ok=True
           )
 
+          final = []
+
+          # ============================================================
+          # CREATE THE THREE SHORTS
+          # ============================================================
+
           for index, story in enumerate(
               approved,
               1
           ):
 
-              skeleton = skeleton_map.get(
+              story_position = int(
                   story["id"]
               )
 
-              if skeleton is None:
+              if (
+                  story_position < 1
+                  or
+                  story_position > 5
+              ):
+
                   raise RuntimeError(
-                      "Could not map story to skeleton"
+                      f"Invalid story position: "
+                      f"{story_position}"
                   )
+
+              # FIX:
+              # Map Groq's 1-5 response position to the
+              # corresponding selected skeleton.
+              skeleton = selected[
+                  story_position - 1
+              ]
 
               item = {
                   "title": story["title"],
@@ -857,6 +978,10 @@ jobs:
                       "the final line?"
                   )
               }
+
+              final.append(
+                  item
+              )
 
               md = f"""# {item['title']}
 
@@ -905,8 +1030,6 @@ jobs:
                   encoding="utf-8"
               )
 
-              final.append(item)
-
           # ============================================================
           # BATCH JSON
           # ============================================================
@@ -925,7 +1048,8 @@ jobs:
           }
 
           (
-              out / "batch.json"
+              out /
+              "batch.json"
           ).write_text(
               json.dumps(
                   batch,
@@ -937,7 +1061,7 @@ jobs:
 
           print()
           print("==========================================")
-          print("V8.1 COMPLETE")
+          print("QUIET VAULT V8.1 COMPLETE")
           print("==========================================")
           print(
               f"Generated: {len(stories)}"
@@ -955,9 +1079,11 @@ jobs:
               print(
                   f"{i}. {item['title']}"
               )
+
               print(
                   f"   {item['script']}"
               )
+
               print()
 
           PY
