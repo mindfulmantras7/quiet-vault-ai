@@ -52,7 +52,7 @@ jobs:
                           "content": prompt
                       }
                   ],
-                  "temperature": 0.85,
+                  "temperature": 0.90,
                   "max_completion_tokens": max_tokens,
                   "reasoning_effort": "low",
                   "reasoning_format": "hidden",
@@ -146,7 +146,6 @@ jobs:
                                   wait_time = float(
                                       retry_after
                                   ) + 2
-
                               except ValueError:
                                   wait_time = 10
 
@@ -177,12 +176,11 @@ jobs:
                       print(str(e))
                       print("=" * 60)
                       print("")
-
                       raise
 
 
           # ============================================================
-          # CANDIDATE SCHEMA
+          # SCHEMAS
           # ============================================================
 
           candidate_schema = {
@@ -199,6 +197,9 @@ jobs:
                               "title": {
                                   "type": "string"
                               },
+                              "mechanism": {
+                                  "type": "string"
+                              },
                               "premise": {
                                   "type": "string"
                               },
@@ -212,6 +213,7 @@ jobs:
                           "required": [
                               "id",
                               "title",
+                              "mechanism",
                               "premise",
                               "static_frame_1",
                               "ending"
@@ -226,382 +228,6 @@ jobs:
               "additionalProperties": False
           }
 
-
-          # ============================================================
-          # CANDIDATE GENERATOR
-          # ============================================================
-
-          def generate_candidates(count=12, starting_id=1):
-
-              prompt = f"""
-          You are the horror concept generator for The Quiet Vault.
-
-          Generate EXACTLY {count} completely different concepts for
-          9–12 second YouTube Shorts.
-
-          The channel uses:
-          - realistic cinematic horror
-          - photorealistic live action
-          - fictional ADULT characters
-          - recognizable real-world locations
-          - simple physical situations
-          - visible human threats
-          - immediate visual contradictions
-          - strong endings
-          - replay-worthy final beats
-
-          MOST IMPORTANT RULE:
-
-          The FIRST FRAME must already contain the horror.
-
-          static_frame_1 describes a SINGLE FROZEN SCREENSHOT.
-
-          If someone sees ONLY that screenshot for one second, they should
-          immediately notice something wrong, threatening or impossible.
-
-          GOOD EXAMPLE:
-
-          "A woman stands at her apartment door holding grocery bags while
-          the chain lock is visibly fastened from the inside, yet an adult
-          hand is opening the door toward her."
-
-          GOOD EXAMPLE:
-
-          "A man sits alone in a conference room while the glass meeting-room
-          door is visibly locked, but an unfamiliar adult is standing outside
-          holding the man's own office keys."
-
-          BAD EXAMPLE:
-
-          "A woman walks into a room and becomes scared."
-
-          BAD EXAMPLE:
-
-          "A man discovers something strange."
-
-          BAD EXAMPLE:
-
-          "An empty chair looks creepy."
-
-          BAD EXAMPLE:
-
-          "A phone call becomes scary."
-
-          The visual contradiction must be visible immediately.
-
-          PRIORITIZE:
-          - adult couples
-          - adult family members
-          - siblings who are adults
-          - coworkers
-          - roommates
-          - ordinary domestic situations
-          - apartment corridors
-          - offices
-          - kitchens
-          - bathrooms
-          - bedrooms
-          - parking areas
-          - shops
-          - hospitals
-          - stairwells
-          - public buildings
-
-          Prefer a HUMAN threat or human behavior that is visibly wrong.
-
-          EXAMPLES OF GOOD MECHANISMS:
-          - a locked door being opened from the wrong side
-          - someone holding an object they could not physically have
-          - a person appearing in a location they should not be able to access
-          - two adults simultaneously claiming ownership of the same place
-          - an ordinary action happening in an impossible direction
-          - someone reacting to a person who should not be there
-          - a familiar person behaving in a physically contradictory way
-          - a security/access situation that is visibly impossible WITHOUT CCTV
-
-          ABSOLUTELY DO NOT USE:
-
-          children
-          babies
-          infants
-          minors
-          teenagers
-          nursery
-          crib
-          schoolchildren
-          babysitters
-          child portraits
-          baby monitors
-
-          elevators
-          cars
-          hotels
-          CCTV
-          security-camera footage
-          surveillance footage
-          mirrors
-          reflections
-          reflective surfaces
-          doppelgangers
-          twins
-          hidden people behind characters
-          people appearing behind characters
-          printers
-          trains
-          buses
-          floating objects
-          floating mugs
-          floating cups
-          possessed household objects
-          objects growing faces
-          random body parts
-          disappearing people
-          reappearing people
-          teleportation
-          ghosts
-          demons
-          monsters
-          zombies
-          giant creatures
-          gore
-          blood
-          severed limbs
-          impossible anatomy
-          head distortion
-          180-degree head turns
-          faces morphing
-          faces melting
-          complicated CGI
-          giant supernatural effects
-          mythology
-          long conversations
-          exposition-heavy stories
-
-          Do not use a supernatural object as the primary horror mechanism.
-
-          Do not depend on sound alone.
-
-          Do not make the first frame normal and put the horror later.
-
-          Do not reuse the same mechanism across concepts.
-
-          Every concept must be realistic enough for Google Flow to generate
-          reliably.
-
-          Every concept must feature fictional ADULTS.
-
-          IDs should start at {starting_id}.
-
-          Return EXACTLY {count} concepts.
-          """
-
-              data = groq_request(
-                  prompt,
-                  "quiet_vault_candidates",
-                  candidate_schema,
-                  max_tokens=4000
-              )
-
-              return data["candidates"]
-
-
-          # ============================================================
-          # BASIC HARD FILTER
-          # ============================================================
-
-          banned_phrases = [
-
-              # MINORS
-              "child",
-              "children",
-              "baby",
-              "infant",
-              "kid",
-              "kids",
-              "minor",
-              "teenager",
-              "teen",
-              "nursery",
-              "crib",
-              "schoolchild",
-              "babysitter",
-              "baby monitor",
-              "child portrait",
-
-              # REPEATED / BANNED MECHANISMS
-              "elevator",
-              "hotel",
-              "cctv",
-              "security camera",
-              "surveillance footage",
-              "mirror",
-              "reflection",
-              "reflective surface",
-              "doppelganger",
-              "doppelgänger",
-              "twin",
-              "printer",
-              "train",
-              "bus",
-              "ghost",
-              "demon",
-              "zombie",
-              "monster",
-              "giant creature",
-              "floating mug",
-              "floating cup",
-              "floating object",
-              "possessed object",
-              "growing face",
-              "body part",
-              "severed limb",
-              "disappears",
-              "disappearing",
-              "reappears",
-              "reappearing",
-              "teleport",
-              "teleportation",
-              "head spins",
-              "head turns 180",
-              "head rotates",
-              "face melts",
-              "face morphs",
-              "gore",
-              "blood"
-          ]
-
-
-          def contains_phrase(text, phrase):
-
-              text = text.lower()
-              phrase = phrase.lower()
-
-              if " " in phrase:
-                  return phrase in text
-
-              return re.search(
-                  rf"(?<![a-z]){re.escape(phrase)}(?![a-z])",
-                  text
-              ) is not None
-
-
-          def basic_filter(candidates):
-
-              survivors = []
-
-              print("")
-              print("=" * 60)
-              print("BASIC HARD FILTER")
-              print("=" * 60)
-
-              for candidate in candidates:
-
-                  title = candidate.get(
-                      "title",
-                      ""
-                  )
-
-                  premise = candidate.get(
-                      "premise",
-                      ""
-                  )
-
-                  frame = candidate.get(
-                      "static_frame_1",
-                      ""
-                  )
-
-                  ending = candidate.get(
-                      "ending",
-                      ""
-                  )
-
-                  combined = " ".join([
-                      title,
-                      premise,
-                      frame,
-                      ending
-                  ]).lower()
-
-                  reason = None
-
-                  if not title.strip():
-                      reason = "missing title"
-
-                  elif len(premise.strip()) < 30:
-                      reason = "premise too short"
-
-                  elif len(frame.strip()) < 60:
-                      reason = "static frame too short"
-
-                  elif len(ending.strip()) < 30:
-                      reason = "ending too short"
-
-                  else:
-
-                      for phrase in banned_phrases:
-
-                          if contains_phrase(
-                              combined,
-                              phrase
-                          ):
-
-                              reason = (
-                                  f"banned: {phrase}"
-                              )
-
-                              break
-
-                  if reason:
-
-                      print(
-                          f"REJECTED: "
-                          f"{candidate.get('id')} "
-                          f"{title} -> {reason}"
-                      )
-
-                  else:
-
-                      survivors.append(
-                          candidate
-                      )
-
-              print("")
-              print(
-                  f"Basic survivors: "
-                  f"{len(survivors)}"
-              )
-
-              return survivors
-
-
-          # ============================================================
-          # GENERATE FIRST BATCH
-          # ============================================================
-
-          print("")
-          print("=" * 60)
-          print("CANDIDATE GENERATION")
-          print("=" * 60)
-
-          candidates = generate_candidates(
-              count=12,
-              starting_id=1
-          )
-
-          print(
-              f"Generated: "
-              f"{len(candidates)}"
-          )
-
-          survivors = basic_filter(
-              candidates
-          )
-
-
-          # ============================================================
-          # STRICT CREATIVE GATE
-          # ============================================================
 
           gate_schema = {
               "type": "object",
@@ -669,7 +295,491 @@ jobs:
           }
 
 
-          def run_creative_gate(
+          final_schema = {
+              "type": "object",
+              "properties": {
+
+                  "id": {
+                      "type": "integer"
+                  },
+
+                  "title": {
+                      "type": "string"
+                  },
+
+                  "short_script": {
+                      "type": "string"
+                  },
+
+                  "visual_hook": {
+                      "type": "string"
+                  },
+
+                  "flow_prompt": {
+                      "type": "string"
+                  },
+
+                  "final_twist": {
+                      "type": "string"
+                  },
+
+                  "description": {
+                      "type": "string"
+                  },
+
+                  "keywords": {
+                      "type": "string"
+                  },
+
+                  "hashtags": {
+                      "type": "string"
+                  },
+
+                  "thumbnail_frame": {
+                      "type": "string"
+                  },
+
+                  "thumbnail_text": {
+                      "type": "string"
+                  }
+              },
+
+              "required": [
+                  "id",
+                  "title",
+                  "short_script",
+                  "visual_hook",
+                  "flow_prompt",
+                  "final_twist",
+                  "description",
+                  "keywords",
+                  "hashtags",
+                  "thumbnail_frame",
+                  "thumbnail_text"
+              ],
+
+              "additionalProperties": False
+          }
+
+
+          # ============================================================
+          # BANNED TERMS
+          # ============================================================
+
+          banned_phrases = [
+
+              # MINORS
+              "child",
+              "children",
+              "baby",
+              "infant",
+              "kid",
+              "kids",
+              "minor",
+              "teenager",
+              "teen",
+              "nursery",
+              "crib",
+              "schoolchild",
+              "babysitter",
+              "baby monitor",
+              "child portrait",
+
+              # LOCATIONS / MECHANISMS
+              "elevator",
+              "hotel",
+              "cctv",
+              "security camera",
+              "surveillance footage",
+              "mirror",
+              "reflection",
+              "reflective surface",
+              "doppelganger",
+              "doppelgänger",
+              "twin",
+              "printer",
+              "train",
+              "bus",
+              "car",
+              "vehicle",
+
+              # SHADOW / GENERIC SUPERNATURAL
+              "shadow figure",
+              "silhouette figure",
+              "ghost",
+              "demon",
+              "zombie",
+              "monster",
+              "creature",
+              "giant creature",
+
+              # OBJECT HORROR
+              "floating mug",
+              "floating cup",
+              "floating object",
+              "possessed object",
+              "growing face",
+              "object grows a face",
+
+              # TRANSFORMATION
+              "disappears",
+              "disappearing",
+              "reappears",
+              "reappearing",
+              "teleport",
+              "teleportation",
+              "head spins",
+              "head turns 180",
+              "head rotates",
+              "face melts",
+              "face morphs",
+
+              # BODY / GORE
+              "body part",
+              "severed limb",
+              "gore",
+              "blood",
+
+              # PHONE-ONLY HORROR
+              "video call",
+              "facetime",
+              "phone screen shows",
+              "phone screen reveals",
+              "text message"
+          ]
+
+
+          def contains_phrase(
+              text,
+              phrase
+          ):
+
+              text = text.lower()
+              phrase = phrase.lower()
+
+              if " " in phrase:
+                  return phrase in text
+
+              return re.search(
+                  rf"(?<![a-z]){re.escape(phrase)}(?![a-z])",
+                  text
+              ) is not None
+
+
+          # ============================================================
+          # TARGETED CANDIDATE GENERATION
+          # ============================================================
+
+          def generate_candidates(
+              count,
+              starting_id,
+              batch_number
+          ):
+
+              mechanism_slots = [
+                  "WRONG ACCESS",
+                  "IMPOSSIBLE POSSESSION",
+                  "WRONG PERSON PERFORMING AN ORDINARY ACTION",
+                  "RELATIONSHIP CONTRADICTION",
+                  "PHYSICAL DIRECTION CONTRADICTION",
+                  "TWO ADULTS WITH CONFLICTING REALITY",
+                  "ORDINARY PLACE WITH A CLEARLY WRONG ADULT",
+                  "OBJECT OR ACTION THAT DIRECTLY CONTRADICTS WHAT A CHARACTER JUST DID"
+              ]
+
+              slots = mechanism_slots[:count]
+
+              if batch_number > 1:
+                  slots = list(reversed(mechanism_slots))
+
+              slot_text = "\n".join(
+                  f"{i + 1}. {slot}"
+                  for i, slot in enumerate(slots)
+              )
+
+              prompt = f"""
+          You are the concept generator for The Quiet Vault.
+
+          This is concept batch {batch_number}.
+
+          Generate EXACTLY {count} horror Short concepts.
+
+          We are deliberately NOT looking for generic horror ideas.
+
+          Each concept must be based on one of these visual mechanisms:
+
+          {slot_text}
+
+          IMPORTANT:
+          Use each mechanism at most once in this batch.
+
+          ================================================================
+          THE FIRST FRAME IS THE PRODUCT
+          ================================================================
+
+          static_frame_1 describes ONE frozen screenshot.
+
+          Imagine the video has been paused at frame 1.
+
+          There must already be a clearly visible contradiction,
+          threat, or impossible human situation.
+
+          The viewer should be able to ask:
+
+          "WHY IS THAT HAPPENING?"
+
+          immediately.
+
+          The first frame must NOT merely show:
+
+          - a scared person
+          - a dark room
+          - an empty chair
+          - an empty room
+          - a normal person holding a phone
+          - a normal person standing at a door
+          - a person looking at something off-camera
+          - a creepy atmosphere
+          - an ordinary object
+
+          The horror must be visible in the composition.
+
+          ================================================================
+          GOOD EXAMPLES
+          ================================================================
+
+          Example A:
+
+          "A woman stands outside her apartment holding grocery bags.
+          Through the open doorway, an adult man inside is wearing the
+          exact same distinctive jacket she is wearing."
+
+          Example B:
+
+          "Two adult brothers stand in a kitchen. One brother is holding
+          the house keys while the other is visibly using the same keys
+          to unlock the front door from across the room."
+
+          Example C:
+
+          "A woman sits at her office desk while an unfamiliar adult man
+          is already seated in the locked manager's chair, holding her
+          employee ID badge."
+
+          These are understandable from a frozen frame.
+
+          ================================================================
+          STORY RULES
+          ================================================================
+
+          - 9–12 seconds
+          - realistic cinematic horror
+          - photorealistic live action
+          - fictional adults only
+          - recognizable real-world location
+          - simple physical movement
+          - visible human-centered threat
+          - strong final visual reversal
+          - no narration required
+          - no sound-only scare
+          - practical for Google Flow
+
+          Prefer:
+          - adult couples
+          - adult siblings
+          - coworkers
+          - roommates
+          - spouses
+          - adult family members
+
+          ================================================================
+          ABSOLUTELY FORBIDDEN
+          ================================================================
+
+          Children
+          Babies
+          Infants
+          Minors
+          Teenagers
+          Nursery
+          Crib
+          Babysitter
+          Child portrait
+
+          Elevators
+          Cars
+          Vehicles
+          Hotels
+          CCTV
+          Security cameras
+          Surveillance footage
+          Mirrors
+          Reflections
+          Doppelgangers
+          Twins
+          Shadow figures
+          Silhouettes as the main threat
+          Hidden person simply standing behind someone
+          Printers
+          Trains
+          Buses
+          Ghosts
+          Demons
+          Monsters
+          Creatures
+          Gore
+          Blood
+          Body parts
+          Disappearing people
+          Reappearing people
+          Teleportation
+          Face morphing
+          Head distortion
+          Possessed household objects
+          Floating objects
+          Objects growing faces
+          Phone/video-call-only horror
+          Text-message-only horror
+          Complicated CGI
+          Long dialogue
+          Mythology
+          Exposition
+
+          Do not use "locked door" as the central mechanism unless the
+          first frame contains a SECOND visible contradiction that makes
+          the situation immediately unusual.
+
+          Do not repeat the same story structure.
+
+          The ending must visually resolve or reverse the first-frame
+          contradiction.
+
+          Return EXACTLY {count} concepts.
+          """
+
+              return groq_request(
+                  prompt,
+                  "quiet_vault_candidates",
+                  candidate_schema,
+                  max_tokens=4000
+              )["candidates"]
+
+
+          # ============================================================
+          # BASIC FILTER
+          # ============================================================
+
+          def basic_filter(
+              candidates
+          ):
+
+              survivors = []
+
+              print("")
+              print("=" * 60)
+              print("BASIC HARD FILTER")
+              print("=" * 60)
+
+              for candidate in candidates:
+
+                  title = candidate.get(
+                      "title",
+                      ""
+                  )
+
+                  mechanism = candidate.get(
+                      "mechanism",
+                      ""
+                  )
+
+                  premise = candidate.get(
+                      "premise",
+                      ""
+                  )
+
+                  frame = candidate.get(
+                      "static_frame_1",
+                      ""
+                  )
+
+                  ending = candidate.get(
+                      "ending",
+                      ""
+                  )
+
+                  combined = " ".join([
+                      title,
+                      mechanism,
+                      premise,
+                      frame,
+                      ending
+                  ])
+
+                  reason = None
+
+                  if not title.strip():
+
+                      reason = "missing title"
+
+                  elif not mechanism.strip():
+
+                      reason = "missing mechanism"
+
+                  elif len(premise.strip()) < 30:
+
+                      reason = "premise too short"
+
+                  elif len(frame.strip()) < 70:
+
+                      reason = "static frame too short"
+
+                  elif len(ending.strip()) < 30:
+
+                      reason = "ending too short"
+
+                  else:
+
+                      for phrase in banned_phrases:
+
+                          if contains_phrase(
+                              combined,
+                              phrase
+                          ):
+
+                              reason = (
+                                  f"banned: {phrase}"
+                              )
+
+                              break
+
+                  if reason:
+
+                      print(
+                          f"REJECTED: "
+                          f"{candidate.get('id')} "
+                          f"{title} -> {reason}"
+                      )
+
+                  else:
+
+                      survivors.append(
+                          candidate
+                      )
+
+              print("")
+              print(
+                  f"Basic survivors: "
+                  f"{len(survivors)}"
+              )
+
+              return survivors
+
+
+          # ============================================================
+          # CREATIVE GATE
+          # ============================================================
+
+          def creative_gate(
               candidates
           ):
 
@@ -682,68 +792,112 @@ jobs:
               )
 
               prompt = f"""
-          You are the FINAL CREATIVE GATEKEEPER for The Quiet Vault.
+          You are the ruthless production gatekeeper for The Quiet Vault.
 
-          Your job is NOT to be generous.
+          DO NOT score generously.
 
-          Your job is to reject concepts that would produce mediocre
-          YouTube Shorts.
+          Your task is to determine whether each concept deserves to
+          become an actual 9–12 second YouTube Short.
 
-          Examine each concept below.
+          Every concept must pass ALL FIVE tests.
 
-          A concept can become a finalist ONLY if ALL five tests pass.
-
+          ================================================================
           TEST 1 — FIRST FRAME HOOK
+          ================================================================
 
           Look ONLY at static_frame_1.
 
-          Ask:
+          Imagine a screenshot.
 
-          "If I saw this frozen image for one second with NO audio,
-          NO captions and NO context, would I immediately notice a
-          disturbing contradiction or visible threat?"
+          PASS only if the screenshot itself contains an immediately
+          noticeable contradiction, threat or impossible situation.
 
-          PASS only if YES.
+          The viewer must be able to understand:
 
-          A normal person sitting, standing, walking or looking worried
-          is NOT enough.
+          "Something is wrong here."
 
-          A generic creepy room is NOT enough.
+          within one second.
 
-          An empty chair, empty room or ordinary object is NOT enough.
+          FAIL:
+          - normal room
+          - scared expression
+          - dark lighting
+          - empty chair
+          - person looking at something
+          - phone held by a person
+          - ordinary door
+          - ordinary object
 
+          ================================================================
           TEST 2 — VISIBLE THREAT
+          ================================================================
 
-          The danger must be physically visible.
+          The threatening element must be visible.
 
-          A heartbeat, sound, unexplained feeling, narration or implication
-          alone does NOT count.
+          FAIL if the horror depends mainly on:
 
-          PASS only if the viewer can SEE the thing that is wrong.
+          sound
+          narration
+          implication
+          an unseen presence
+          a future reveal
+          something happening off-camera
 
+          PASS only if the viewer can SEE the abnormality.
+
+          ================================================================
           TEST 3 — FLOW FEASIBILITY
+          ================================================================
 
-          Could Google Flow realistically create the scene in 9–12 seconds
-          with simple physical movement?
+          Can Google Flow plausibly create the scene?
 
-          PASS only if YES.
+          PASS:
+          simple human movement
+          normal environments
+          clear physical actions
 
-          Reject complicated transformations, precise text, tiny visual
-          details, complicated supernatural effects, difficult reflections,
-          or unreliable CGI.
+          FAIL:
+          complicated transformations
+          precise text
+          tiny details
+          complex reflections
+          impossible physics
+          complicated CGI
+          difficult face transformations
 
+          ================================================================
           TEST 4 — ORIGINALITY
+          ================================================================
 
-          Does the concept avoid tired mechanisms and the banned mechanisms
-          from the concept-generation rules?
+          The central mechanism must feel different from:
 
-          PASS only if the central horror idea feels meaningfully different.
+          mirrors
+          reflections
+          doppelgangers
+          locked-door variations
+          CCTV
+          hidden-person scares
+          ghosts
+          monsters
+          shadow figures
+          phone-call scares
+          possessed objects
+          disappearing/reappearing people
 
+          If the concept feels like a minor variation of one of those,
+          FAIL it.
+
+          ================================================================
           TEST 5 — RULE COMPLIANCE
+          ================================================================
 
-          Must use fictional adults only.
+          Fictional adults only.
 
-          No children, babies, minors or child-centered scenarios.
+          No minors.
+
+          No children.
+
+          No babies.
 
           No mirrors.
 
@@ -751,39 +905,37 @@ jobs:
 
           No doppelgangers.
 
-          No elevators.
-
           No cars.
+
+          No elevators.
 
           No hotels.
 
           No CCTV.
 
-          No ghosts, demons or monsters.
+          No monsters.
+
+          No ghosts.
+
+          No demons.
 
           No gore.
 
           No disappearing/reappearing mechanism.
 
-          No hidden person simply standing behind someone.
+          ================================================================
+          ELIGIBILITY
+          ================================================================
 
-          No possessed household object.
+          eligible = TRUE only when ALL FIVE tests are TRUE.
 
-          ELIGIBLE:
+          If even one test fails:
 
-          eligible MUST be TRUE only when:
+          eligible = FALSE.
 
-          hook_pass = true
-          AND visible_threat_pass = true
-          AND flow_pass = true
-          AND originality_pass = true
-          AND rule_pass = true
+          Be strict.
 
-          If even ONE fails, eligible MUST be false.
-
-          Be extremely strict.
-
-          We would rather generate another batch than publish a weak idea.
+          We would rather return fewer ideas than approve weak concepts.
 
           CONCEPTS:
 
@@ -792,22 +944,44 @@ jobs:
           Return one evaluation for every concept.
           """
 
-              data = groq_request(
+              return groq_request(
                   prompt,
                   "quiet_vault_creative_gate",
                   gate_schema,
                   max_tokens=3000
-              )
+              )["evaluations"]
 
-              return data["evaluations"]
 
+          # ============================================================
+          # FIRST BATCH
+          # ============================================================
 
           print("")
           print("=" * 60)
-          print("STRICT CREATIVE GATE")
+          print("CANDIDATE GENERATION — BATCH 1")
           print("=" * 60)
 
-          evaluations = run_creative_gate(
+          candidates = generate_candidates(
+              count=8,
+              starting_id=1,
+              batch_number=1
+          )
+
+          print(
+              f"Generated: "
+              f"{len(candidates)}"
+          )
+
+          survivors = basic_filter(
+              candidates
+          )
+
+          print("")
+          print("=" * 60)
+          print("STRICT CREATIVE GATE — BATCH 1")
+          print("=" * 60)
+
+          evaluations = creative_gate(
               survivors
           )
 
@@ -861,25 +1035,23 @@ jobs:
 
 
           # ============================================================
-          # SECOND BATCH IF NECESSARY
+          # SECOND BATCH IF REQUIRED
           # ============================================================
 
           if len(eligible_candidates) < 3:
 
               print("")
               print("=" * 60)
-              print("NOT ENOUGH STRONG CONCEPTS")
+              print("BATCH 1 DID NOT PRODUCE 3 APPROVED CONCEPTS")
               print("=" * 60)
 
               print(
-                  f"Only "
-                  f"{len(eligible_candidates)} "
-                  f"concept(s) passed."
+                  f"Approved so far: "
+                  f"{len(eligible_candidates)}"
               )
 
               print(
-                  "Generating 8 additional concepts "
-                  "instead of filling slots with weak ideas."
+                  "Generating a deliberately different second batch."
               )
 
               print(
@@ -890,14 +1062,25 @@ jobs:
 
               second_batch = generate_candidates(
                   count=8,
-                  starting_id=100
+                  starting_id=100,
+                  batch_number=2
+              )
+
+              print(
+                  f"Second batch generated: "
+                  f"{len(second_batch)}"
               )
 
               second_survivors = basic_filter(
                   second_batch
               )
 
-              second_evaluations = run_creative_gate(
+              print("")
+              print("=" * 60)
+              print("STRICT CREATIVE GATE — BATCH 2")
+              print("=" * 60)
+
+              second_evaluations = creative_gate(
                   second_survivors
               )
 
@@ -926,7 +1109,12 @@ jobs:
 
                   print(
                       f"SECOND BATCH ID {cid} | "
-                      f"Eligible={eligible}"
+                      f"Hook={result['hook_pass']} | "
+                      f"Threat={result['visible_threat_pass']} | "
+                      f"Flow={result['flow_pass']} | "
+                      f"Originality={result['originality_pass']} | "
+                      f"Rules={result['rule_pass']} | "
+                      f"ELIGIBLE={eligible}"
                   )
 
                   if eligible:
@@ -935,22 +1123,39 @@ jobs:
                           candidate
                       )
 
+                  else:
+
+                      print(
+                          f"  REASON: "
+                          f"{result['reason']}"
+                      )
+
 
           # ============================================================
-          # FINAL SAFETY CHECK
+          # FINAL APPROVAL CHECK
           # ============================================================
+
+          print("")
+          print("=" * 60)
+          print("FINAL CREATIVE CHECK")
+          print("=" * 60)
+
+          print(
+              f"Total approved concepts: "
+              f"{len(eligible_candidates)}"
+          )
 
           if len(eligible_candidates) < 3:
 
               raise RuntimeError(
-                  "Fewer than 3 concepts passed the strict creative gate. "
-                  "The workflow intentionally refused to manufacture weak "
-                  "finalists."
+                  "Fewer than 3 concepts passed the strict creative gate "
+                  "after two targeted batches. The workflow intentionally "
+                  "stopped rather than manufacture weak Shorts."
               )
 
 
           # ============================================================
-          # SELECT THREE
+          # SELECT 3
           # ============================================================
 
           finalists = eligible_candidates[:3]
@@ -967,7 +1172,8 @@ jobs:
 
               print(
                   f"{index}. "
-                  f"{candidate['title']}"
+                  f"{candidate['title']} "
+                  f"[{candidate['mechanism']}]"
               )
 
 
@@ -984,81 +1190,7 @@ jobs:
 
 
           # ============================================================
-          # FINAL PACKAGE SCHEMA
-          # ============================================================
-
-          final_schema = {
-              "type": "object",
-
-              "properties": {
-
-                  "id": {
-                      "type": "integer"
-                  },
-
-                  "title": {
-                      "type": "string"
-                  },
-
-                  "short_script": {
-                      "type": "string"
-                  },
-
-                  "visual_hook": {
-                      "type": "string"
-                  },
-
-                  "flow_prompt": {
-                      "type": "string"
-                  },
-
-                  "final_twist": {
-                      "type": "string"
-                  },
-
-                  "description": {
-                      "type": "string"
-                  },
-
-                  "keywords": {
-                      "type": "string"
-                  },
-
-                  "hashtags": {
-                      "type": "string"
-                  },
-
-                  "thumbnail_frame": {
-                      "type": "string"
-                  },
-
-                  "thumbnail_text": {
-                      "type": "string"
-                  }
-              },
-
-              "required": [
-
-                  "id",
-                  "title",
-                  "short_script",
-                  "visual_hook",
-                  "flow_prompt",
-                  "final_twist",
-                  "description",
-                  "keywords",
-                  "hashtags",
-                  "thumbnail_frame",
-                  "thumbnail_text"
-
-              ],
-
-              "additionalProperties": False
-          }
-
-
-          # ============================================================
-          # FINAL PACKAGE VALIDATION
+          # FINALIZE
           # ============================================================
 
           def validate_final_package(
@@ -1118,10 +1250,6 @@ jobs:
                       )
 
 
-          # ============================================================
-          # FINALIZE ONE SHORT AT A TIME
-          # ============================================================
-
           final_packages = []
 
           for index, finalist in enumerate(
@@ -1145,151 +1273,178 @@ jobs:
               final_prompt = f"""
           You are the final scriptwriter for The Quiet Vault.
 
-          Turn this APPROVED concept into ONE complete YouTube Shorts package.
+          Turn this APPROVED concept into ONE complete 9–12 second
+          YouTube Shorts package.
 
           APPROVED CONCEPT:
 
           {finalist_json}
 
+          IMPORTANT:
+
           The concept has already passed a strict creative gate.
 
-          Preserve its core visual idea.
+          Preserve the central visual mechanism.
 
-          Do NOT replace the central mechanism with a different horror
-          mechanism.
+          Do NOT replace it with a mirror, reflection, doppelganger,
+          shadow figure, phone-call scare, ghost, monster, disappearing
+          person, possessed object, or another generic horror mechanism.
 
-          FORMAT:
+          ================================================================
+          VIDEO
+          ================================================================
 
-          9–12 second YouTube Short.
-
-          The first frame must immediately show the exact disturbing
-          situation described in static_frame_1.
-
-          No normal establishing shot.
-
-          The viewer must be able to understand the visual hook without
-          narration.
-
-          Use fictional ADULT characters only.
-
-          Realistic cinematic live action.
+          9–12 seconds.
 
           Vertical 9:16.
 
-          Photorealistic.
+          Photorealistic live action.
 
-          Simple physical movement.
+          Fictional adult characters only.
 
-          Strong visible ending.
+          Recognizable real-world location.
 
-          No minors.
+          The FIRST FRAME must visibly reproduce the disturbing situation
+          described in static_frame_1.
 
-          No children.
+          Do not start with a normal establishing shot.
 
-          No babies.
+          The viewer must understand the visual hook without narration.
 
-          No nursery.
+          Keep physical movement simple and realistic.
 
-          No crib.
+          The final beat should create a strong visual payoff and a reason
+          to replay.
 
-          No mirrors.
+          ================================================================
+          FORBIDDEN
+          ================================================================
 
-          No reflections.
+          minors
+          children
+          babies
+          nursery
+          crib
+          mirrors
+          reflections
+          doppelgangers
+          twins
+          elevators
+          cars
+          hotels
+          CCTV
+          shadow figures
+          silhouettes as the main threat
+          ghosts
+          demons
+          monsters
+          gore
+          blood
+          disappearing people
+          reappearing people
+          teleportation
+          face morphing
+          head distortion
+          possessed objects
+          floating objects
+          complicated CGI
+          subtitles
+          on-screen text
+          logos
+          celebrity likenesses
 
-          No doppelgangers.
-
-          No elevators.
-
-          No cars.
-
-          No hotels.
-
-          No CCTV.
-
-          No ghosts.
-
-          No demons.
-
-          No monsters.
-
-          No gore.
-
-          No complicated CGI.
-
-          No impossible anatomy.
-
-          No subtitles.
-
-          No on-screen text.
-
-          No logos.
-
-          No celebrity likeness.
-
-          REQUIRED OUTPUT:
+          ================================================================
+          REQUIRED FIELDS
+          ================================================================
 
           id
+
           title
+
           short_script
+
           visual_hook
+
           flow_prompt
+
           final_twist
+
           description
+
           keywords
+
           hashtags
+
           thumbnail_frame
+
           thumbnail_text
 
+          ALL 11 FIELDS ARE MANDATORY.
+
+          Never omit any field.
+
+          ================================================================
+          SCRIPT
+          ================================================================
+
           short_script:
-          Write the complete 9–12 second timed action.
+          Write the complete timed 9–12 second action.
 
-          visual_hook:
-          Describe the exact first frame as a frozen screenshot.
+          ================================================================
+          VISUAL HOOK
+          ================================================================
 
-          flow_prompt:
-          Write ONE Google Flow-ready prompt.
+          Describe the exact frozen first frame.
 
-          It must specify:
+          ================================================================
+          GOOGLE FLOW PROMPT
+          ================================================================
+
+          Write ONE complete paste-ready Google Flow prompt.
+
+          Include:
+
           - vertical 9:16
           - photorealistic live action
-          - fictional adult characters
+          - fictional adults
           - consistent character appearance
-          - recognizable location
+          - location
           - exact first-frame composition
           - camera framing
           - lighting
-          - simple realistic movements
-          - timing
+          - realistic movement
+          - timed beats
           - final visual beat
           - no text
           - no subtitles
           - no logos
           - no real-person likenesses
+          - no minors
 
-          final_twist:
-          Explain exactly what the viewer discovers at the end.
+          ================================================================
+          FINAL TWIST
+          ================================================================
+
+          Explain the final visual payoff.
+
+          ================================================================
+          METADATA
+          ================================================================
 
           description:
-          Write a natural YouTube Shorts description.
+          Natural YouTube Shorts description.
 
           keywords:
-          Give useful comma-separated keywords.
+          Useful comma-separated keywords.
 
           hashtags:
-          Give useful hashtags.
+          Useful hashtags.
 
           thumbnail_frame:
-          Specify the strongest frame and approximate timing.
+          Strongest frame and approximate timing.
 
           thumbnail_text:
-          Give optional 2–5 word thumbnail text.
-          Empty string is acceptable if text is unnecessary.
-
-          CRITICAL:
-
-          Return ALL 11 fields.
-
-          Never omit a field.
+          Optional 2–5 word text. Empty string is acceptable.
 
           Return ONLY JSON.
           """
@@ -1357,12 +1512,8 @@ jobs:
 
 
           # ============================================================
-          # SAVE JSON
+          # SAVE BATCH JSON
           # ============================================================
-
-          batch = {
-              "shorts": final_packages
-          }
 
           with open(
               OUTPUT_DIR / "batch.json",
@@ -1371,7 +1522,9 @@ jobs:
           ) as f:
 
               json.dump(
-                  batch,
+                  {
+                      "shorts": final_packages
+                  },
                   f,
                   ensure_ascii=False,
                   indent=2
@@ -1379,7 +1532,7 @@ jobs:
 
 
           # ============================================================
-          # SAVE MARKDOWN FILES
+          # SAVE MARKDOWN
           # ============================================================
 
           for index, package in enumerate(
@@ -1437,7 +1590,7 @@ jobs:
 
 
           # ============================================================
-          # COMPLETE
+          # SUCCESS
           # ============================================================
 
           print("")
@@ -1452,8 +1605,7 @@ jobs:
           )
 
           print(
-              "These concepts passed the strict "
-              "creative gate before finalization."
+              "All three passed the strict creative gate."
           )
 
           print(
