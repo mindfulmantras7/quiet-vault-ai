@@ -10,7 +10,7 @@ jobs:
     steps:
 
       # ============================================================
-      # GENERATE, FILTER, JUDGE AND FINALIZE
+      # GENERATE QUIET VAULT SHORTS
       # ============================================================
 
       - name: Generate evidence-based Quiet Vault Shorts
@@ -41,16 +41,39 @@ jobs:
 
           # ============================================================
           # GROQ REQUEST
+          #
+          # IMPORTANT:
+          # Candidate generation uses normal JSON mode.
+          # Final generation uses strict JSON schema.
           # ============================================================
 
           def groq_request(
               messages,
               schema_name,
-              schema,
-              temperature,
-              max_tokens,
+              schema=None,
+              temperature=0.7,
+              max_tokens=4000,
+              strict=False,
               retries=4
           ):
+
+              if strict:
+
+                  response_format = {
+                      "type": "json_schema",
+                      "json_schema": {
+                          "name": schema_name,
+                          "strict": True,
+                          "schema": schema
+                      }
+                  }
+
+              else:
+
+                  response_format = {
+                      "type": "json_object"
+                  }
+
 
               payload = {
                   "model": MODEL,
@@ -59,17 +82,12 @@ jobs:
                   "max_completion_tokens": max_tokens,
                   "reasoning_effort": "low",
                   "reasoning_format": "hidden",
-                  "response_format": {
-                      "type": "json_schema",
-                      "json_schema": {
-                          "name": schema_name,
-                          "strict": True,
-                          "schema": schema
-                      }
-                  }
+                  "response_format": response_format
               }
 
+
               data = json.dumps(payload).encode("utf-8")
+
 
               for attempt in range(retries):
 
@@ -84,6 +102,7 @@ jobs:
                       }
                   )
 
+
                   try:
 
                       with urllib.request.urlopen(
@@ -92,11 +111,31 @@ jobs:
                       ) as response:
 
                           body = response.read().decode("utf-8")
+
                           result = json.loads(body)
 
                           content = result["choices"][0]["message"]["content"]
 
+                          # Remove accidental markdown fences
+                          content = content.strip()
+
+                          if content.startswith("```"):
+
+                              content = re.sub(
+                                  r"^```(?:json)?\s*",
+                                  "",
+                                  content,
+                                  flags=re.I
+                              )
+
+                              content = re.sub(
+                                  r"\s*```$",
+                                  "",
+                                  content
+                              )
+
                           return json.loads(content)
+
 
                   except urllib.error.HTTPError as e:
 
@@ -105,12 +144,14 @@ jobs:
                           errors="replace"
                       )
 
+
                       print("")
                       print("==========================================")
                       print("GROQ ERROR")
                       print("HTTP:", e.code)
                       print(error_body)
                       print("==========================================")
+
 
                       if e.code == 429 and attempt < retries - 1:
 
@@ -123,10 +164,12 @@ jobs:
                           )
 
                           if match:
+
                               retry_seconds = max(
                                   65,
                                   int(match.group(1)) + 5
                               )
+
 
                           print(
                               f"Rate limited. Waiting {retry_seconds} seconds..."
@@ -136,176 +179,271 @@ jobs:
 
                           continue
 
+
                       raise RuntimeError(
                           f"Groq returned HTTP {e.code}"
                       )
 
 
+                  except json.JSONDecodeError as e:
+
+                      print("")
+                      print("==========================================")
+                      print("INVALID JSON FROM GROQ")
+                      print("==========================================")
+                      print(str(e))
+                      print("")
+                      raise RuntimeError(
+                          "Groq returned invalid JSON."
+                      )
+
+
           # ============================================================
-          # HISTORICAL CREATIVE DNA
+          # QUIET VAULT CREATIVE DNA
           # ============================================================
 
           CREATIVE_DNA = """
 
-          THE QUIET VAULT — HISTORICAL CREATIVE DNA
+          THE QUIET VAULT — CREATIVE DNA
 
-          The channel's strongest observed Shorts demonstrated:
+          The channel creates short, realistic, cinematic horror videos.
 
-          1. IMMEDIATE VISUAL PROBLEM
+          TARGET LENGTH:
+          9-12 seconds.
 
-          The viewer should see something wrong before they need to
-          understand the entire story.
+          TARGET AUDIENCE:
+          Adults.
 
-          The first frame must contain a person, object, action or situation
-          that is obviously out of place.
+          CHARACTERS:
+          Fictional adults only.
 
-          Do not begin with:
-          - someone walking into a room
-          - empty room
-          - normal establishing shot
-          - person simply looking worried
-          - ordinary conversation
-          - atmospheric darkness
+          ============================================================
+          WHAT OUR PREVIOUS RESULTS TAUGHT US
+          ============================================================
 
-          The first screenshot should already make the viewer ask:
+          Stronger Shorts had:
 
-          "Why is THAT person there?"
+          - an immediate visual problem
+          - a visible human threat or disturbing human situation
+          - a simple contradiction
+          - very little explanation
+          - a second realization near the end
+          - strong replay potential
 
-          or:
+          Some previous Shorts had good replay/APV but weak
+          Stayed-to-Watch because the first visual was not compelling.
 
-          "How is THAT possible?"
+          Therefore:
 
-          or:
+          FIRST FRAME IS THE PRIMARY PRIORITY.
 
-          "Why is THAT happening?"
+          Do not sacrifice the opening visual for a clever story.
 
+          ============================================================
+          THE FIRST FRAME TEST
+          ============================================================
 
+          Imagine the video is paused on FRAME 1.
 
-          2. VISIBLE THREAT
+          Remove:
 
-          Horror should be physically visible.
+          - audio
+          - narration
+          - subtitles
+          - context
+          - title
 
-          A strange adult standing somewhere they should not be.
+          Ask:
 
-          A stranger holding something that belongs to the protagonist.
+          "Can I immediately see why this situation is wrong?"
 
-          An adult doing something that proves they know impossible/private
-          information.
+          If not, the concept is weak.
 
-          An adult occupying a place that should be inaccessible.
+          ============================================================
+          GOOD FIRST FRAMES
+          ============================================================
 
-          The viewer should not need narration to discover that something
-          is wrong.
+          An unfamiliar adult is already inside a private home.
 
+          A stranger is visibly holding something deeply personal.
 
+          A stranger is visibly occupying a locked/private space.
 
-          3. SIMPLE CONTRADICTION
+          Two adults are confronting a third adult who should not be there.
 
-          The strongest structure is:
+          A stranger is performing an intimate household action that proves
+          impossible familiarity.
 
-          NORMAL REALITY
+          A stranger is calmly behaving as though an impossible situation
+          is completely normal.
+
+          ============================================================
+          BAD FIRST FRAMES
+          ============================================================
+
+          Person walking into a room.
+
+          Person opening a door.
+
+          Person looking scared.
+
+          Empty room.
+
+          Dark hallway.
+
+          Normal dinner.
+
+          Person looking at a phone.
+
+          Phone screen.
+
+          Text message.
+
+          Mysterious object sitting somewhere.
+
+          Person simply standing alone.
+
+          ============================================================
+          HORROR STRUCTURE
+          ============================================================
+
+          Use:
+
+          VISIBLE PROBLEM
           +
-          ONE IMPOSSIBLE CONTRADICTION
+          SIMPLE CONTRADICTION
           +
           SECOND REALIZATION
 
-          Do not build mythology.
+          Example structure:
 
-          Do not explain ghosts.
+          A stranger is already inside.
 
-          Do not explain supernatural rules.
+          The protagonist asks how he entered.
 
-          Do not create elaborate backstory.
+          The stranger gives one answer that proves something much worse.
 
-          One contradiction is enough.
+          CUT.
 
+          ============================================================
+          THREAT
+          ============================================================
 
+          Prefer a visible adult human threat.
 
-          4. RELATIONSHIP OR PERSONAL STAKES
+          The threat does not need to attack anyone.
 
-          Family/relationship context has been useful.
+          Presence + impossible knowledge + wrong location
+          can be enough.
 
-          Preferred adult relationships:
+          ============================================================
+          RELATIONSHIPS
+          ============================================================
+
+          Useful adult relationships:
 
           husband / wife
           brother / sister
           adult siblings
           close friends
           roommates
-          colleagues
           neighbors
+          colleagues
           ex-partners
 
-          Adults only.
+          ============================================================
+          FLOW FEASIBILITY
+          ============================================================
 
-          Never use children or minors.
-
-
-
-          5. REWATCH VALUE
-
-          The viewer should be able to notice a clue on replay.
-
-          Good:
-
-          "He said he came yesterday."
-
-          while the protagonist knows he was not there.
-
-          Bad:
-
-          "The ancient demon of the house appears because..."
-
-          The viewer should understand the premise immediately and discover
-          one additional implication after thinking about it.
-
-
-
-          6. GOOGLE FLOW FEASIBILITY
+          Google Flow should be able to create the scene.
 
           Prefer:
 
-          - 2 or 3 adults maximum
           - one recognizable location
-          - one camera angle
-          - simple walking / turning / holding / opening actions
+          - 2 or 3 adults maximum
+          - simple movement
           - normal human faces
           - realistic lighting
+          - one continuous shot
+          - or two very simple shots
 
-          Avoid complicated transformations.
+          Avoid:
 
-          Avoid tiny text that must be read.
+          complicated visual effects
+          tiny readable text
+          complicated transformations
+          elaborate supernatural creatures
+          multiple locations
 
-          Avoid phone screens as the primary horror mechanism.
+          ============================================================
+          HARD BANS
+          ============================================================
 
-          Avoid reflections.
+          No children.
 
-          Avoid visual effects.
+          No minors.
 
+          No babies.
 
+          No teenagers.
 
-          7. IMPORTANT PERFORMANCE LESSON
+          No mirrors.
 
-          High APV alone is not enough.
+          No reflections.
 
-          A clever story that people swipe away from is still a weak Short.
+          No doppelgängers.
 
-          Therefore:
+          No twins.
 
-          FIRST FRAME > STORY COMPLEXITY
+          No CCTV.
 
-          The first frame must sell the horror.
+          No elevators.
 
+          No hotels.
+
+          No trains.
+
+          No printer horror.
+
+          No empty-chair horror.
+
+          No phone-screen horror.
+
+          No video-call horror.
+
+          No disappearing people.
+
+          No reappearing people.
+
+          No monsters.
+
+          No demons.
+
+          No zombies.
+
+          No ghosts as the explanation.
+
+          No face distortion.
+
+          No body transformation.
+
+          No gore.
+
+          No blood.
+
+          No elaborate supernatural mythology.
+
+          No celebrity likenesses.
+
+          No real-person likenesses.
+
+          ============================================================
           """
 
 
 
           # ============================================================
-          # MECHANISM LIBRARY
-          #
-          # These are NOT stories.
-          #
-          # They are controlled horror structures.
+          # CONTROLLED HORROR MECHANISMS
           # ============================================================
 
           MECHANISMS = [
@@ -314,403 +452,408 @@ jobs:
                   "id": 1,
                   "name": "WRONG ACCESS",
                   "rule":
-                  "An unfamiliar adult is visibly inside a private locked space "
-                  "using something that should only belong to the protagonist."
+                  "An unfamiliar adult is already inside a private locked "
+                  "space using something that should belong only to the "
+                  "protagonist."
               },
 
               {
                   "id": 2,
                   "name": "DEAD PERSON'S OBJECT",
                   "rule":
-                  "A stranger is visibly holding or returning an ordinary object "
-                  "that belongs to someone the protagonist knows is dead."
+                  "A stranger visibly possesses an ordinary personal object "
+                  "belonging to someone the protagonist knows is dead."
               },
 
               {
                   "id": 3,
                   "name": "IMPOSSIBLE VISIT",
                   "rule":
-                  "A stranger calmly claims they visited the protagonist recently "
-                  "when the protagonist knows the place was inaccessible."
+                  "A stranger is already inside a familiar place and calmly "
+                  "claims they visited recently when access was impossible."
               },
 
               {
                   "id": 4,
                   "name": "PRIVATE MEMORY",
                   "rule":
-                  "An unfamiliar adult reveals one extremely specific private event "
-                  "that only someone present could know."
+                  "An unfamiliar adult knows one extremely specific private "
+                  "event that only someone present could know."
               },
 
               {
                   "id": 5,
                   "name": "WRONG OWNER",
                   "rule":
-                  "A stranger confidently identifies a private possession as theirs "
-                  "and gives a detail proving unusual familiarity."
+                  "A stranger confidently treats a deeply personal possession "
+                  "as theirs and reveals knowledge proving unusual familiarity."
               },
 
               {
                   "id": 6,
                   "name": "WRONG ROOM",
                   "rule":
-                  "An adult is visibly occupying a room or workplace they should "
-                  "have no reason or permission to enter."
+                  "An adult is visibly occupying a private room or workplace "
+                  "where they should have no reason or permission to be."
               },
 
               {
                   "id": 7,
-                  "name": "WRONG INSTRUCTION",
+                  "name": "IMPOSSIBLE INSTRUCTION",
                   "rule":
-                  "A stranger performs an ordinary action exactly as instructed by "
-                  "someone who could not have communicated with them."
+                  "An adult performs a very specific ordinary action because "
+                  "someone who could not communicate with them supposedly "
+                  "instructed them."
               },
 
               {
                   "id": 8,
-                  "name": "UNEXPECTED VISITOR",
+                  "name": "UNWELCOME GUEST",
                   "rule":
-                  "A stranger is already comfortably inside a familiar home and "
-                  "speaks as though their presence was expected."
+                  "A stranger is already comfortably inside a familiar home "
+                  "and behaves as though the household expected them."
               },
 
               {
                   "id": 9,
-                  "name": "RELATIONSHIP CONTRADICTION",
+                  "name": "IMPOSSIBLE RELATIONSHIP",
                   "rule":
-                  "A stranger claims a personal relationship with one protagonist "
-                  "that the other protagonist knows is impossible."
+                  "A stranger claims a close personal relationship that the "
+                  "protagonist knows cannot exist."
               },
 
               {
                   "id": 10,
-                  "name": "WRONG CONVERSATION",
+                  "name": "CONTRADICTORY CONVERSATION",
                   "rule":
-                  "Two adults are visibly speaking while one refers to a private "
-                  "conversation that supposedly happened when they were apart."
+                  "One adult refers to a private conversation that supposedly "
+                  "happened while the other adult was physically elsewhere."
               },
 
               {
                   "id": 11,
                   "name": "IMPOSSIBLE DELIVERY",
                   "rule":
-                  "An adult delivers an ordinary item while claiming it was ordered "
-                  "or requested by someone who could not have done so."
+                  "A delivery person hands over something supposedly ordered "
+                  "by someone who could not have ordered it."
               },
 
               {
                   "id": 12,
                   "name": "WRONG TIME",
                   "rule":
-                  "An adult appears with knowledge or evidence that places them "
-                  "inside the location at a time they could not have been there."
+                  "A stranger knows they were physically present at a location "
+                  "at a time when access was impossible."
               },
 
               {
                   "id": 13,
-                  "name": "PERSONAL WARNING",
+                  "name": "FUTURE WARNING",
                   "rule":
-                  "A stranger warns the protagonist about a very specific private "
-                  "event that has not happened yet."
+                  "A stranger visibly warns the protagonist about a very "
+                  "specific private event that has not happened yet."
               },
 
               {
                   "id": 14,
-                  "name": "WRONG NAME",
+                  "name": "PRIVATE NAME",
                   "rule":
-                  "A stranger addresses the protagonist using a private name or "
-                  "nickname that almost nobody knows."
+                  "A stranger addresses the protagonist using an extremely "
+                  "private nickname almost nobody knows."
               },
 
               {
                   "id": 15,
-                  "name": "IMPOSSIBLE FAMILIARITY",
+                  "name": "FAMILIAR ROUTINE",
                   "rule":
-                  "A stranger behaves inside the home like someone who has lived "
-                  "there before."
+                  "A stranger performs a highly personal household routine "
+                  "belonging to someone close to the protagonist."
               },
 
               {
                   "id": 16,
-                  "name": "THE OTHER WITNESS",
+                  "name": "OTHER WITNESS",
                   "rule":
-                  "A stranger describes an event witnessed by someone who was "
-                  "supposedly alone with the protagonist."
+                  "A stranger describes an event that supposedly happened "
+                  "while the protagonist was alone with another adult."
               },
 
               {
                   "id": 17,
                   "name": "WRONG DESTINATION",
                   "rule":
-                  "A stranger arrives at an ordinary location and confidently says "
-                  "the protagonist personally sent them there."
+                  "A stranger arrives at a normal location and says the "
+                  "protagonist personally sent them there."
               },
 
               {
                   "id": 18,
-                  "name": "FAMILIAR ROUTINE",
+                  "name": "IMPOSSIBLE FAMILIARITY",
                   "rule":
-                  "A stranger performs one highly personal household routine "
-                  "belonging to someone close to the protagonist."
+                  "A stranger behaves inside a home as if they have lived "
+                  "there before, knowing exactly where ordinary things are."
               },
 
               {
                   "id": 19,
-                  "name": "IMPOSSIBLE KNOWLEDGE",
+                  "name": "PRIVATE PHYSICAL DETAIL",
                   "rule":
-                  "A stranger knows a private physical detail about the location "
-                  "that the protagonist has never told anyone."
+                  "A stranger knows a concealed physical detail about the "
+                  "home or workplace that nobody should know."
               },
 
               {
                   "id": 20,
-                  "name": "THE WRONG PERSON IS CALM",
+                  "name": "CALM INTRUDER",
                   "rule":
-                  "A visible adult threat is already present, but the stranger "
-                  "calmly behaves as though the protagonist is the unusual one."
+                  "A clearly misplaced adult intruder behaves calmly and "
+                  "treats the frightened homeowner as though the homeowner "
+                  "is the one behaving strangely."
               }
 
           ]
 
 
           # ============================================================
-          # CANDIDATE SCHEMA
+          # STAGE 1
+          # GENERATE 10 CANDIDATES
           # ============================================================
 
-          candidate_schema = {
-              "type": "object",
-              "properties": {
-                  "candidates": {
-                      "type": "array",
-                      "items": {
-                          "type": "object",
-                          "properties": {
-                              "id": {
-                                  "type": "integer"
-                              },
-                              "mechanism_id": {
-                                  "type": "integer"
-                              },
-                              "title": {
-                                  "type": "string"
-                              },
-                              "premise": {
-                                  "type": "string"
-                              },
-                              "static_frame_1": {
-                                  "type": "string"
-                              },
-                              "visible_threat": {
-                                  "type": "string"
-                              },
-                              "contradiction": {
-                                  "type": "string"
-                              },
-                              "ending": {
-                                  "type": "string"
-                              }
-                          },
-                          "required": [
-                              "id",
-                              "mechanism_id",
-                              "title",
-                              "premise",
-                              "static_frame_1",
-                              "visible_threat",
-                              "contradiction",
-                              "ending"
-                          ],
-                          "additionalProperties": False
-                      }
-                  }
-              },
-              "required": [
-                  "candidates"
-              ],
-              "additionalProperties": False
-          }
+          candidate_prompt = f"""
 
-
-          # ============================================================
-          # STAGE 1 — GENERATE 12 CONTROLLED CONCEPTS
-          # ============================================================
-
-          selected_mechanisms = MECHANISMS.copy()
-
-          generator_prompt = f"""
-
-          You are the horror concept architect for The Quiet Vault.
+          You are the concept architect for The Quiet Vault.
 
           {CREATIVE_DNA}
 
-          You are NOT allowed to invent a random horror mechanism.
+          Generate EXACTLY 10 horror concepts.
 
-          You must use the supplied mechanism library.
+          Every concept must use a DIFFERENT mechanism from the supplied
+          mechanism library.
 
-          Generate EXACTLY 12 candidates.
-
-          Each candidate must use a DIFFERENT mechanism.
-
-          MECHANISM LIBRARY:
-
-          {json.dumps(selected_mechanisms, indent=2)}
+          Do not invent additional mechanisms.
 
           ============================================================
-          CRITICAL FIRST-FRAME RULE
+          MECHANISM LIBRARY
           ============================================================
 
-          The first frame is treated like a thumbnail.
+          {json.dumps(MECHANISMS, indent=2)}
 
-          If the viewer pauses on frame 1 with NO AUDIO,
-          they must see something clearly wrong.
+          ============================================================
+          CRITICAL
+          ============================================================
 
-          GOOD:
+          These are concepts, NOT finished scripts.
 
-          - unfamiliar adult already inside private home
-          - stranger holding a personal object
-          - two adults confronting a visibly misplaced third adult
-          - adult standing inside a locked/private area
-          - stranger performing an obviously intimate/familiar action
+          Think visually first.
+
+          Every concept must answer:
+
+          1. What does the viewer see in frame 1?
+
+          2. What adult human threat or disturbing adult situation is
+             visible?
+
+          3. What is the one contradiction?
+
+          4. What second piece of information appears at the end?
+
+          ============================================================
+          FRAME 1
+          ============================================================
+
+          static_frame_1 must describe an actual frozen video frame.
+
+          It must contain:
+
+          - location
+          - protagonist
+          - visible adult threat or anomaly
+          - important physical detail
+
+          Do not describe an action that happens later.
 
           BAD:
 
-          - person looking scared
-          - dark hallway
-          - empty room
-          - ordinary dinner
-          - person walking into a room
-          - phone call
-          - text message
-          - reflection
-          - mysterious object by itself
+          "A woman opens the door and sees a man."
+
+          GOOD:
+
+          "A woman stands frozen in her bedroom doorway while an unfamiliar "
+          "adult man is already sitting on her bed holding her house keys."
 
           ============================================================
-          THREAT RULE
+          IMPORTANT
           ============================================================
 
-          Every concept needs a visible adult human threat or visibly
-          disturbing adult situation.
+          The concept must still make visual sense without narration.
 
-          "Something is watching."
+          Do not rely on:
 
-          is NOT enough.
-
-          "A stranger is sitting at the protagonist's kitchen table."
-
-          IS enough.
-
-          ============================================================
-          CONTRADICTION RULE
-          ============================================================
-
-          The contradiction must be explainable in ONE sentence.
-
-          Example:
-
-          "The stranger says the dead man's key was given to him yesterday."
-
-          Do NOT require mythology or a paragraph of explanation.
-
-          ============================================================
-          ENDING RULE
-          ============================================================
-
-          The final beat must add a SECOND piece of information.
-
-          It should not merely reveal:
-
-          "It was a ghost."
-
-          Prefer:
-
-          "The stranger knows the exact private detail."
-
-          or:
-
-          "The supposedly dead person's object is still warm."
-
-          or:
-
-          "The stranger says something that proves he was there before."
-
-          ============================================================
-          ADULT ONLY
-
-          All characters are fictional adults.
-
-          No children.
-          No minors.
-          No babies.
-          No teenagers.
-
-          ============================================================
-          HARD BANS
-
-          Do not use:
-
-          mirrors
+          dates
+          tiny labels
+          phone screens
+          text messages
           reflections
-          doppelgängers
-          twins
-          CCTV
-          elevators
-          cars as the central mechanism
-          hotels
-          trains
-          printers
-          empty-chair horror
-          video-call horror
-          phone-screen horror
-          disappearing people
-          reappearing people
-          monsters
-          demons
-          zombies
-          ghosts as the explanation
-          face distortion
-          body transformation
-          gore
-          blood
-          elaborate supernatural mythology
+          complicated backstory
 
           ============================================================
-          OUTPUT QUALITY
+          RETURN EXACTLY THIS JSON STRUCTURE
+          ============================================================
 
-          The premise should work even if the viewer never hears the dialogue.
+          {{
+            "candidates": [
+              {{
+                "id": 1,
+                "mechanism_id": 1,
+                "title": "...",
+                "premise": "...",
+                "static_frame_1": "...",
+                "visible_threat": "...",
+                "contradiction": "...",
+                "ending": "..."
+              }}
+            ]
+          }}
 
-          Do not write the final script yet.
-
-          Think VISUAL first.
-
-          Return ONLY JSON.
+          Return ONLY valid JSON.
           """
 
 
           generated = groq_request(
+
               [
                   {
                       "role": "system",
                       "content":
-                      "You are a strict visual horror concept architect."
+                      "You are a strict visual horror concept architect. "
+                      "Return JSON only."
                   },
+
                   {
                       "role": "user",
                       "content":
-                      generator_prompt
+                      candidate_prompt
                   }
               ],
+
               "quiet_vault_candidates",
-              candidate_schema,
-              0.85,
-              7000
+
+              None,
+
+              0.80,
+
+              5000,
+
+              False
           )
 
 
-          candidates = generated["candidates"]
+          if not isinstance(
+              generated,
+              dict
+          ):
+
+              raise RuntimeError(
+                  "Candidate response was not a JSON object."
+              )
+
+
+          candidates = generated.get(
+              "candidates",
+              []
+          )
+
+
+          if not isinstance(
+              candidates,
+              list
+          ):
+
+              raise RuntimeError(
+                  "Candidate response did not contain a valid candidates array."
+              )
+
+
+          print("")
+          print("==========================================")
+          print("CANDIDATE GENERATION")
+          print("==========================================")
+          print(
+              "Candidates returned:",
+              len(candidates)
+          )
 
 
           # ============================================================
-          # HARD FILTER
+          # PYTHON STRUCTURAL VALIDATION
+          # ============================================================
+
+          required_fields = [
+
+              "id",
+              "mechanism_id",
+              "title",
+              "premise",
+              "static_frame_1",
+              "visible_threat",
+              "contradiction",
+              "ending"
+
+          ]
+
+
+          valid_candidates = []
+
+
+          for candidate in candidates:
+
+              if not isinstance(
+                  candidate,
+                  dict
+              ):
+
+                  continue
+
+
+              missing = [
+
+                  field
+                  for field in required_fields
+                  if field not in candidate
+
+              ]
+
+
+              if missing:
+
+                  print(
+                      "Candidate",
+                      candidate.get("id"),
+                      "missing:",
+                      missing
+                  )
+
+                  continue
+
+
+              valid_candidates.append(
+                  candidate
+              )
+
+
+          candidates = valid_candidates[:10]
+
+
+          if len(candidates) < 8:
+
+              raise RuntimeError(
+                  f"Only {len(candidates)} valid candidates returned. "
+                  "Need at least 8."
+              )
+
+
+          # ============================================================
+          # HARD CREATIVE FILTER
           # ============================================================
 
           banned_terms = [
@@ -729,6 +872,7 @@ jobs:
               "video call",
               "video-call",
               "phone screen",
+              "phone-screen",
               "ghost",
               "demon",
               "zombie",
@@ -737,6 +881,7 @@ jobs:
               "blood",
               "face distortion",
               "head spins",
+              "body transformation",
               "disappear",
               "disappears",
               "reappears",
@@ -751,37 +896,71 @@ jobs:
 
 
           def normalize(text):
+
               return re.sub(
                   r"\s+",
                   " ",
-                  text.lower()
+                  str(text).lower()
               ).strip()
 
 
-          def hard_filter(candidate):
+          def contains_banned(text):
 
-              combined = normalize(
-                  " ".join([
-                      candidate["title"],
-                      candidate["premise"],
-                      candidate["static_frame_1"],
-                      candidate["visible_threat"],
-                      candidate["contradiction"],
-                      candidate["ending"]
-                  ])
-              )
+              text = normalize(text)
 
               for term in banned_terms:
 
                   if re.search(
-                      r"\b" + re.escape(term) + r"\b",
-                      combined
+                      r"\b" +
+                      re.escape(term) +
+                      r"\b",
+                      text
                   ):
 
-                      return False, (
-                          "banned mechanism: "
-                          + term
-                      )
+                      return term
+
+              return None
+
+
+          hard_survivors = []
+          hard_rejected = []
+
+
+          for candidate in candidates:
+
+              combined = " ".join([
+
+                  candidate["title"],
+                  candidate["premise"],
+                  candidate["static_frame_1"],
+                  candidate["visible_threat"],
+                  candidate["contradiction"],
+                  candidate["ending"]
+
+              ])
+
+
+              banned = contains_banned(
+                  combined
+              )
+
+
+              if banned:
+
+                  hard_rejected.append({
+
+                      "id":
+                      candidate["id"],
+
+                      "title":
+                      candidate["title"],
+
+                      "reason":
+                      "banned term: " + banned
+
+                  })
+
+                  continue
 
 
               frame = normalize(
@@ -789,33 +968,69 @@ jobs:
               )
 
 
-              weak_frame_terms = [
+              weak_frame_phrases = [
+
                   "walks into",
-                  "enters the room",
+                  "walk into",
+                  "enters the",
                   "opens the door",
+                  "opening the door",
                   "looks around",
                   "stands alone",
                   "empty room",
-                  "dimly lit room",
-                  "dark room",
+                  "dark hallway",
+                  "dim hallway",
+                  "normal room",
                   "ordinary room",
                   "camera shows"
               ]
 
 
-              for term in weak_frame_terms:
-
-                  if term in frame:
-
-                      return False, (
-                          "weak first frame: "
-                          + term
-                      )
+              weak = None
 
 
-              if len(frame.split()) < 16:
+              for phrase in weak_frame_phrases:
 
-                  return False, "first frame lacks visual detail"
+                  if phrase in frame:
+
+                      weak = phrase
+                      break
+
+
+              if weak:
+
+                  hard_rejected.append({
+
+                      "id":
+                      candidate["id"],
+
+                      "title":
+                      candidate["title"],
+
+                      "reason":
+                      "weak first frame: " + weak
+
+                  })
+
+                  continue
+
+
+              if len(frame.split()) < 18:
+
+                  hard_rejected.append({
+
+                      "id":
+                      candidate["id"],
+
+                      "title":
+                      candidate["title"],
+
+                      "reason":
+                      "first frame too vague"
+
+                  })
+
+                  continue
 
 
               threat = normalize(
@@ -823,66 +1038,69 @@ jobs:
               )
 
 
-              if len(threat.split()) < 8:
+              if len(threat.split()) < 9:
 
-                  return False, "visible threat too vague"
+                  hard_rejected.append({
+
+                      "id":
+                      candidate["id"],
+
+                      "title":
+                      candidate["title"],
+
+                      "reason":
+                      "visible threat too vague"
+
+                  })
+
+                  continue
 
 
-              ending = normalize(
-                  candidate["ending"]
+              contradiction = normalize(
+                  candidate["contradiction"]
               )
 
 
-              if len(ending.split()) < 10:
+              if len(contradiction.split()) < 8:
 
-                  return False, "ending too weak"
+                  hard_rejected.append({
+
+                      "id":
+                      candidate["id"],
+
+                      "title":
+                      candidate["title"],
+
+                      "reason":
+                      "contradiction too weak"
+
+                  })
+
+                  continue
 
 
-              return True, "passed"
-
-
-          survivors = []
-          rejected = []
-
-
-          for candidate in candidates:
-
-              passed, reason = hard_filter(
+              hard_survivors.append(
                   candidate
               )
-
-              if passed:
-
-                  survivors.append(
-                      candidate
-                  )
-
-              else:
-
-                  rejected.append(
-                      {
-                          "id":
-                          candidate["id"],
-
-                          "title":
-                          candidate["title"],
-
-                          "reason":
-                          reason
-                      }
-                  )
 
 
           print("")
           print("==========================================")
           print("HARD FILTER")
           print("==========================================")
-          print("Generated:", len(candidates))
-          print("Survived:", len(survivors))
-          print("Rejected:", len(rejected))
+
+          print(
+              "Survivors:",
+              len(hard_survivors)
+          )
+
+          print(
+              "Rejected:",
+              len(hard_rejected)
+          )
 
 
-          for item in rejected:
+          for item in hard_rejected:
 
               print(
                   "REJECTED:",
@@ -893,26 +1111,44 @@ jobs:
               )
 
 
-          if len(survivors) < 6:
+          if len(hard_survivors) < 5:
 
               raise RuntimeError(
-                  "Too few strong visual concepts survived. "
-                  "This run is intentionally rejected rather than "
-                  "filling the batch with weak stories."
+                  "Fewer than 5 concepts survived the hard visual filter."
               )
 
 
           # ============================================================
-          # STAGE 2 — STRICT CREATIVE JUDGE
+          # PROTECT GROQ TPM
+          # ============================================================
+
+          print("")
+          print(
+              "Waiting 65 seconds before creative judging..."
+          )
+
+          time.sleep(65)
+
+
+          # ============================================================
+          # STAGE 2
+          # CREATIVE JUDGE
           # ============================================================
 
           judge_schema = {
+
               "type": "object",
+
               "properties": {
+
                   "judgements": {
+
                       "type": "array",
+
                       "items": {
+
                           "type": "object",
+
                           "properties": {
 
                               "id": {
@@ -962,6 +1198,7 @@ jobs:
                           },
 
                           "required": [
+
                               "id",
                               "hook",
                               "visible_threat",
@@ -973,6 +1210,7 @@ jobs:
                               "originality",
                               "pass",
                               "reason"
+
                           ],
 
                           "additionalProperties": False
@@ -990,106 +1228,99 @@ jobs:
 
           judge_prompt = f"""
 
-          You are the FINAL CREATIVE GATE for The Quiet Vault.
+          You are the ruthless final creative gate for The Quiet Vault.
 
           {CREATIVE_DNA}
 
-          Judge every candidate harshly.
+          Judge EVERY candidate.
 
-          This is NOT a writing contest.
+          Do not reward clever writing.
 
-          A clever premise with a weak opening FAILS.
-
-          ============================================================
-          SCORE EACH 1-10
-          ============================================================
-
-          HOOK
-
-          Look ONLY at static_frame_1.
-
-          Would a viewer scrolling Shorts immediately see something wrong?
-
-          9-10 = instantly disturbing visual
-
-          7-8 = clearly unusual
-
-          5-6 = needs narration
-
-          1-4 = normal frame
-
-          Anything below 8 FAILS.
-
-
-
-          VISIBLE THREAT
-
-          Is an adult human threat or disturbing adult situation physically
-          visible?
-
-          Anything below 8 FAILS.
-
-
-
-          CLARITY
-
-          Can the viewer understand the basic problem immediately?
-
-          Anything below 8 FAILS.
-
-
-
-          CONTRADICTION
-
-          Is there ONE simple impossible contradiction?
-
-          Anything below 8 FAILS.
-
-
-
-          ENDING
-
-          Does the ending create a second realization?
-
-          Anything below 8 FAILS.
-
-
-
-          FLOW
-
-          Could Google Flow realistically create this with:
-
-          2-3 adults
-          one location
-          simple movements
-          realistic faces
-          minimal visual effects
-
-          Anything below 8 FAILS.
-
-
-
-          REWATCH
-
-          Does replay reveal another clue?
-
-          Anything below 7 FAILS.
-
-
-
-          ORIGINALITY
-
-          Does this feel different from our recent failed outputs?
-
-          Anything below 7 FAILS.
-
-
+          Judge the actual visual concept.
 
           ============================================================
-          PASS RULE
+          HOOK — 1 TO 10
           ============================================================
 
-          A candidate passes ONLY when:
+          Judge static_frame_1 only.
+
+          10 = immediately disturbing screenshot.
+
+          8 = clearly wrong and compelling.
+
+          6 = unusual but requires explanation.
+
+          4 = mostly normal.
+
+          1 = no visible hook.
+
+          Minimum PASS = 8.
+
+          ============================================================
+          VISIBLE THREAT — 1 TO 10
+          ============================================================
+
+          Is the disturbing adult situation physically visible?
+
+          10 = unmistakable.
+
+          8 = clearly visible.
+
+          Below 8 = FAIL.
+
+          ============================================================
+          CLARITY — 1 TO 10
+          ============================================================
+
+          Does the viewer immediately understand the basic problem?
+
+          Below 8 = FAIL.
+
+          ============================================================
+          CONTRADICTION — 1 TO 10
+          ============================================================
+
+          Is there one simple impossible contradiction?
+
+          Below 8 = FAIL.
+
+          ============================================================
+          ENDING — 1 TO 10
+          ============================================================
+
+          Does the final beat add a second realization?
+
+          Below 8 = FAIL.
+
+          ============================================================
+          FLOW — 1 TO 10
+          ============================================================
+
+          Can Google Flow realistically create this?
+
+          Below 8 = FAIL.
+
+          ============================================================
+          REWATCH — 1 TO 10
+          ============================================================
+
+          Does replay make the viewer notice something else?
+
+          Minimum 7.
+
+          ============================================================
+          ORIGINALITY — 1 TO 10
+          ============================================================
+
+          Does it avoid our recently rejected mechanisms?
+
+          Minimum 7.
+
+          ============================================================
+          PASS REQUIREMENT
+          ============================================================
+
+          A candidate passes ONLY if:
 
           hook >= 8
           visible_threat >= 8
@@ -1102,66 +1333,89 @@ jobs:
 
           AND
 
-          the concept is genuinely scary rather than merely mysterious.
+          it feels like actual horror rather than a mystery puzzle.
 
           Return ONLY JSON.
 
           CANDIDATES:
 
-          {json.dumps(survivors, ensure_ascii=False)}
+          {json.dumps(hard_survivors, indent=2, ensure_ascii=False)}
           """
 
 
           judged = groq_request(
+
               [
                   {
                       "role": "system",
                       "content":
-                      "You are a ruthless horror Shorts editor."
+                      "You are a ruthless horror Shorts creative director."
                   },
+
                   {
                       "role": "user",
                       "content":
                       judge_prompt
                   }
               ],
-              "quiet_vault_judgement",
+
+              "quiet_vault_judge",
+
               judge_schema,
+
               0.25,
-              6500
+
+              5000,
+
+              True
           )
 
 
-          judgements = judged["judgements"]
-
-
-          passed_ids = [
-              item["id"]
-              for item in judgements
-              if item["pass"]
-          ]
+          judgements = judged.get(
+              "judgements",
+              []
+          )
 
 
           judgement_map = {
-              item["id"]: item
+
+              item["id"]:
+              item
+
               for item in judgements
+
           }
 
 
-          finalists = [
-              candidate
-              for candidate in survivors
-              if candidate["id"] in passed_ids
-          ]
+          finalists = []
 
 
-          # Sort by weighted score
+          for candidate in hard_survivors:
 
-          def weighted_score(candidate):
+              judgment = judgement_map.get(
+                  candidate["id"]
+              )
 
-              j = judgement_map[candidate["id"]]
+
+              if judgment and judgment["pass"]:
+
+                  finalists.append(
+                      candidate
+                  )
+
+
+          # ============================================================
+          # RANK FINALISTS
+          # ============================================================
+
+          def score(candidate):
+
+              j = judgement_map[
+                  candidate["id"]
+              ]
 
               return (
+
                   j["hook"] * 4
                   + j["visible_threat"] * 3
                   + j["clarity"] * 2
@@ -1170,47 +1424,60 @@ jobs:
                   + j["flow"]
                   + j["rewatch"] * 2
                   + j["originality"]
+
               )
 
 
-          finalists = sorted(
-              finalists,
-              key=weighted_score,
+          finalists.sort(
+              key=score,
               reverse=True
           )
 
 
           print("")
           print("==========================================")
-          print("CREATIVE GATE")
+          print("CREATIVE JUDGE")
           print("==========================================")
 
 
           for item in judgements:
 
               print(
+
                   "ID:",
                   item["id"],
-                  "PASS:",
+
+                  "| PASS:",
                   item["pass"],
-                  "Hook:",
+
+                  "| Hook:",
                   item["hook"],
-                  "Threat:",
+
+                  "| Threat:",
                   item["visible_threat"],
-                  "Clarity:",
+
+                  "| Clarity:",
                   item["clarity"],
-                  "Ending:",
+
+                  "| Ending:",
                   item["ending"],
-                  "Rewatch:",
-                  item["rewatch"]
+
+                  "| Rewatch:",
+                  item["rewatch"],
+
+                  "| Reason:",
+                  item["reason"]
+
               )
 
 
           if len(finalists) < 3:
 
               raise RuntimeError(
-                  "Fewer than 3 concepts passed the strict "
-                  "Quiet Vault creative gate."
+
+                  "Fewer than 3 concepts passed the creative gate. "
+                  "Workflow intentionally stopped instead of using weak ideas."
+
               )
 
 
@@ -1219,7 +1486,7 @@ jobs:
 
           print("")
           print("==========================================")
-          print("FINALISTS")
+          print("APPROVED FINALISTS")
           print("==========================================")
 
 
@@ -1232,21 +1499,25 @@ jobs:
 
 
           # ============================================================
-          # WAIT BEFORE FINALIZATION
+          # PROTECT GROQ TPM
           # ============================================================
 
           print("")
-          print("Waiting before finalization to protect Groq TPM limits...")
+          print(
+              "Waiting 65 seconds before final writing..."
+          )
 
           time.sleep(65)
 
 
           # ============================================================
-          # FINAL PACKAGE SCHEMA
+          # FINAL SHORT SCHEMA
           # ============================================================
 
           final_schema = {
+
               "type": "object",
+
               "properties": {
 
                   "id": {
@@ -1304,6 +1575,7 @@ jobs:
               },
 
               "required": [
+
                   "id",
                   "title",
                   "short_script",
@@ -1317,6 +1589,7 @@ jobs:
                   "thumbnail_text",
                   "sound_design",
                   "pinned_comment"
+
               ],
 
               "additionalProperties": False
@@ -1324,7 +1597,7 @@ jobs:
 
 
           # ============================================================
-          # FINALIZE EACH SHORT SEPARATELY
+          # FINAL WRITER
           # ============================================================
 
           final_shorts = []
@@ -1337,35 +1610,29 @@ jobs:
 
               print("")
               print(
-                  f"Finalizing Short {index}/3..."
+                  f"FINALIZING SHORT {index}/3..."
               )
 
 
               final_prompt = f"""
 
-              You are the senior writer for The Quiet Vault.
+              You are the senior production writer for The Quiet Vault.
 
-              Turn this APPROVED horror mechanism into ONE complete
-              YouTube Short.
+              Turn this APPROVED concept into ONE complete YouTube Short.
 
-              DO NOT change the underlying mechanism.
+              DO NOT change its underlying horror mechanism.
 
               APPROVED CONCEPT:
 
-              {json.dumps(finalist, ensure_ascii=False, indent=2)}
-
-              ============================================================
-              HISTORICAL PERFORMANCE RULES
-              ============================================================
-
-              The channel performs best when the viewer understands the
-              visual problem immediately and then receives a second
-              realization.
-
-              The first frame matters more than elaborate storytelling.
+              {json.dumps(
+                  finalist,
+                  indent=2,
+                  ensure_ascii=False
+              )}
 
               ============================================================
               VIDEO
+              ============================================================
 
               9-12 seconds.
 
@@ -1381,152 +1648,225 @@ jobs:
 
               Natural human movement.
 
-              Realistic lighting.
+              Cinematic but realistic lighting.
 
               ============================================================
               FIRST FRAME
+              ============================================================
 
-              The first frame MUST already contain the disturbing situation.
+              The FIRST FRAME must already show the disturbing situation.
 
-              Do NOT start with:
+              Do NOT begin with:
 
               someone entering
               someone walking
-              an empty room
+              someone opening a door
+              empty room
               establishing shot
               normal conversation
               slow reveal
 
-              The first frame must be strong enough to work as a thumbnail.
+              The first frame must be strong enough to serve as the
+              thumbnail.
 
               ============================================================
-              SCRIPT
+              STORY
+              ============================================================
+
+              Keep spoken dialogue extremely short.
 
               Maximum approximately 35 spoken words.
 
-              Prefer 2-4 short spoken lines.
+              Prefer 2-4 short lines.
 
-              Do not explain the horror.
-
-              Let the visual contradiction do the work.
+              Do not explain supernatural mythology.
 
               ============================================================
-              STRUCTURE
+              TIMING
+              ============================================================
 
               0-3 seconds:
-              Show the impossible situation immediately.
+
+              Show the visual problem immediately.
 
               3-6 seconds:
-              One character identifies or questions the contradiction.
+
+              Protagonist recognizes or questions the contradiction.
 
               6-9/12 seconds:
-              The other character reveals one additional piece of information.
+
+              Stranger reveals one additional disturbing fact.
 
               Final moment:
-              hard cut or loop-friendly visual.
+
+              Hard cut.
 
               ============================================================
               GOOGLE FLOW PROMPT
+              ============================================================
 
-              Give ONE complete copy/paste prompt.
+              Write ONE complete ready-to-paste Google Flow prompt.
 
-              It must specify:
+              Include:
 
-              - 9:16 vertical
-              - photorealistic live action
-              - fictional adults
-              - consistent character appearance
-              - recognizable location
-              - exact first frame
-              - camera framing
-              - 0-3 second action
-              - 3-6 second action
-              - 6-9/12 second action
-              - final reveal
-              - hard cut
-              - realistic lighting
-              - natural movement
-              - no subtitles
-              - no text overlays
-              - no celebrity likeness
-              - no real-person likeness
+              vertical 9:16
+              photorealistic live action
+              fictional adult characters
+              consistent character appearance
+              recognizable location
+              exact first frame
+              camera framing
+              realistic lighting
+              0-3 second action
+              3-6 second action
+              6-9/12 second action
+              final reveal
+              hard cut
+              natural human movement
 
               ============================================================
               HARD BANS
+              ============================================================
 
               No children.
+
               No minors.
+
               No mirrors.
+
               No reflections.
+
               No doppelgängers.
+
               No twins.
+
               No CCTV.
+
               No elevators.
+
               No hotels.
+
               No trains.
-              No phone-screen horror.
-              No video-call horror.
+
               No printers.
+
+              No phone-screen horror.
+
+              No video-call horror.
+
               No empty-chair horror.
+
               No monsters.
+
               No demons.
+
               No zombies.
+
               No ghosts as the explanation.
+
               No gore.
+
               No blood.
+
               No face distortion.
+
               No body transformation.
+
               No complicated CGI.
+
+              No celebrity likeness.
+
+              No real-person likeness.
+
+              No text rendered inside the video.
+
+              ============================================================
+              SCRIPT RULE
+              ============================================================
+
+              The visual carries the story.
+
+              Dialogue should reveal the contradiction,
+              not explain everything.
 
               ============================================================
               THUMBNAIL
+              ============================================================
 
-              Choose a frame that visually explains the horror.
+              Choose the strongest visual frame.
 
               Give approximate timing.
 
               Thumbnail text:
+
               maximum 3 words
+
               or NONE.
 
               ============================================================
               DESCRIPTION
+              ============================================================
 
               Natural and short.
 
-              Do not write generic AI marketing language.
+              Do not use generic AI marketing language.
 
               ============================================================
               KEYWORDS
+              ============================================================
 
               Comma-separated.
 
               ============================================================
               HASHTAGS
+              ============================================================
 
-              Compact.
+              Compact and relevant.
+
+              ============================================================
+              SOUND DESIGN
+              ============================================================
+
+              Realistic subtle sound.
+
+              No excessive cinematic effects.
+
+              ============================================================
+              PINNED COMMENT
+              ============================================================
+
+              Short curiosity-driven question.
 
               Return ONLY JSON.
               """
 
 
               final_data = groq_request(
+
                   [
                       {
                           "role": "system",
                           "content":
-                          "You are the final production writer for a realistic horror Shorts channel."
+                          "You are the final production writer for "
+                          "The Quiet Vault. Return JSON only."
                       },
+
                       {
                           "role": "user",
                           "content":
                           final_prompt
                       }
                   ],
+
                   f"quiet_vault_final_{index}",
+
                   final_schema,
-                  0.65,
-                  3000
+
+                  0.60,
+
+                  3000,
+
+                  True
               )
 
 
@@ -1538,14 +1878,14 @@ jobs:
               if index < len(finalists):
 
                   print(
-                      "Waiting 15 seconds before next final call..."
+                      "Waiting 30 seconds before next final call..."
                   )
 
-                  time.sleep(15)
+                  time.sleep(30)
 
 
           # ============================================================
-          # FINAL OUTPUT
+          # SAVE OUTPUT
           # ============================================================
 
           os.makedirs(
@@ -1563,10 +1903,10 @@ jobs:
               candidates,
 
               "hard_filter_rejected":
-              rejected,
+              hard_rejected,
 
               "hard_filter_survivors":
-              survivors,
+              hard_survivors,
 
               "ai_judgements":
               judgements,
@@ -1576,6 +1916,7 @@ jobs:
 
               "final_shorts":
               final_shorts
+
           }
 
 
@@ -1594,7 +1935,7 @@ jobs:
 
 
           # ============================================================
-          # MARKDOWN PACKAGES
+          # CREATE HUMAN-READABLE FILES
           # ============================================================
 
           for index, short in enumerate(
@@ -1664,26 +2005,26 @@ jobs:
 
 
           # ============================================================
-          # CONSOLE SUMMARY
+          # FINAL CONSOLE OUTPUT
           # ============================================================
 
           print("")
           print("==========================================")
-          print("QUIET VAULT — EVIDENCE BASED PIPELINE")
+          print("QUIET VAULT AI PIPELINE COMPLETE")
           print("==========================================")
 
           print(
-              "Candidates generated:",
+              "Candidates:",
               len(candidates)
           )
 
           print(
               "Hard-filter survivors:",
-              len(survivors)
+              len(hard_survivors)
           )
 
           print(
-              "Creative-gate finalists:",
+              "Creative finalists:",
               len(finalists)
           )
 
@@ -1705,17 +2046,15 @@ jobs:
 
           print("")
           print("==========================================")
-          print("PIPELINE COMPLETE")
-          print("==========================================")
-
 
           PY
+
 
           python generate.py
 
 
       # ============================================================
-      # UPLOAD ARTIFACT
+      # UPLOAD OUTPUT
       # ============================================================
 
       - name: Upload Quiet Vault Shorts
