@@ -8,13 +8,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      # ==========================================
+      # TEST GROQ
+      # ==========================================
       - name: Test Groq
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-          echo "=============================="
+          echo "================================"
           echo "TESTING GROQ"
-          echo "=============================="
+          echo "================================"
 
           python - <<'PY'
           import os
@@ -34,13 +38,12 @@ jobs:
                       "content": "Reply with exactly: GROQ_OK"
                   }
               ],
-              "max_tokens": 10,
-              "temperature": 0
+              "max_tokens": 10
           }
 
-          req = urllib.request.Request(
+          request = urllib.request.Request(
               url,
-              data=json.dumps(payload).encode(),
+              data=json.dumps(payload).encode("utf-8"),
               headers={
                   "Content-Type": "application/json",
                   "Authorization": f"Bearer {api_key}",
@@ -50,27 +53,40 @@ jobs:
           )
 
           try:
-              with urllib.request.urlopen(req, timeout=30) as response:
-                  data = json.loads(response.read().decode())
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  body = response.read().decode("utf-8")
+                  data = json.loads(body)
+
                   text = data["choices"][0]["message"]["content"].strip()
+
                   print("Groq HTTP:", response.status)
                   print("Groq response:", text)
                   print("GROQ_TEST_SUCCESS")
-          except urllib.error.HTTPError as e:
-              body = e.read().decode()
-              print("Groq HTTP ERROR:", e.code)
+
+          except urllib.error.HTTPError as error:
+              body = error.read().decode("utf-8")
+
+              print("Groq HTTP ERROR:", error.code)
               print("Groq response:", body)
-              raise
-          PY
+
+              # Do not stop the entire diagnostic.
+              print("GROQ_TEST_FAILED")
+
+          except Exception as error:
+              print("Groq unexpected error:", repr(error))
+              print("GROQ_TEST_FAILED")
 
 
+      # ==========================================
+      # TEST GEMINI
+      # ==========================================
       - name: Test Gemini
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          echo "=============================="
+          echo "================================"
           echo "TESTING GEMINI"
-          echo "=============================="
+          echo "================================"
 
           python - <<'PY'
           import os
@@ -80,11 +96,12 @@ jobs:
 
           api_key = os.environ["GEMINI_API_KEY"]
 
-          model = "gemini-2.5-flash-lite"
+          # CURRENT GEMINI MODEL
+          model = "gemini-3.5-flash-lite"
 
           url = (
-              f"https://generativelanguage.googleapis.com/"
-              f"v1beta/models/{model}:generateContent?key={api_key}"
+              "https://generativelanguage.googleapis.com/"
+              f"v1beta/models/{model}:generateContent"
           )
 
           payload = {
@@ -98,27 +115,31 @@ jobs:
                   }
               ],
               "generationConfig": {
-                  "maxOutputTokens": 10,
-                  "temperature": 0
+                  "maxOutputTokens": 10
               }
           }
 
-          req = urllib.request.Request(
+          request = urllib.request.Request(
               url,
-              data=json.dumps(payload).encode(),
+              data=json.dumps(payload).encode("utf-8"),
               headers={
                   "Content-Type": "application/json",
+                  "x-goog-api-key": api_key,
                   "User-Agent": "QuietVaultProviderTest/1.0"
               },
               method="POST"
           )
 
           try:
-              with urllib.request.urlopen(req, timeout=30) as response:
-                  data = json.loads(response.read().decode())
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  body = response.read().decode("utf-8")
+                  data = json.loads(body)
 
                   text = (
-                      data["candidates"][0]["content"]["parts"][0]["text"]
+                      data["candidates"][0]
+                      ["content"]
+                      ["parts"][0]
+                      ["text"]
                       .strip()
                   )
 
@@ -126,15 +147,26 @@ jobs:
                   print("Gemini response:", text)
                   print("GEMINI_TEST_SUCCESS")
 
-          except urllib.error.HTTPError as e:
-              body = e.read().decode()
-              print("Gemini HTTP ERROR:", e.code)
-              print("Gemini response:", body)
-              raise
-          PY
+          except urllib.error.HTTPError as error:
+              body = error.read().decode("utf-8")
 
+              print("Gemini HTTP ERROR:", error.code)
+              print("Gemini response:", body)
+              print("GEMINI_TEST_FAILED")
+
+          except Exception as error:
+              print("Gemini unexpected error:", repr(error))
+              print("GEMINI_TEST_FAILED")
+
+
+      # ==========================================
+      # FINISH
+      # ==========================================
       - name: Diagnostic Complete
         run: |
-          echo "=============================="
+          echo ""
+          echo "================================"
           echo "PROVIDER DIAGNOSTIC COMPLETE"
-          echo "=============================="
+          echo "================================"
+          echo "Both providers were tested."
+          echo "Check the two sections above."
