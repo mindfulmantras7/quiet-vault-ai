@@ -24,10 +24,6 @@ jobs:
           import urllib.error
 
 
-          # ============================================================
-          # CONFIG
-          # ============================================================
-
           API_KEY = os.environ["GROQ_API_KEY"]
 
           ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
@@ -36,11 +32,7 @@ jobs:
 
 
           # ============================================================
-          # GROQ REQUEST
-          #
-          # IMPORTANT:
-          # No json_schema is used anywhere.
-          # This avoids the repeated Groq 400 schema failures.
+          # GROQ
           # ============================================================
 
           def groq_request(
@@ -96,7 +88,6 @@ jobs:
                           content = content.strip()
 
 
-                          # Remove accidental markdown fences.
                           if content.startswith("```"):
 
                               content = re.sub(
@@ -166,19 +157,12 @@ jobs:
                       )
 
 
-                  except json.JSONDecodeError as e:
-
-                      print("")
-                      print("==========================================")
-                      print("INVALID JSON FROM GROQ")
-                      print("==========================================")
-                      print(str(e))
-                      print("==========================================")
+                  except json.JSONDecodeError:
 
                       if attempt < retries - 1:
 
                           print(
-                              "Retrying with a simpler request..."
+                              "Invalid JSON. Retrying..."
                           )
 
                           time.sleep(10)
@@ -194,214 +178,143 @@ jobs:
           # CREATIVE DNA
           # ============================================================
 
-          CREATIVE_DNA = """
+          DNA = """
 
           THE QUIET VAULT
 
-          The channel creates short, realistic, cinematic horror.
+          Create realistic cinematic horror Shorts for adults.
 
-          Target length:
-          9-12 seconds.
+          Length: 9-12 seconds.
 
-          Audience:
-          Adults.
-
-          Characters:
           Fictional adults only.
 
-          ============================================================
-          WHAT OUR ACTUAL CHANNEL DATA TAUGHT US
-          ============================================================
+          The channel's strongest performance pattern has been:
 
-          Several previous Shorts showed strong replay behavior.
-
-          Some had average percentage viewed above 120% and even around
-          140%.
-
-          That means viewers who chose to watch often watched again.
-
-          The larger weakness was the initial scroll decision.
-
-          Therefore:
-
-          THE FIRST FRAME IS THE PRIMARY PRIORITY.
-
-          We need a video that makes someone stop scrolling BEFORE they
-          understand the complete story.
-
-          ============================================================
-          STRONG HISTORICAL PATTERN
-          ============================================================
-
-          The strongest concepts combined:
-
-          recognizable location
-
-          visible human situation
-
-          relationship context
-
+          immediate visual hook
+          +
+          visible human threat
+          +
           simple contradiction
-
-          short dialogue
-
-          second realization
-
+          +
+          second disturbing realization
+          +
           hard cut
 
-          ============================================================
-          FIRST FRAME RULE
-          ============================================================
+          The biggest historical weakness has been poor initial
+          scroll-stopping power.
 
-          Imagine frame 1 is shown as a completely silent photograph.
-
-          No narration.
-
-          No captions.
-
-          No sound.
-
-          No title.
-
-          No explanation.
-
-          The photograph itself must make the viewer think:
-
-          "Why is that person there?"
-
-          or
-
-          "Why is he/she holding that?"
-
-          or
-
-          "How is that possible?"
+          Therefore FRAME 1 is critical.
 
           ============================================================
-          GOOD FIRST FRAME
+          FRAME 1
           ============================================================
 
-          An unfamiliar adult is already sitting inside a private bedroom.
+          The viewer must see the wrong thing immediately.
 
-          A stranger is already inside a locked workplace.
+          Good:
 
-          An unfamiliar adult is holding a dead person's personal object.
+          unfamiliar adult already inside a private room
 
-          A stranger is visibly performing a private household routine.
+          stranger holding a deeply personal object
 
-          A stranger is calmly occupying a place they should not be.
+          stranger occupying a locked/private location
 
-          An adult is confronting another adult who knows something impossible.
+          stranger performing an intimate household action
 
-          ============================================================
-          BAD FIRST FRAME
-          ============================================================
+          adult intruder behaving as though everything is normal
 
-          Person walking.
+          Bad:
 
-          Person entering.
+          person walking
 
-          Person opening a door.
+          person entering
 
-          Person looking scared.
+          door opening
 
-          Empty room.
+          empty room
 
-          Dark hallway.
+          dark hallway
 
-          Normal dinner.
+          person looking frightened
 
-          Person looking at phone.
+          phone screen
 
-          Phone screen.
+          mysterious object alone
 
-          Mysterious object sitting by itself.
-
-          Atmospheric establishing shot.
+          atmospheric establishing shot
 
           ============================================================
-          HORROR MUST BE PHYSICAL
+          ENDING
           ============================================================
 
-          Prefer something physically visible:
+          THIS IS EXTREMELY IMPORTANT.
 
-          stranger
+          The final beat must make the situation WORSE.
 
-          possession
+          It must introduce NEW INFORMATION.
 
-          location
+          The ending must NOT merely explain the original contradiction.
 
-          action
+          Weak:
 
-          relationship
+          "I found your husband's watch."
 
-          confrontation
+          Strong:
 
-          The viewer should not need narration to discover that something
-          is wrong.
+          "Your husband gave me this yesterday."
 
-          ============================================================
-          CONTRADICTION
-          ============================================================
+          Weak:
 
-          Keep it extremely simple.
+          "I was here last night."
 
-          GOOD:
+          Strong:
 
-          "That watch belonged to my husband."
+          "I was here last night. Your wife let me in."
 
-          "I know."
+          Weak:
 
-          "He died three years ago."
+          "I know your private nickname."
 
-          "He gave it to me yesterday."
+          Strong:
 
-          BAD:
+          "I know your private nickname. He taught it to me."
 
-          complicated mythology
-
-          multiple timelines
-
-          elaborate supernatural rules
-
-          long explanation
+          The ending should make the viewer mentally reinterpret
+          the first frame.
 
           ============================================================
-          SECOND REALIZATION
+          RELATIONSHIPS
           ============================================================
 
-          The ending must add a NEW disturbing fact.
+          husband/wife
 
-          Not simply:
+          adult siblings
 
-          "It was a ghost."
+          close friends
 
-          Better:
+          roommates
 
-          The stranger knows a private detail.
+          neighbors
 
-          The stranger reveals they were there earlier.
+          colleagues
 
-          The stranger possesses something impossible.
-
-          The stranger knows something only a missing/dead/private person
-          should know.
+          ex-partners
 
           ============================================================
-          FLOW FEASIBILITY
+          FLOW
           ============================================================
 
           One recognizable location.
 
-          2-3 adults maximum.
+          2-3 adults.
 
-          Simple physical movement.
+          Simple movement.
 
-          Realistic human faces.
+          Realistic faces.
 
           Realistic lighting.
 
-          No complicated VFX.
+          No complicated effects.
 
           ============================================================
           HARD BANS
@@ -449,7 +362,7 @@ jobs:
 
           zombies
 
-          ghosts as the explanation
+          ghosts
 
           gore
 
@@ -465,249 +378,108 @@ jobs:
 
           real-person likeness
 
-          ============================================================
+          text appearing inside the video
+
           """
 
 
           # ============================================================
-          # MECHANISM LIBRARY
+          # MECHANISMS
           # ============================================================
 
           MECHANISMS = [
 
-              {
-                  "id": 1,
-                  "name": "WRONG ACCESS",
-                  "rule":
-                  "An unfamiliar adult is already inside a private or locked "
-                  "place using something that should belong to the protagonist."
-              },
+              "Wrong Access: unfamiliar adult already inside a locked/private place",
 
-              {
-                  "id": 2,
-                  "name": "DEAD PERSON'S OBJECT",
-                  "rule":
-                  "A stranger visibly possesses an ordinary personal object "
-                  "belonging to someone the protagonist knows is dead."
-              },
+              "Dead Person's Object: stranger visibly possesses an object belonging to someone known to be dead",
 
-              {
-                  "id": 3,
-                  "name": "IMPOSSIBLE VISIT",
-                  "rule":
-                  "A stranger is already inside a familiar location and claims "
-                  "they visited earlier when access was impossible."
-              },
+              "Impossible Visit: stranger claims they were previously inside when access was impossible",
 
-              {
-                  "id": 4,
-                  "name": "PRIVATE MEMORY",
-                  "rule":
-                  "An unfamiliar adult reveals one extremely specific private "
-                  "event that only someone present could know."
-              },
+              "Private Memory: stranger knows an extremely specific private event",
 
-              {
-                  "id": 5,
-                  "name": "WRONG OWNER",
-                  "rule":
-                  "A stranger confidently claims a deeply personal possession "
-                  "and knows a detail proving unusual familiarity."
-              },
+              "Wrong Owner: stranger claims a deeply personal possession belongs to them",
 
-              {
-                  "id": 6,
-                  "name": "WRONG ROOM",
-                  "rule":
-                  "An adult is already inside a private room or workplace where "
-                  "they have no legitimate reason to be."
-              },
+              "Wrong Room: stranger is already inside a private bedroom, office or restricted room",
 
-              {
-                  "id": 7,
-                  "name": "IMPOSSIBLE INSTRUCTION",
-                  "rule":
-                  "An adult performs a specific ordinary action because someone "
-                  "who could not communicate with them supposedly instructed it."
-              },
+              "Impossible Instruction: adult performs a specific action because someone who could not communicate supposedly instructed it",
 
-              {
-                  "id": 8,
-                  "name": "UNWELCOME GUEST",
-                  "rule":
-                  "A stranger is already comfortably inside a familiar home "
-                  "and behaves as though the household expected them."
-              },
+              "Unwelcome Guest: stranger is comfortably inside a familiar home as though invited",
 
-              {
-                  "id": 9,
-                  "name": "IMPOSSIBLE RELATIONSHIP",
-                  "rule":
-                  "A stranger claims a close personal relationship that the "
-                  "protagonist knows cannot exist."
-              },
+              "Impossible Relationship: stranger claims a relationship that cannot exist",
 
-              {
-                  "id": 10,
-                  "name": "CONTRADICTORY CONVERSATION",
-                  "rule":
-                  "One adult refers to a private conversation that supposedly "
-                  "happened while the other adult was physically elsewhere."
-              },
+              "Contradictory Conversation: adult knows a conversation that supposedly happened while the other person was elsewhere",
 
-              {
-                  "id": 11,
-                  "name": "IMPOSSIBLE DELIVERY",
-                  "rule":
-                  "An adult delivers an ordinary item while claiming someone "
-                  "ordered it even though that person could not have done so."
-              },
+              "Impossible Delivery: delivery person brings something ordered by someone who could not order it",
 
-              {
-                  "id": 12,
-                  "name": "WRONG TIME",
-                  "rule":
-                  "A stranger knows they were physically present at a location "
-                  "at a time when access was impossible."
-              },
+              "Wrong Time: stranger knows they were physically present at an impossible time",
 
-              {
-                  "id": 13,
-                  "name": "FUTURE WARNING",
-                  "rule":
-                  "A stranger gives a specific warning about an event that "
-                  "has not happened yet."
-              },
+              "Future Warning: stranger knows a specific private event before it happens",
 
-              {
-                  "id": 14,
-                  "name": "PRIVATE NAME",
-                  "rule":
-                  "A stranger addresses the protagonist using an extremely "
-                  "private nickname almost nobody knows."
-              },
+              "Private Name: stranger knows an extremely private nickname",
 
-              {
-                  "id": 15,
-                  "name": "FAMILIAR ROUTINE",
-                  "rule":
-                  "A stranger performs a highly personal household routine "
-                  "belonging to someone close to the protagonist."
-              },
+              "Familiar Routine: stranger performs a personal routine belonging to someone close",
 
-              {
-                  "id": 16,
-                  "name": "OTHER WITNESS",
-                  "rule":
-                  "A stranger describes an event that supposedly happened while "
-                  "the protagonist was alone with another adult."
-              },
+              "Other Witness: stranger describes an event that supposedly happened while protagonist was alone with someone",
 
-              {
-                  "id": 17,
-                  "name": "WRONG DESTINATION",
-                  "rule":
-                  "A stranger arrives somewhere and says the protagonist "
-                  "personally sent them there."
-              },
+              "Wrong Destination: stranger arrives claiming protagonist sent them",
 
-              {
-                  "id": 18,
-                  "name": "IMPOSSIBLE FAMILIARITY",
-                  "rule":
-                  "A stranger moves around a home as if they have lived there "
-                  "before, knowing where personal things are kept."
-              },
+              "Impossible Familiarity: stranger knows exactly where private things are kept",
 
-              {
-                  "id": 19,
-                  "name": "PRIVATE PHYSICAL DETAIL",
-                  "rule":
-                  "A stranger knows a concealed physical detail about the "
-                  "home or workplace that nobody should know."
-              },
+              "Private Physical Detail: stranger knows a concealed detail about the location",
 
-              {
-                  "id": 20,
-                  "name": "CALM INTRUDER",
-                  "rule":
-                  "A visibly misplaced adult intruder behaves completely calmly "
-                  "and treats the frightened homeowner as though the homeowner "
-                  "is the strange one."
-              }
+              "Calm Intruder: intruder behaves as though the homeowner is the strange one"
 
           ]
 
 
           # ============================================================
-          # STAGE 1
+          # CANDIDATE GENERATION
           # ============================================================
 
           candidate_prompt = f"""
 
-          You are the concept architect for The Quiet Vault.
+          You are the horror concept architect for The Quiet Vault.
 
-          {CREATIVE_DNA}
+          {DNA}
 
-          Generate EXACTLY 10 horror concepts.
+          Generate EXACTLY 10 concepts.
 
-          Each must use a different mechanism.
+          Use a DIFFERENT mechanism for every concept.
 
-          MECHANISM LIBRARY:
+          Mechanisms:
 
           {json.dumps(MECHANISMS, indent=2)}
 
           ============================================================
-          CONCEPT REQUIREMENTS
+          MOST IMPORTANT REQUIREMENT
           ============================================================
 
-          Every concept must contain:
+          Build the ending FIRST.
 
-          - a recognizable location
-          - 2-3 fictional adults
-          - an immediately visible disturbing situation
-          - one simple contradiction
-          - a second realization at the end
+          Before writing the premise, imagine the final line.
 
-          ============================================================
-          STATIC FRAME 1
-          ============================================================
+          Ask:
 
-          Describe the actual frozen first video frame.
+          "What new fact could make the opening visual much worse?"
 
-          Do NOT describe something that happens later.
-
-          BAD:
-
-          "A woman opens the door and discovers a stranger."
-
-          GOOD:
-
-          "A woman stands in her bedroom doorway while an unfamiliar adult "
-          "man is already sitting on her bed holding her house keys."
+          The ending must materially change what the viewer thinks
+          is happening.
 
           ============================================================
-          DO NOT RELY ON
+          STATIC FIRST FRAME
           ============================================================
 
-          tiny text
+          Describe an actual frozen frame.
 
-          dates
+          The disturbing adult situation must already be visible.
 
-          phone screens
-
-          narration
-
-          sound
-
-          reflections
-
-          unseen entities
-
-          complicated supernatural explanations
+          Do not describe something that happens later.
 
           ============================================================
-          RETURN ONLY JSON
+          OUTPUT
+          ============================================================
+
+          Return:
 
           {{
             "candidates": [
@@ -722,6 +494,8 @@ jobs:
             ]
           }}
 
+          Return JSON only.
+
           """
 
 
@@ -731,8 +505,8 @@ jobs:
                   {
                       "role": "system",
                       "content":
-                      "You are a visual horror concept architect. "
-                      "Return valid JSON only."
+                      "You create visual horror concepts. "
+                      "Return JSON only."
                   },
 
                   {
@@ -742,8 +516,8 @@ jobs:
                   }
               ],
 
-              temperature=0.80,
-              max_tokens=5000
+              temperature=0.85,
+              max_tokens=5500
           )
 
 
@@ -764,59 +538,18 @@ jobs:
           )
 
 
-          # ============================================================
-          # STRUCTURAL VALIDATION
-          # ============================================================
-
-          required_candidate_fields = [
-
-              "id",
-              "mechanism_id",
-              "title",
-              "premise",
-              "static_frame_1",
-              "ending"
-
-          ]
-
-
-          valid_candidates = []
-
-
-          for candidate in candidates:
-
-              if not isinstance(
-                  candidate,
-                  dict
-              ):
-
-                  continue
-
-
-              if all(
-                  field in candidate
-                  for field in required_candidate_fields
-              ):
-
-                  valid_candidates.append(
-                      candidate
-                  )
-
-
-          candidates = valid_candidates[:10]
-
-
           if len(candidates) < 8:
 
               raise RuntimeError(
-                  "Fewer than 8 structurally valid candidates."
+                  "Fewer than 8 candidates returned."
               )
 
 
+          candidates = candidates[:10]
+
+
           # ============================================================
-          # HARD BANS ONLY
-          #
-          # NO subjective quality filter here.
+          # HARD BANS
           # ============================================================
 
           banned_terms = [
@@ -857,7 +590,7 @@ jobs:
           ]
 
 
-          def find_banned(candidate):
+          def banned(candidate):
 
               text = " ".join([
 
@@ -872,44 +605,62 @@ jobs:
               for term in banned_terms:
 
                   if re.search(
-                      r"\b" +
-                      re.escape(term) +
-                      r"\b",
+                      r"\b" + re.escape(term) + r"\b",
                       text
                   ):
 
                       return term
-
 
               return None
 
 
           survivors = []
 
-          rejected = []
-
 
           for candidate in candidates:
 
-              banned = find_banned(
+              if not isinstance(
+                  candidate,
+                  dict
+              ):
+
+                  continue
+
+
+              required = [
+
+                  "id",
+                  "mechanism_id",
+                  "title",
+                  "premise",
+                  "static_frame_1",
+                  "ending"
+
+              ]
+
+
+              if not all(
+                  field in candidate
+                  for field in required
+              ):
+
+                  continue
+
+
+              bad = banned(
                   candidate
               )
 
 
-              if banned:
+              if bad:
 
-                  rejected.append({
-
-                      "id":
+                  print(
+                      "REJECTED:",
                       candidate["id"],
-
-                      "title":
                       candidate["title"],
-
-                      "reason":
-                      "banned mechanism: " + banned
-
-                  })
+                      "->",
+                      bad
+                  )
 
                   continue
 
@@ -919,31 +670,10 @@ jobs:
               )
 
 
-          print("")
-          print("==========================================")
-          print("HARD BAN FILTER")
-          print("==========================================")
-
           print(
-              "Survivors:",
+              "Hard-ban survivors:",
               len(survivors)
           )
-
-          print(
-              "Rejected:",
-              len(rejected)
-          )
-
-
-          for item in rejected:
-
-              print(
-                  "REJECTED:",
-                  item["id"],
-                  item["title"],
-                  "->",
-                  item["reason"]
-              )
 
 
           if len(survivors) < 5:
@@ -957,362 +687,575 @@ jobs:
           # WAIT
           # ============================================================
 
-          print("")
           print(
-              "Waiting 65 seconds before creative judge..."
+              "Waiting 65 seconds before judging..."
           )
 
           time.sleep(65)
 
 
           # ============================================================
-          # STAGE 2 — CREATIVE JUDGE
+          # JUDGE
           # ============================================================
 
-          judge_prompt = f"""
+          def judge_candidates(
+              concepts,
+              label
+          ):
 
-          You are the ruthless creative director for The Quiet Vault.
+              prompt = f"""
 
-          {CREATIVE_DNA}
+              You are the ruthless creative director for The Quiet Vault.
 
-          Judge EVERY candidate below.
+              {DNA}
 
-          Do not judge the wording.
+              Judge EVERY concept below.
 
-          Judge whether the ACTUAL VIDEO would work.
+              {json.dumps(concepts, indent=2, ensure_ascii=False)}
 
-          ============================================================
-          HOOK
-          ============================================================
+              ============================================================
+              SCORE EACH
+              ============================================================
 
-          Look only at static_frame_1.
+              hook:
+              Is frame 1 immediately disturbing?
 
-          Imagine it is a silent photograph.
+              visible_horror:
+              Is the disturbing human situation physically visible?
 
-          Score:
+              clarity:
+              Is the basic problem immediately understandable?
 
-          10 = immediately disturbing and scroll-stopping
+              ending:
+              Does the final beat introduce NEW disturbing information?
 
-          9 = extremely clear visual problem
+              flow:
+              Can Google Flow realistically generate it?
 
-          8 = clearly wrong and compelling
+              rewatch:
+              Does replay reveal another clue or make the first frame
+              more disturbing?
 
-          7 = interesting but requires context
+              originality:
+              Does it avoid our repeated mechanisms?
 
-          6 or below = weak
+              ============================================================
+              CRITICAL ENDING TEST
+              ============================================================
 
-          ============================================================
-          VISIBLE HORROR
-          ============================================================
+              Ask:
 
-          Is something disturbing physically visible?
+              "If I remove the ending, does the viewer lose a genuinely
+              new disturbing fact?"
 
-          10 = unmistakable
+              If NO:
 
-          8 = clearly visible
+              ending MUST be 6 or below.
 
-          7 or below = weak
+              Do not give 8 just because the ending sounds creepy.
 
-          Reject:
+              ============================================================
+              PASS
+              ============================================================
 
-          empty rooms
+              hook >= 8
 
-          mysterious objects alone
+              visible_horror >= 8
 
-          people merely looking scared
+              clarity >= 8
 
-          sound-only horror
+              ending >= 8
 
-          narration-only horror
+              flow >= 8
 
-          ============================================================
-          CLARITY
-          ============================================================
+              rewatch >= 7
 
-          Can an average viewer understand the basic problem quickly?
+              originality >= 7
 
-          ============================================================
-          ENDING
-          ============================================================
+              ============================================================
+              BE SELECTIVE
+              ============================================================
 
-          Does the ending create a second realization?
+              Do NOT give everything 8.
 
-          ============================================================
-          FLOW
-          ============================================================
+              A normal situation with creepy dialogue is not enough.
 
-          Can Google Flow realistically make this in 9-12 seconds?
+              A mysterious object is not enough.
 
-          ============================================================
-          REWATCH
-          ============================================================
+              A person merely looking frightened is not enough.
 
-          Does replay potentially reveal another clue?
+              Return JSON only:
 
-          ============================================================
-          ORIGINALITY
-          ============================================================
-
-          Avoid concepts that feel like:
-
-          generic ghost stories
-
-          generic mystery puzzles
-
-          date/timestamp tricks
-
-          paperwork puzzles
-
-          phone tricks
-
-          reflection tricks
-
-          doppelgänger stories
-
-          ============================================================
-          PASS
-          ============================================================
-
-          A concept should pass only if:
-
-          hook >= 8
-
-          visible_horror >= 8
-
-          clarity >= 8
-
-          ending >= 8
-
-          flow >= 8
-
-          rewatch >= 7
-
-          originality >= 7
-
-          ============================================================
-          IMPORTANT
-          ============================================================
-
-          Be selective.
-
-          Do not give every concept an 8.
-
-          We need genuine discrimination.
-
-          Return JSON:
-
-          {{
-            "judgements": [
               {{
-                "id": 1,
-                "hook": 8,
-                "visible_horror": 8,
-                "clarity": 8,
-                "ending": 8,
-                "flow": 8,
-                "rewatch": 7,
-                "originality": 7,
-                "pass": true,
-                "reason": "Short explanation."
+                "judgements": [
+                  {{
+                    "id": 1,
+                    "hook": 8,
+                    "visible_horror": 8,
+                    "clarity": 8,
+                    "ending": 8,
+                    "flow": 8,
+                    "rewatch": 7,
+                    "originality": 7,
+                    "pass": true,
+                    "reason": "..."
+                  }}
+                ]
               }}
-            ]
-          }}
 
-          CANDIDATES:
+              """
 
-          {json.dumps(
+
+              result = groq_request(
+
+                  [
+                      {
+                          "role": "system",
+                          "content":
+                          "You are a ruthless horror Shorts editor. "
+                          "Return JSON only."
+                      },
+
+                      {
+                          "role": "user",
+                          "content":
+                          prompt
+                      }
+                  ],
+
+                  temperature=0.15,
+                  max_tokens=5000
+              )
+
+
+              return result.get(
+                  "judgements",
+                  []
+              )
+
+
+          judgements = judge_candidates(
               survivors,
-              indent=2,
-              ensure_ascii=False
-          )}
-
-          """
-
-
-          judged = groq_request(
-
-              [
-                  {
-                      "role": "system",
-                      "content":
-                      "You are a ruthless horror Shorts creative director. "
-                      "Return valid JSON only."
-                  },
-
-                  {
-                      "role": "user",
-                      "content":
-                      judge_prompt
-                  }
-              ],
-
-              temperature=0.20,
-              max_tokens=4500
+              "initial"
           )
 
 
-          judgements = judged.get(
-              "judgements",
-              []
-          )
+          # ============================================================
+          # FIND PASSES
+          # ============================================================
+
+          judgement_map = {
+
+              int(j["id"]):
+              j
+
+              for j in judgements
+              if isinstance(j, dict)
+              and "id" in j
+
+          }
+
+
+          def passed(j):
+
+              try:
+
+                  return (
+
+                      int(j.get("hook", 0)) >= 8
+
+                      and int(j.get("visible_horror", 0)) >= 8
+
+                      and int(j.get("clarity", 0)) >= 8
+
+                      and int(j.get("ending", 0)) >= 8
+
+                      and int(j.get("flow", 0)) >= 8
+
+                      and int(j.get("rewatch", 0)) >= 7
+
+                      and int(j.get("originality", 0)) >= 7
+
+                  )
+
+              except Exception:
+
+                  return False
+
+
+          finalists = [
+
+              c
+
+              for c in survivors
+
+              if int(c["id"]) in judgement_map
+              and passed(
+                  judgement_map[int(c["id"])]
+              )
+
+          ]
 
 
           print("")
           print("==========================================")
-          print("CREATIVE JUDGE")
+          print("INITIAL JUDGE")
           print("==========================================")
 
 
-          judgement_map = {}
-
-
-          for judgment in judgements:
-
-              if not isinstance(
-                  judgment,
-                  dict
-              ):
-
-                  continue
-
-
-              try:
-
-                  jid = int(
-                      judgment["id"]
-                  )
-
-                  judgement_map[jid] = judgment
-
-              except Exception:
-
-                  continue
-
+          for j in judgements:
 
               print(
 
                   "ID:",
-                  judgment.get("id"),
-
-                  "| PASS:",
-                  judgment.get("pass"),
+                  j.get("id"),
 
                   "| Hook:",
-                  judgment.get("hook"),
+                  j.get("hook"),
 
                   "| Horror:",
-                  judgment.get("visible_horror"),
+                  j.get("visible_horror"),
 
                   "| Clarity:",
-                  judgment.get("clarity"),
+                  j.get("clarity"),
 
                   "| Ending:",
-                  judgment.get("ending"),
+                  j.get("ending"),
 
                   "| Flow:",
-                  judgment.get("flow"),
+                  j.get("flow"),
 
                   "| Rewatch:",
-                  judgment.get("rewatch"),
+                  j.get("rewatch"),
 
                   "| Originality:",
-                  judgment.get("originality"),
+                  j.get("originality"),
+
+                  "| PASS:",
+                  passed(j),
 
                   "|",
-                  judgment.get("reason")
+                  j.get("reason")
 
               )
 
 
           # ============================================================
-          # PYTHON DECISION
-          #
-          # We do NOT blindly trust the model's "pass" field.
-          # We calculate pass from its scores.
+          # REPAIR IF FEWER THAN 3
           # ============================================================
 
-          finalists = []
+          if len(finalists) < 3:
+
+              print("")
+              print("==========================================")
+              print("REPAIR STAGE")
+              print("==========================================")
 
 
-          for candidate in survivors:
+              rejected_for_repair = [
 
-              judgment = judgement_map.get(
-                  int(candidate["id"])
-              )
+                  c
 
+                  for c in survivors
 
-              if not judgment:
-
-                  continue
-
-
-              try:
-
-                  hook = int(
-                      judgment.get("hook", 0)
+                  if int(c["id"]) in judgement_map
+                  and not passed(
+                      judgement_map[int(c["id"])]
                   )
 
-                  visible_horror = int(
-                      judgment.get("visible_horror", 0)
-                  )
-
-                  clarity = int(
-                      judgment.get("clarity", 0)
-                  )
-
-                  ending = int(
-                      judgment.get("ending", 0)
-                  )
-
-                  flow = int(
-                      judgment.get("flow", 0)
-                  )
-
-                  rewatch = int(
-                      judgment.get("rewatch", 0)
-                  )
-
-                  originality = int(
-                      judgment.get("originality", 0)
-                  )
-
-              except Exception:
-
-                  continue
-
-
-              if (
-
-                  hook >= 8
-
-                  and visible_horror >= 8
-
-                  and clarity >= 8
-
-                  and ending >= 8
-
-                  and flow >= 8
-
-                  and rewatch >= 7
-
-                  and originality >= 7
-
-              ):
-
-                  finalists.append(
-                      candidate
-                  )
-
-
-          # ============================================================
-          # RANK
-          # ============================================================
-
-          def candidate_score(candidate):
-
-              j = judgement_map[
-                  int(candidate["id"])
               ]
+
+
+              # Sort rejected concepts by overall potential.
+              # We want to repair concepts that were close to passing.
+
+              def repair_score(c):
+
+                  j = judgement_map[
+                      int(c["id"])
+                  ]
+
+
+                  return (
+
+                      int(j.get("hook", 0)) * 3
+
+                      + int(j.get("visible_horror", 0)) * 3
+
+                      + int(j.get("clarity", 0)) * 2
+
+                      + int(j.get("ending", 0)) * 4
+
+                      + int(j.get("flow", 0))
+
+                      + int(j.get("rewatch", 0))
+
+                      + int(j.get("originality", 0))
+
+                  )
+
+
+              rejected_for_repair.sort(
+                  key=repair_score,
+                  reverse=True
+              )
+
+
+              repair_pool = rejected_for_repair[:5]
+
+
+              print(
+                  "Concepts selected for repair:",
+                  len(repair_pool)
+              )
+
+
+              repair_prompt = f"""
+
+              You are repairing horror Shorts for The Quiet Vault.
+
+              {DNA}
+
+              The following concepts were close to passing but failed
+              the creative gate.
+
+              REJECTED CONCEPTS:
+
+              {json.dumps(
+                  repair_pool,
+                  indent=2,
+                  ensure_ascii=False
+              )}
+
+              THEIR JUDGEMENTS:
+
+              {json.dumps(
+                  [
+                      judgement_map[int(c["id"])]
+                      for c in repair_pool
+                  ],
+                  indent=2,
+                  ensure_ascii=False
+              )}
+
+              ============================================================
+              YOUR TASK
+              ============================================================
+
+              Repair each concept.
+
+              DO NOT completely replace the concept.
+
+              Keep:
+
+              location
+
+              main visible situation
+
+              basic mechanism
+
+              relationship
+
+              But fix the weakness.
+
+              ============================================================
+              MOST IMPORTANT
+              ============================================================
+
+              The ending must be substantially stronger.
+
+              It must introduce a new disturbing fact.
+
+              It must make the viewer reinterpret the first frame.
+
+              Do NOT simply explain what already happened.
+
+              ============================================================
+              FIRST FRAME
+              ============================================================
+
+              If hook was below 8, make the first frame more visually
+              disturbing.
+
+              The threat must already be visible.
+
+              ============================================================
+              OUTPUT
+
+              Return exactly:
+
+              {{
+                "repaired": [
+                  {{
+                    "id": 1,
+                    "mechanism_id": 1,
+                    "title": "...",
+                    "premise": "...",
+                    "static_frame_1": "...",
+                    "ending": "..."
+                  }}
+                ]
+              }}
+
+              Return JSON only.
+
+              """
+
+
+              repaired_result = groq_request(
+
+                  [
+                      {
+                          "role": "system",
+                          "content":
+                          "You repair weak horror concepts. "
+                          "Return JSON only."
+                      },
+
+                      {
+                          "role": "user",
+                          "content":
+                          repair_prompt
+                      }
+                  ],
+
+                  temperature=0.75,
+                  max_tokens=4500
+              )
+
+
+              repaired = repaired_result.get(
+                  "repaired",
+                  []
+              )
+
+
+              print(
+                  "Repaired concepts:",
+                  len(repaired)
+              )
+
+
+              if repaired:
+
+                  print(
+                      "Waiting 65 seconds before repair judging..."
+                  )
+
+                  time.sleep(65)
+
+
+                  repaired_judgements = judge_candidates(
+                      repaired,
+                      "repair"
+                  )
+
+
+                  repaired_map = {
+
+                      int(j["id"]):
+                      j
+
+                      for j in repaired_judgements
+                      if isinstance(j, dict)
+                      and "id" in j
+
+                  }
+
+
+                  print("")
+                  print("==========================================")
+                  print("REPAIR JUDGE")
+                  print("==========================================")
+
+
+                  for j in repaired_judgements:
+
+                      print(
+
+                          "ID:",
+                          j.get("id"),
+
+                          "| Hook:",
+                          j.get("hook"),
+
+                          "| Horror:",
+                          j.get("visible_horror"),
+
+                          "| Clarity:",
+                          j.get("clarity"),
+
+                          "| Ending:",
+                          j.get("ending"),
+
+                          "| Flow:",
+                          j.get("flow"),
+
+                          "| Rewatch:",
+                          j.get("rewatch"),
+
+                          "| Originality:",
+                          j.get("originality"),
+
+                          "| PASS:",
+                          passed(j),
+
+                          "|",
+                          j.get("reason")
+
+                      )
+
+
+                  for candidate in repaired:
+
+                      cid = int(
+                          candidate["id"]
+                      )
+
+
+                      if (
+
+                          cid in repaired_map
+
+                          and passed(
+                              repaired_map[cid]
+                          )
+
+                      ):
+
+                          finalists.append(
+                              candidate
+                          )
+
+
+          # ============================================================
+          # FINAL RANKING
+          # ============================================================
+
+          def total_score(c):
+
+              cid = int(
+                  c["id"]
+              )
+
+
+              j = judgement_map.get(
+                  cid
+              )
+
+
+              if not j:
+
+                  # repaired candidate
+                  # may use the repair map
+
+                  j = locals().get(
+                      "repaired_map",
+                      {}
+                  ).get(
+                      cid,
+                      {}
+                  )
 
 
               return (
@@ -1323,7 +1266,7 @@ jobs:
 
                   + int(j.get("clarity", 0)) * 2
 
-                  + int(j.get("ending", 0)) * 3
+                  + int(j.get("ending", 0)) * 5
 
                   + int(j.get("flow", 0))
 
@@ -1334,15 +1277,31 @@ jobs:
               )
 
 
+          # Remove duplicate IDs.
+
+          unique = {}
+
+          for candidate in finalists:
+
+              unique[
+                  int(candidate["id"])
+              ] = candidate
+
+
+          finalists = list(
+              unique.values()
+          )
+
+
           finalists.sort(
-              key=candidate_score,
+              key=total_score,
               reverse=True
           )
 
 
           print("")
           print("==========================================")
-          print("APPROVED FINALISTS")
+          print("FINALIST SELECTION")
           print("==========================================")
 
 
@@ -1350,8 +1309,8 @@ jobs:
 
               raise RuntimeError(
 
-                  "Fewer than 3 concepts passed the creative gate. "
-                  "The workflow stopped rather than filling slots with weak ideas."
+                  "Still fewer than 3 concepts passed after repair. "
+                  "Workflow stopped rather than manufacturing a weak Short."
 
               )
 
@@ -1361,19 +1320,11 @@ jobs:
 
           for candidate in finalists:
 
-              j = judgement_map[
-                  int(candidate["id"])
-              ]
-
-
               print(
-
                   candidate["id"],
                   candidate["title"],
-
                   "| score:",
-                  candidate_score(candidate)
-
+                  total_score(candidate)
               )
 
 
@@ -1390,23 +1341,17 @@ jobs:
 
 
           # ============================================================
-          # STAGE 3 — FINAL PRODUCTION
-          #
-          # ONE CALL FOR ALL THREE SHORTS.
+          # FINAL PRODUCTION
           # ============================================================
 
           final_prompt = f"""
 
           You are the senior production writer for The Quiet Vault.
 
-          Turn the three approved concepts below into three complete
-          YouTube Shorts.
+          Turn these three approved concepts into three complete
+          9-12 second YouTube Shorts.
 
-          DO NOT replace their underlying mechanisms.
-
-          ============================================================
-          APPROVED CONCEPTS
-          ============================================================
+          APPROVED CONCEPTS:
 
           {json.dumps(
               finalists,
@@ -1415,64 +1360,28 @@ jobs:
           )}
 
           ============================================================
-          EACH SHORT
+          RULES
           ============================================================
 
-          Length:
+          Preserve each concept's mechanism.
 
-          9-12 seconds.
+          Do not replace the story.
 
-          Format:
+          The first frame must already show the disturbing situation.
 
-          vertical 9:16.
+          One recognizable location.
 
-          Style:
+          2-3 fictional adults.
 
-          photorealistic live action.
+          Photorealistic live action.
 
-          Characters:
+          Vertical 9:16.
 
-          fictional adults only.
+          Natural movement.
 
-          Maximum:
+          Realistic lighting.
 
-          3 adults.
-
-          Location:
-
-          one recognizable location.
-
-          ============================================================
-          FIRST FRAME
-          ============================================================
-
-          The disturbing situation must already be visible in frame 1.
-
-          Do NOT begin with:
-
-          walking
-
-          entering
-
-          opening a door
-
-          establishing shot
-
-          empty room
-
-          normal conversation
-
-          ============================================================
-          STORY
-          ============================================================
-
-          Keep dialogue extremely short.
-
-          Approximately 35 spoken words maximum.
-
-          Prefer 2-4 short lines.
-
-          The visual should carry most of the story.
+          Maximum approximately 35 spoken words.
 
           ============================================================
           TIMING
@@ -1480,27 +1389,35 @@ jobs:
 
           0-3 seconds:
 
-          Show the disturbing situation immediately.
+          disturbing situation already visible.
 
           3-6 seconds:
 
-          Reveal the contradiction.
+          contradiction becomes clear.
 
           6-9/12 seconds:
 
-          Reveal the second disturbing fact.
+          NEW disturbing fact.
 
-          Final frame:
+          Final moment:
 
           hard cut.
 
           ============================================================
-          GOOGLE FLOW PROMPT
+          ENDING
           ============================================================
 
-          Write ONE complete Google Flow prompt for each Short.
+          The final line must NOT merely explain the first line.
 
-          It must explicitly describe:
+          It must make the situation worse.
+
+          ============================================================
+          GOOGLE FLOW
+          ============================================================
+
+          Provide one complete ready-to-paste Google Flow prompt.
+
+          Include:
 
           vertical 9:16
 
@@ -1508,23 +1425,21 @@ jobs:
 
           fictional adult characters
 
-          consistent character appearance
-
-          recognizable location
+          consistent appearance
 
           exact first frame
 
           camera framing
 
-          realistic lighting
+          location
 
-          natural human movement
+          lighting
 
-          0-3 seconds
+          0-3 second beat
 
-          3-6 seconds
+          3-6 second beat
 
-          6-9/12 seconds
+          6-9/12 second beat
 
           final reveal
 
@@ -1535,118 +1450,20 @@ jobs:
           no text overlays
 
           ============================================================
-          HARD BANS
-          ============================================================
-
-          No children.
-
-          No minors.
-
-          No babies.
-
-          No teenagers.
-
-          No mirrors.
-
-          No reflections.
-
-          No doppelgängers.
-
-          No twins.
-
-          No CCTV.
-
-          No elevators.
-
-          No hotels.
-
-          No trains.
-
-          No printers.
-
-          No phone-screen horror.
-
-          No video-call horror.
-
-          No empty-chair horror.
-
-          No monsters.
-
-          No demons.
-
-          No zombies.
-
-          No ghosts as the explanation.
-
-          No gore.
-
-          No blood.
-
-          No face distortion.
-
-          No body transformation.
-
-          No complicated CGI.
-
-          No celebrity likeness.
-
-          No real-person likeness.
-
-          No text rendered inside the generated video.
-
-          ============================================================
-          TITLE
-          ============================================================
-
-          Make the title curiosity-driven.
-
-          Prefer an unresolved contradiction.
-
-          ============================================================
-          DESCRIPTION
-          ============================================================
-
-          Short and natural.
-
-          ============================================================
-          KEYWORDS
-          ============================================================
-
-          Comma-separated.
-
-          ============================================================
-          HASHTAGS
-          ============================================================
-
-          Compact and relevant.
-
-          ============================================================
           THUMBNAIL
           ============================================================
 
-          Choose the strongest frame.
+          Select the strongest frame.
 
-          Give approximate timing.
+          Give approximate timestamp.
 
-          Thumbnail text:
-
-          maximum 3 words or NONE.
+          Maximum 3 words of thumbnail text or NONE.
 
           ============================================================
-          SOUND
+          OUTPUT
           ============================================================
 
-          Realistic subtle sound design.
-
-          ============================================================
-          PINNED COMMENT
-          ============================================================
-
-          One short curiosity question.
-
-          ============================================================
-          RETURN ONLY JSON
-          ============================================================
+          Return:
 
           {{
             "shorts": [
@@ -1667,14 +1484,38 @@ jobs:
               }},
               {{
                 "id": 2,
-                "...": "..."
+                "title": "...",
+                "short_script": "...",
+                "visual_hook": "...",
+                "flow_prompt": "...",
+                "final_twist": "...",
+                "description": "...",
+                "keywords": "...",
+                "hashtags": "...",
+                "thumbnail_frame": "...",
+                "thumbnail_text": "...",
+                "sound_design": "...",
+                "pinned_comment": "..."
               }},
               {{
                 "id": 3,
-                "...": "..."
+                "title": "...",
+                "short_script": "...",
+                "visual_hook": "...",
+                "flow_prompt": "...",
+                "final_twist": "...",
+                "description": "...",
+                "keywords": "...",
+                "hashtags": "...",
+                "thumbnail_frame": "...",
+                "thumbnail_text": "...",
+                "sound_design": "...",
+                "pinned_comment": "..."
               }}
             ]
           }}
+
+          Return JSON only.
 
           """
 
@@ -1686,7 +1527,7 @@ jobs:
                       "role": "system",
                       "content":
                       "You are the senior production writer for "
-                      "The Quiet Vault. Return valid JSON only."
+                      "The Quiet Vault. Return JSON only."
                   },
 
                   {
@@ -1694,7 +1535,6 @@ jobs:
                       "content":
                       final_prompt
                   }
-
               ],
 
               temperature=0.55,
@@ -1708,19 +1548,8 @@ jobs:
           )
 
 
-          print("")
-          print("==========================================")
-          print("FINAL PRODUCTION")
-          print("==========================================")
-
-          print(
-              "Shorts returned:",
-              len(final_shorts)
-          )
-
-
           # ============================================================
-          # NORMALIZE FINAL OUTPUT
+          # NORMALIZE
           # ============================================================
 
           aliases = {
@@ -1737,9 +1566,6 @@ jobs:
               "script":
               "short_script",
 
-              "description_text":
-              "description",
-
               "thumb_frame":
               "thumbnail_frame",
 
@@ -1755,7 +1581,26 @@ jobs:
           }
 
 
-          normalized_shorts = []
+          normalized = []
+
+
+          required_final = [
+
+              "id",
+              "title",
+              "short_script",
+              "visual_hook",
+              "flow_prompt",
+              "final_twist",
+              "description",
+              "keywords",
+              "hashtags",
+              "thumbnail_frame",
+              "thumbnail_text",
+              "sound_design",
+              "pinned_comment"
+
+          ]
 
 
           for short in final_shorts:
@@ -1768,86 +1613,41 @@ jobs:
                   continue
 
 
-              # Normalize harmless field-name variations.
-
-              for old_key, new_key in aliases.items():
+              for old, new in aliases.items():
 
                   if (
 
-                      old_key in short
+                      old in short
 
-                      and new_key not in short
+                      and new not in short
 
                   ):
 
-                      short[new_key] = short[
-                          old_key
-                      ]
+                      short[new] = short[old]
 
 
-              required_final_fields = [
+              if all(
+                  field in short
+                  for field in required_final
+              ):
 
-                  "id",
-                  "title",
-                  "short_script",
-                  "visual_hook",
-                  "flow_prompt",
-                  "final_twist",
-                  "description",
-                  "keywords",
-                  "hashtags",
-                  "thumbnail_frame",
-                  "thumbnail_text",
-                  "sound_design",
-                  "pinned_comment"
-
-              ]
-
-
-              missing = [
-
-                  field
-
-                  for field in required_final_fields
-
-                  if field not in short
-
-              ]
-
-
-              if missing:
-
-                  print(
-
-                      "FINAL SHORT REJECTED:",
-                      short.get("id"),
-                      "missing:",
-                      missing
-
+                  normalized.append(
+                      short
                   )
 
-                  continue
 
-
-              normalized_shorts.append(
-                  short
-              )
-
-
-          final_shorts = normalized_shorts[:3]
+          final_shorts = normalized[:3]
 
 
           if len(final_shorts) < 3:
 
               raise RuntimeError(
-
-                  "Final production returned fewer than 3 valid Shorts."
-
+                  "Final writer returned fewer than 3 complete Shorts."
               )
 
 
           # ============================================================
-          # SAVE OUTPUT
+          # SAVE
           # ============================================================
 
           os.makedirs(
@@ -1858,9 +1658,6 @@ jobs:
 
           output = {
 
-              "creative_dna":
-              "Evidence-based Quiet Vault formula",
-
               "generated_candidates":
               candidates,
 
@@ -1870,10 +1667,20 @@ jobs:
               "hard_filter_survivors":
               survivors,
 
-              "ai_judgements":
+              "initial_judgements":
               judgements,
 
-              "approved_finalists":
+              "approved_initial":
+              [
+                  c
+                  for c in survivors
+                  if int(c["id"]) in judgement_map
+                  and passed(
+                      judgement_map[int(c["id"])]
+                  )
+              ],
+
+              "finalists":
               finalists,
 
               "final_shorts":
@@ -1897,7 +1704,7 @@ jobs:
 
 
           # ============================================================
-          # HUMAN-READABLE FILES
+          # MARKDOWN OUTPUT
           # ============================================================
 
           for index, short in enumerate(
@@ -1905,7 +1712,7 @@ jobs:
               start=1
           ):
 
-              markdown = f"""# THE QUIET VAULT — SHORT {index}
+              text = f"""# THE QUIET VAULT — SHORT {index}
 
           ## TITLE
 
@@ -1963,20 +1770,16 @@ jobs:
                   encoding="utf-8"
               ) as f:
 
-                  f.write(markdown)
+                  f.write(text)
 
-
-          # ============================================================
-          # FINAL LOG
-          # ============================================================
 
           print("")
           print("==========================================")
-          print("QUIET VAULT AI PIPELINE COMPLETE")
+          print("QUIET VAULT PIPELINE COMPLETE")
           print("==========================================")
 
           print(
-              "Candidates generated:",
+              "Candidates:",
               len(candidates)
           )
 
@@ -1986,7 +1789,19 @@ jobs:
           )
 
           print(
-              "Creative finalists:",
+              "Initial passes:",
+              len([
+                  c
+                  for c in survivors
+                  if int(c["id"]) in judgement_map
+                  and passed(
+                      judgement_map[int(c["id"])]
+                  )
+              ])
+          )
+
+          print(
+              "Finalists:",
               len(finalists)
           )
 
@@ -1995,19 +1810,14 @@ jobs:
               len(final_shorts)
           )
 
-          print("")
-
-          for index, short in enumerate(
-              final_shorts,
-              start=1
-          ):
+          for short in final_shorts:
 
               print(
-                  f"{index}. {short['title']}"
+                  "-",
+                  short["title"]
               )
 
           print("")
-          print("==========================================")
 
 
           PY
@@ -2015,10 +1825,6 @@ jobs:
 
           python generate.py
 
-
-      # ============================================================
-      # UPLOAD ARTIFACT
-      # ============================================================
 
       - name: Upload Quiet Vault Shorts
         uses: actions/upload-artifact@v4
