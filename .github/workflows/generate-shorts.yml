@@ -25,14 +25,10 @@ jobs:
           MODEL = "openai/gpt-oss-20b"
 
           # ============================================================
-          # FIXED HORROR LIBRARY
-          #
-          # Groq cannot invent the visual mechanism.
-          # It can only turn these into a short story.
+          # FIXED HORROR STORY LIBRARY
           # ============================================================
 
           SEEDS = [
-
               {
                   "id": 1,
                   "location": "apartment bedroom",
@@ -51,7 +47,6 @@ jobs:
                       "that she genuinely cannot remember."
                   )
               },
-
               {
                   "id": 2,
                   "location": "private office",
@@ -70,7 +65,6 @@ jobs:
                       "should know about."
                   )
               },
-
               {
                   "id": 3,
                   "location": "apartment kitchen",
@@ -89,7 +83,6 @@ jobs:
                       "been inside their home before."
                   )
               },
-
               {
                   "id": 4,
                   "location": "hospital room",
@@ -108,7 +101,6 @@ jobs:
                       "has never told anyone."
                   )
               },
-
               {
                   "id": 5,
                   "location": "restaurant private dining room",
@@ -127,7 +119,6 @@ jobs:
                       "where the husband was that night instead."
                   )
               },
-
               {
                   "id": 6,
                   "location": "apartment laundry room",
@@ -138,7 +129,7 @@ jobs:
                   ),
                   "mechanism": (
                       "The stranger says he found the wallet upstairs and has been waiting "
-                      specifically for its owner."
+                      "specifically for its owner."
                   ),
                   "payoff": (
                       "The stranger says the man's full name before the man introduces himself, "
@@ -148,7 +139,7 @@ jobs:
           ]
 
           # ============================================================
-          # GROQ API
+          # GROQ API FUNCTION
           # ============================================================
 
           def groq_call(messages, schema, max_tokens=2200, retries=5):
@@ -198,56 +189,65 @@ jobs:
 
                           return json.loads(content)
 
-                  except urllib.error.HTTPError as e:
+                  except urllib.error.HTTPError as error:
 
-                      body = e.read().decode(
+                      body = error.read().decode(
                           "utf-8",
                           errors="ignore"
                       )
 
-                      print(f"GROQ HTTP {e.code}: {body}")
+                      print(
+                          f"GROQ HTTP ERROR {error.code}: {body}"
+                      )
 
-                      if e.code == 429 and attempt < retries - 1:
+                      if error.code == 429 and attempt < retries - 1:
 
-                          retry_after = e.headers.get("retry-after")
+                          retry_after = error.headers.get(
+                              "retry-after"
+                          )
 
                           try:
-                              wait = max(
+                              wait_seconds = max(
                                   65,
                                   int(float(retry_after)) + 2
                               )
-                          except:
-                              wait = 65
+                          except Exception:
+                              wait_seconds = 65
 
                           print(
-                              f"Rate limit. Waiting {wait} seconds..."
+                              f"Rate limit detected. "
+                              f"Waiting {wait_seconds} seconds..."
                           )
 
-                          time.sleep(wait)
+                          time.sleep(wait_seconds)
                           continue
 
                       raise
 
-                  except Exception as e:
+                  except Exception as error:
 
-                      print(f"GROQ ERROR: {e}")
+                      print(
+                          f"GROQ ERROR: {error}"
+                      )
 
                       if attempt < retries - 1:
 
+                          print("Retrying in 10 seconds...")
                           time.sleep(10)
                           continue
 
                       raise
 
           # ============================================================
-          # STAGE 1 — CREATE STORY BLUEPRINTS
+          # STAGE 1 - GENERATE STORY BLUEPRINTS
           # ============================================================
 
-          seed_text = ""
+          seed_text_parts = []
 
           for seed in SEEDS:
 
-              seed_text += f"""
+              seed_text_parts.append(
+                  f"""
           SEED {seed['id']}
 
           LOCATION:
@@ -259,11 +259,12 @@ jobs:
           FIXED HORROR MECHANISM:
           {seed['mechanism']}
 
-          FIXED PAYOFF DIRECTION:
+          FIXED PAYOFF:
           {seed['payoff']}
-
-          ----------------------------------------
           """
+              )
+
+          seed_text = "\n".join(seed_text_parts)
 
           blueprint_schema = {
               "name": "quiet_vault_blueprints",
@@ -310,19 +311,21 @@ jobs:
           }
 
           generator_prompt = f"""
-          You write ultra-short realistic horror stories for YouTube Shorts.
+          You write ultra-short realistic cinematic horror stories
+          for YouTube Shorts.
 
-          IMPORTANT:
+          Create EXACTLY ONE story for each supplied seed.
 
-          The visual and horror mechanism are FIXED.
+          The visual, mechanism and payoff are already designed.
 
-          DO NOT invent a different horror mechanism.
+          DO NOT change the supplied mechanism.
 
-          DO NOT replace the stranger.
+          DO NOT invent a different horror concept.
 
-          DO NOT add another major character.
+          DO NOT remove the visible adult threat.
 
-          DO NOT add:
+          DO NOT introduce:
+
           - children
           - babies
           - minors
@@ -343,41 +346,42 @@ jobs:
           - blood
           - supernatural mythology
 
-          Write each story as exactly THREE spoken lines:
+          Each story must have exactly THREE short spoken lines:
 
           HOOK:
-          Immediately tells the viewer what is wrong.
+          Immediately establish what is wrong.
 
           MIDDLE:
-          Introduces the fixed contradiction.
+          Develop the fixed contradiction.
 
           ENDING:
-          Delivers the disturbing payoff.
+          Deliver the fixed disturbing payoff.
 
-          Total spoken content should be short enough for approximately
-          9–12 seconds.
+          Keep the complete spoken story approximately 25-50 words.
 
-          Do not explain the entire backstory.
+          Do not explain the backstory.
 
-          Do not use phrases like:
+          Do not add unnecessary characters.
+
+          Do not use:
           "little did she know"
           "what happened next"
           "you won't believe"
           "everything changed"
 
-          The horror must remain grounded.
+          Make the dialogue sound like a real person speaking.
 
-          MOST IMPORTANT:
-          Preserve the supplied mechanism and payoff direction.
+          The final line should make the viewer rethink the
+          situation shown in the first frame.
 
-          SEEDS:
+          FIXED SEEDS:
 
           {seed_text}
           """
 
           print("")
           print("==============================================")
-          print("STAGE 1: STORY BLUEPRINTS")
+          print("STAGE 1: GENERATING STORY BLUEPRINTS")
           print("==============================================")
 
           generated = groq_call(
@@ -385,8 +389,8 @@ jobs:
                   {
                       "role": "system",
                       "content": (
-                          "You are a concise cinematic horror writer. "
-                          "You follow fixed story mechanisms."
+                          "You are a concise realistic horror writer. "
+                          "Follow fixed story mechanisms exactly."
                       )
                   },
                   {
@@ -401,11 +405,11 @@ jobs:
           stories = generated["stories"]
 
           print(
-              f"Generated {len(stories)} story blueprints."
+              f"Groq returned {len(stories)} story blueprints."
           )
 
           # ============================================================
-          # RECONNECT EACH STORY TO ITS FIXED SEED
+          # CONNECT STORIES TO FIXED SEEDS
           # ============================================================
 
           seed_map = {
@@ -417,29 +421,32 @@ jobs:
 
           for story in stories:
 
-              sid = story.get("id")
+              story_id = story.get("id")
 
-              if sid not in seed_map:
+              if story_id not in seed_map:
                   continue
 
-              seed = seed_map[sid]
+              seed = seed_map[story_id]
 
               candidates.append({
-                  "id": sid,
+                  "id": story_id,
                   "title": story["title"].strip(),
                   "hook_line": story["hook_line"].strip(),
                   "middle_line": story["middle_line"].strip(),
                   "ending_line": story["ending_line"].strip(),
 
-                  # These NEVER come from Groq.
                   "location": seed["location"],
+
+                  # Python owns the visual.
                   "static_frame_1": seed["visual"],
+
                   "fixed_mechanism": seed["mechanism"],
+
                   "fixed_payoff": seed["payoff"]
               })
 
           # ============================================================
-          # OBJECTIVE FILTER ONLY
+          # OBJECTIVE FILTER
           # ============================================================
 
           banned_terms = [
@@ -471,12 +478,15 @@ jobs:
               "zombie",
               "gore",
               "blood",
-              "supernatural"
+              "supernatural",
+              "teleport",
+              "teleports",
+              "teleported"
           ]
 
           def contains_banned(text):
 
-              text = text.lower()
+              lowered = text.lower()
 
               for term in banned_terms:
 
@@ -486,91 +496,82 @@ jobs:
                       + r"(?![a-z])"
                   )
 
-                  if re.search(pattern, text):
+                  if re.search(pattern, lowered):
                       return True
 
               return False
 
-          clean = []
+          clean_candidates = []
 
           for candidate in candidates:
 
-              combined = " ".join([
-                  candidate["title"],
+              spoken_text = " ".join([
                   candidate["hook_line"],
                   candidate["middle_line"],
                   candidate["ending_line"]
               ])
 
-              if contains_banned(combined):
+              if contains_banned(spoken_text):
 
                   print(
-                      f"REJECT {candidate['id']}: "
-                      f"prohibited term"
+                      f"OBJECTIVE REJECT "
+                      f"{candidate['id']}: banned element"
                   )
 
                   continue
-
-              spoken = " ".join([
-                  candidate["hook_line"],
-                  candidate["middle_line"],
-                  candidate["ending_line"]
-              ])
 
               word_count = len(
-                  spoken.split()
+                  spoken_text.split()
               )
 
-              if word_count > 55:
+              if word_count > 50:
 
                   print(
-                      f"REJECT {candidate['id']}: "
-                      f"too many words ({word_count})"
+                      f"OBJECTIVE REJECT "
+                      f"{candidate['id']}: "
+                      f"{word_count} words"
                   )
 
                   continue
 
-              if word_count < 15:
+              if word_count < 20:
 
                   print(
-                      f"REJECT {candidate['id']}: "
-                      f"too few words ({word_count})"
+                      f"OBJECTIVE REJECT "
+                      f"{candidate['id']}: "
+                      f"only {word_count} words"
                   )
 
                   continue
 
-              clean.append(candidate)
+              clean_candidates.append(candidate)
 
           print("")
           print(
               f"After objective filtering: "
-              f"{len(clean)}"
+              f"{len(clean_candidates)}"
           )
 
-          if len(clean) < 3:
+          if len(clean_candidates) < 3:
 
               raise RuntimeError(
-                  "Fewer than 3 usable story blueprints remained."
+                  "Fewer than 3 usable story blueprints were generated."
               )
 
           # ============================================================
-          # SELECT FIRST THREE VALID STORIES
-          #
-          # No AI ranking.
-          # No AI quality score.
-          # No subjective gate.
+          # SELECT THREE
           # ============================================================
 
-          selected = clean[:3]
+          selected = clean_candidates[:3]
 
           print("")
           print("SELECTED STORIES:")
 
-          for item in selected:
+          for candidate in selected:
 
               print(
-                  f"{item['id']} - "
-                  f"{item['title']}"
+                  f"  {candidate['id']} - "
+                  f"{candidate['title']}"
               )
 
           # ============================================================
@@ -585,7 +586,7 @@ jobs:
           time.sleep(65)
 
           # ============================================================
-          # FINAL PACKAGE
+          # FINAL PACKAGE SCHEMA
           # ============================================================
 
           final_schema = {
@@ -662,6 +663,10 @@ jobs:
               }
           }
 
+          # ============================================================
+          # FINALIZE THREE SHORTS
+          # ============================================================
+
           final_outputs = []
 
           for index, candidate in enumerate(selected):
@@ -669,15 +674,16 @@ jobs:
               print("")
               print(
                   f"STAGE 2: FINALIZING "
-                  f"{index + 1}/3"
+                  f"{index + 1}/3 - "
+                  f"{candidate['title']}"
               )
 
               final_prompt = f"""
-          Create the final production package for one realistic
-          horror YouTube Short.
+          Create the final production package for this
+          realistic horror YouTube Short.
 
           ============================================================
-          FIXED STORY
+          STORY
           ============================================================
 
           TITLE:
@@ -693,7 +699,7 @@ jobs:
           {candidate['ending_line']}
 
           ============================================================
-          FIXED VISUAL
+          FIXED FIRST FRAME
           ============================================================
 
           {candidate['static_frame_1']}
@@ -711,113 +717,122 @@ jobs:
           {candidate['fixed_payoff']}
 
           ============================================================
-          SCRIPT REQUIREMENTS
+          SCRIPT
           ============================================================
 
-          Write a natural spoken script lasting approximately
-          9–12 seconds.
+          Write the final spoken script.
 
-          Keep it extremely concise.
+          Requirements:
 
-          Do not add new plot points.
-
-          Do not add another character.
-
-          Do not add mythology.
-
-          Do not explain the backstory.
-
-          The first spoken sentence must immediately establish
-          what is wrong.
-
-          The final sentence must deliver the payoff.
+          - approximately 9–12 seconds
+          - maximum 50 words
+          - natural spoken English
+          - immediate hook
+          - no exposition dump
+          - no unnecessary dialogue
+          - no new characters
+          - no new plot mechanism
+          - final sentence is the disturbing payoff
+          - hard cut immediately after the payoff
 
           ============================================================
-          GOOGLE FLOW
+          GOOGLE FLOW PROMPT
           ============================================================
 
-          Create ONE Google Flow-ready prompt.
+          Create ONE Google Flow-ready production prompt.
 
-          It must:
+          Requirements:
 
-          - be vertical 9:16
-          - be photorealistic live action
-          - use fictional adults only
-          - use no celebrity or real-person likeness
-          - preserve the exact first-frame composition
-          - show both adults clearly
-          - use realistic human movement
-          - use realistic lighting
-          - use cinematic but believable camera movement
-          - maintain character consistency
-          - contain no children
-          - contain no mirrors
-          - contain no reflections
-          - contain no CCTV
-          - contain no monsters
-          - contain no ghosts
-          - contain no gore
+          - vertical 9:16
+          - photorealistic live action
+          - fictional adults only
+          - no celebrity likeness
+          - no real-person likeness
+          - realistic human faces
+          - realistic movement
+          - realistic lighting
+          - cinematic but believable
+          - consistent characters
+          - preserve the exact first-frame situation
+          - no children
+          - no mirrors
+          - no reflections
+          - no CCTV
+          - no ghosts
+          - no monsters
+          - no gore
+          - no supernatural effects
 
-          EXACT FIRST FRAME:
+          The FIRST FRAME MUST BE:
 
           {candidate['static_frame_1']}
 
-          Do not replace this first frame.
+          Do not replace the first frame.
 
-          The visual progression should simply act out the
-          three spoken lines.
+          The remaining movement should simply act out
+          the supplied three-line story.
 
           ============================================================
-          THUMBNAIL
+          FINAL TWIST
           ============================================================
 
-          Choose the strongest frame.
-
-          Thumbnail text:
-          maximum 4 words.
-
-          Do not reveal the ending.
+          State the actual final reveal in one or two sentences.
 
           ============================================================
           DESCRIPTION
           ============================================================
 
-          Short natural YouTube description.
+          Write a short natural YouTube description.
 
           ============================================================
           KEYWORDS
           ============================================================
 
-          Comma-separated.
+          Give comma-separated search keywords.
 
           ============================================================
           HASHTAGS
           ============================================================
 
-          4–6 relevant hashtags.
+          Give 4-6 relevant hashtags.
 
           ============================================================
-          SOUND
+          THUMBNAIL
           ============================================================
 
-          Give simple cinematic sound cues.
+          Select the strongest frame from the sequence.
+
+          Give:
+
+          - exact moment/frame
+          - optional thumbnail text
+
+          Thumbnail text must be 2-4 words maximum.
+
+          Do NOT reveal the twist.
+
+          ============================================================
+          SOUND DESIGN
+          ============================================================
+
+          Give simple sound effects and music cues.
 
           ============================================================
           PINNED COMMENT
           ============================================================
 
-          Ask a question that encourages comments without revealing
-          the ending.
+          Ask a question that encourages comments
+          without revealing the ending.
           """
 
-              final = groq_call(
+              final_result = groq_call(
                   [
                       {
                           "role": "system",
                           "content": (
                               "You are the final production editor "
                               "for The Quiet Vault. "
-                              "Do not change the supplied story."
+                              "Preserve the supplied story and visual."
                           )
                       },
                       {
@@ -829,12 +844,12 @@ jobs:
                   max_tokens=1700
               )
 
-              final_outputs.append(final)
+              final_outputs.append(final_result)
 
               if index < len(selected) - 1:
 
                   print(
-                      "Waiting 12 seconds..."
+                      "Waiting 12 seconds before next package..."
                   )
 
                   time.sleep(12)
@@ -852,7 +867,7 @@ jobs:
               "output/quiet-vault-shorts.json",
               "w",
               encoding="utf-8"
-          ) as file:
+          ) as output_file:
 
               json.dump(
                   {
@@ -861,100 +876,114 @@ jobs:
                       ),
                       "shorts": final_outputs
                   },
-                  file,
+                  output_file,
                   ensure_ascii=False,
                   indent=2
               )
 
           # ============================================================
-          # SAVE HUMAN-READABLE FILE
+          # SAVE HUMAN-READABLE TEXT
           # ============================================================
 
           with open(
               "output/quiet-vault-shorts.txt",
               "w",
               encoding="utf-8"
-          ) as file:
+          ) as output_file:
 
               for number, short in enumerate(
                   final_outputs,
                   1
               ):
 
-                  file.write("=" * 70 + "\n")
-                  file.write(f"SHORT {number}\n")
-                  file.write("=" * 70 + "\n\n")
+                  output_file.write(
+                      "=" * 70 + "\n"
+                  )
 
-                  file.write(
+                  output_file.write(
+                      f"SHORT {number}\n"
+                  )
+
+                  output_file.write(
+                      "=" * 70 + "\n\n"
+                  )
+
+                  output_file.write(
                       "TITLE:\n"
                       + short["title"]
                       + "\n\n"
                   )
 
-                  file.write(
+                  output_file.write(
                       "SCRIPT:\n"
                       + short["short_script"]
                       + "\n\n"
                   )
 
-                  file.write(
+                  output_file.write(
                       "GOOGLE FLOW PROMPT:\n"
                       + short["flow_prompt"]
                       + "\n\n"
                   )
 
-                  file.write(
+                  output_file.write(
                       "FINAL TWIST:\n"
                       + short["final_twist"]
                       + "\n\n"
                   )
 
-                  file.write(
+                  output_file.write(
                       "DESCRIPTION:\n"
                       + short["description"]
                       + "\n\n"
                   )
 
-                  file.write(
+                  output_file.write(
                       "KEYWORDS:\n"
                       + short["keywords"]
                       + "\n\n"
                   )
 
-                  file.write(
+                  output_file.write(
                       "HASHTAGS:\n"
                       + short["hashtags"]
                       + "\n\n"
                   )
 
-                  file.write(
+                  output_file.write(
                       "THUMBNAIL FRAME:\n"
                       + short["thumbnail_frame"]
                       + "\n\n"
                   )
 
-                  file.write(
+                  output_file.write(
                       "THUMBNAIL TEXT:\n"
                       + short["thumbnail_text"]
                       + "\n\n"
                   )
 
-                  file.write(
+                  output_file.write(
                       "SOUND DESIGN:\n"
                       + short["sound_design"]
                       + "\n\n"
                   )
 
-                  file.write(
+                  output_file.write(
                       "PINNED COMMENT:\n"
                       + short["pinned_comment"]
                       + "\n\n"
+                  )
 
           print("")
           print("==============================================")
           print("QUIET VAULT AI GENERATION SUCCESS")
           print("==============================================")
-          print(f"Generated {len(final_outputs)} Shorts.")
+          print(
+              f"Generated {len(final_outputs)} Shorts."
+          )
+          print(
+              "Artifacts are ready."
+          )
           print("==============================================")
           PY
 
