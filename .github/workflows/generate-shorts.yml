@@ -21,17 +21,23 @@ jobs:
           import re
           import urllib.request
           import urllib.error
-          import time
 
           API_KEY = os.environ["GROQ_API_KEY"]
           ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
           MODEL = "openai/gpt-oss-20b"
 
+
           # ============================================================
-          # GROQ API HELPER
+          # GROQ API
           # ============================================================
 
-          def call_groq(messages, schema_name, schema, temperature=0.7, max_tokens=8000):
+          def call_groq(
+              messages,
+              schema_name,
+              schema,
+              temperature=0.7,
+              max_tokens=8000
+          ):
 
               base_payload = {
                   "model": MODEL,
@@ -43,7 +49,7 @@ jobs:
               }
 
               # --------------------------------------------------------
-              # ATTEMPT 1: STRICT JSON SCHEMA
+              # STRICT JSON SCHEMA
               # --------------------------------------------------------
 
               strict_payload = dict(base_payload)
@@ -58,11 +64,13 @@ jobs:
               }
 
               try:
+
                   print("")
                   print("Trying Groq strict JSON Schema...")
-                  print("")
 
-                  data = json.dumps(strict_payload).encode("utf-8")
+                  data = json.dumps(
+                      strict_payload
+                  ).encode("utf-8")
 
                   request = urllib.request.Request(
                       ENDPOINT,
@@ -75,10 +83,22 @@ jobs:
                       }
                   )
 
-                  with urllib.request.urlopen(request, timeout=180) as response:
+                  with urllib.request.urlopen(
+                      request,
+                      timeout=180
+                  ) as response:
+
                       body = response.read().decode("utf-8")
+
                       result = json.loads(body)
-                      content = result["choices"][0]["message"]["content"]
+
+                      content = result[
+                          "choices"
+                      ][0][
+                          "message"
+                      ][
+                          "content"
+                      ]
 
                       print("Strict JSON Schema succeeded.")
 
@@ -98,8 +118,6 @@ jobs:
                   print(error_body)
                   print("")
 
-                  # Continue to JSON Object Mode below.
-
               except Exception as e:
 
                   print("")
@@ -107,8 +125,9 @@ jobs:
                   print(str(e))
                   print("")
 
+
               # --------------------------------------------------------
-              # ATTEMPT 2: JSON OBJECT MODE FALLBACK
+              # JSON OBJECT FALLBACK
               # --------------------------------------------------------
 
               print("Trying Groq JSON Object Mode fallback...")
@@ -142,8 +161,16 @@ jobs:
                   ) as response:
 
                       body = response.read().decode("utf-8")
+
                       result = json.loads(body)
-                      content = result["choices"][0]["message"]["content"]
+
+                      content = result[
+                          "choices"
+                      ][0][
+                          "message"
+                      ][
+                          "content"
+                      ]
 
                       parsed = json.loads(content)
 
@@ -166,7 +193,7 @@ jobs:
                   print("")
 
                   raise RuntimeError(
-                      "Both Groq Structured Output and JSON Object Mode failed."
+                      "Both Groq output modes failed."
                   )
 
               except Exception as e:
@@ -180,27 +207,64 @@ jobs:
 
 
           # ============================================================
-          # STAGE 1 - GENERATE 12 CANDIDATES
+          # STAGE 1
+          # GENERATE 12 CANDIDATES
           # ============================================================
 
           candidate_schema = {
+
               "type": "object",
+
               "properties": {
+
                   "candidates": {
+
                       "type": "array",
+
                       "items": {
+
                           "type": "object",
+
                           "properties": {
-                              "id": {"type": "integer"},
-                              "title": {"type": "string"},
-                              "premise": {"type": "string"},
-                              "static_frame_1": {"type": "string"},
-                              "visual_anomaly": {"type": "string"},
-                              "escalation": {"type": "string"},
-                              "ending": {"type": "string"},
-                              "relationship_context": {"type": "string"},
-                              "flow_feasibility": {"type": "string"}
+
+                              "id": {
+                                  "type": "integer"
+                              },
+
+                              "title": {
+                                  "type": "string"
+                              },
+
+                              "premise": {
+                                  "type": "string"
+                              },
+
+                              "static_frame_1": {
+                                  "type": "string"
+                              },
+
+                              "visual_anomaly": {
+                                  "type": "string"
+                              },
+
+                              "escalation": {
+                                  "type": "string"
+                              },
+
+                              "ending": {
+                                  "type": "string"
+                              },
+
+                              "relationship_context": {
+                                  "type": "string"
+                              },
+
+                              "flow_feasibility": {
+                                  "type": "string"
+                              }
+
                           },
+
                           "required": [
                               "id",
                               "title",
@@ -212,221 +276,327 @@ jobs:
                               "relationship_context",
                               "flow_feasibility"
                           ],
+
                           "additionalProperties": False
                       }
                   }
               },
-              "required": ["candidates"],
+
+              "required": [
+                  "candidates"
+              ],
+
               "additionalProperties": False
           }
 
+
           generator_prompt = """
+
           You are the horror concept generator for The Quiet Vault.
 
           Return ONLY valid JSON matching the requested structure.
 
-          Generate exactly 12 DIFFERENT horror concepts.
+          Generate exactly 12 genuinely different horror concepts.
 
-          Every concept must work as a 9-12 second vertical YouTube Short.
+          TARGET:
+
+          Each concept must work as a 9-12 second YouTube Short.
 
           STYLE:
-          - photorealistic live-action
+
+          - photorealistic live action
           - realistic human situations
           - fictional adults only
           - recognizable everyday locations
           - cinematic but believable
           - minimal dialogue
           - visible threat or contradiction
+          - simple visual storytelling
 
-          MOST IMPORTANT RULE:
+          ============================================================
+          MOST IMPORTANT RULE
+          ============================================================
 
-          THE FIRST FRAME MUST ALREADY LOOK WRONG.
+          THE FIRST FRAME MUST ALREADY CONTAIN THE HORROR.
 
-          Imagine pausing the video at frame 1.
+          Imagine the video is paused at frame 1.
 
-          The viewer must immediately see something disturbing.
+          The viewer should immediately see a specific visual detail
+          that is wrong, threatening or impossible.
 
-          GOOD:
-
-          "A woman sits on her bed while the locked bedroom door behind her
-          is visibly being pushed inward by an adult hand."
+          DO NOT write a normal scene and then introduce the horror later.
 
           BAD:
 
-          "A woman sits in her bedroom and something strange happens later."
+          "A woman enters her apartment."
 
-          The static_frame_1 field must describe exactly what is visible
-          in the paused first frame.
+          GOOD:
 
-          DO NOT USE:
+          "A woman stands inside her apartment while the locked front
+          door is visibly being opened from the hallway by an adult hand."
 
-          elevators
-          cars
-          hotels
-          CCTV
-          security cameras
-          mirrors
-          reflections
-          doppelgangers
-          people hiding behind other people
-          printers
-          trains
-          floating objects
-          objects with faces
-          possessed objects
-          ghosts
-          demons
-          monsters
-          zombies
-          giant creatures
-          gore
-          disappearing people
-          reappearing people
-          teleportation
-          impossible anatomy
-          head distortion
-          random body parts
-          children
-          babies
-          minors
-          complicated mythology
-          long dialogue
+          BAD:
 
-          Prefer:
+          "A man works late in an office."
+
+          GOOD:
+
+          "A man sits at his desk while the closed office door directly
+          beside him is visibly being pushed inward from the other side."
+
+          STATIC_FRAME_1 must describe exactly what a paused screenshot
+          would show.
+
+          ============================================================
+          PREFERRED HORROR
+          ============================================================
+
+          Prefer realistic human-centered horror:
+
+          - someone being somewhere they should not be
+          - a locked/open contradiction
+          - an ordinary action happening incorrectly
+          - someone interacting with something that should be impossible
+          - a familiar person behaving subtly wrong
+          - an adult relationship creating emotional stakes
+          - a visible threat that requires no explanation
+
+          Useful relationships:
 
           - husband and wife
           - adult siblings
+          - adult parent and adult child
           - coworkers
           - friends
-          - adult parent and adult child
-          - ordinary homes
-          - offices
-          - bathrooms
-          - hospitals
-          - schools with adult staff
-          - shops
-          - apartment hallways
-          - stairwells
-          - workplaces
+          - roommates
 
-          Do not repeat the same horror mechanism.
+          Useful locations:
 
-          The ending should create a second realization.
+          - apartment
+          - house
+          - bedroom
+          - kitchen
+          - bathroom
+          - office
+          - hospital
+          - workplace
+          - stairwell
+          - hallway
+          - shop
+          - classroom
+          - warehouse
+          - basement
+          - public building
 
-          "Character screams" is NOT an ending.
+          ============================================================
+          HARD EXCLUSIONS
+          ============================================================
+
+          Do NOT use:
+
+          - elevators
+          - cars
+          - hotels
+          - CCTV
+          - security camera footage
+          - mirrors
+          - reflections
+          - doppelgangers
+          - clones
+          - people secretly hiding directly behind another person
+          - printers
+          - trains
+          - floating objects
+          - objects with faces
+          - possessed household objects
+          - ghosts
+          - demons
+          - monsters
+          - zombies
+          - giant creatures
+          - gore
+          - disappearing people
+          - reappearing people
+          - teleportation
+          - impossible anatomy
+          - head distortion
+          - random body parts
+          - complicated transformations
+          - elaborate mythology
+          - children
+          - babies
+          - minors
+
+          Do not repeat the same horror mechanism across candidates.
+
+          The ending must create a second realization.
+
+          "The character screams" is NOT a sufficient ending.
 
           All characters are fictional adults.
-          No celebrities.
-          No real-person likenesses.
           """
+
 
           generator_user = """
-          Generate exactly 12 candidate concepts now.
 
-          Make every concept visually understandable without narration.
+          Generate exactly 12 candidates.
 
-          Each candidate needs:
-          id
-          title
-          premise
-          static_frame_1
-          visual_anomaly
-          escalation
-          ending
-          relationship_context
-          flow_feasibility
+          Make them visually simple enough for Google Flow.
+
+          Every STATIC_FRAME_1 must be at least 15 words and must describe
+          a concrete paused image.
+
+          Do not use vague phrases such as:
+
+          "something scary is happening"
+          "something feels wrong"
+          "the scene is creepy"
+
+          Explain exactly what the camera sees.
           """
+
 
           candidates_data = call_groq(
               [
                   {
                       "role": "user",
-                      "content": generator_prompt
-                      + "\n\n"
-                      + generator_user
+                      "content":
+                          generator_prompt
+                          + "\n\n"
+                          + generator_user
                   }
               ],
               "quiet_vault_candidates",
               candidate_schema,
-              temperature=0.8,
+              temperature=0.85,
               max_tokens=9000
           )
 
-          candidates = candidates_data.get("candidates", [])
 
-          if not isinstance(candidates, list):
-              raise RuntimeError(
-                  "Groq did not return a candidates array."
-              )
+          candidates = candidates_data.get(
+              "candidates",
+              []
+          )
+
 
           print("")
           print("==========================================")
           print("CANDIDATE GENERATION")
           print("==========================================")
-          print("Generated:", len(candidates))
+          print(
+              "Generated:",
+              len(candidates)
+          )
+
 
           if len(candidates) < 8:
+
               raise RuntimeError(
-                  f"Only {len(candidates)} candidates generated."
+                  "Groq generated fewer than 8 candidates."
               )
 
 
           # ============================================================
-          # STAGE 2 - PYTHON HARD FILTER
+          # STAGE 2
+          # SMART HARD FILTER
           # ============================================================
 
-          banned_terms = [
+          # IMPORTANT:
+          # These are checked as WORDS/PHRASES, not loose substrings.
+          # This prevents "car" from matching "cart".
+
+          banned_phrases = [
+
+              # Locations / mechanisms
               "elevator",
-              "car",
-              "hotel",
+              "elevators",
               "cctv",
               "security camera",
+              "security-camera",
+              "hotel room",
+              "hotel hallway",
+
+              # Reflection mechanisms
               "mirror",
+              "mirrors",
               "reflection",
+              "reflections",
+
+              # Doppelganger mechanisms
               "doppelganger",
+              "doppelgängers",
               "doppelgänger",
-              "double of",
-              "behind her",
-              "behind him",
-              "behind the woman",
-              "behind the man",
+              "clone",
+              "cloned",
+
+              # Specific hidden-person mechanism
+              "hiding directly behind her",
+              "hiding directly behind him",
+              "hiding behind her",
+              "hiding behind him",
+              "person hidden behind her",
+              "person hidden behind him",
+
+              # Common failed concepts
               "printer",
               "empty chair",
-              "train",
+              "train carriage",
               "floating mug",
               "floating cup",
-              "cereal box",
+              "cereal box with a face",
               "object with a face",
               "face on the object",
               "possessed object",
+
+              # Supernatural creature concepts
               "ghost",
+              "ghosts",
               "demon",
+              "demons",
               "monster",
+              "monsters",
               "zombie",
+              "zombies",
               "giant creature",
-              "gore",
-              "decapitat",
+
+              # Transformation mechanisms
+              "teleport",
+              "teleportation",
+              "teleports",
+              "disappear and reappear",
+              "disappears and reappears",
+              "disappearing and reappearing",
               "head spins",
               "head turns 180",
-              "disappears",
-              "disappearing",
-              "reappears",
-              "reappearing",
-              "teleport",
-              "teleports",
-              "random hand",
+              "180-degree head",
               "random body part",
               "floating hand",
+              "floating head",
+
+              # Gore
+              "gore",
+              "decapitation",
+              "decapitated",
+
+              # Minors
               "child",
               "children",
               "kid",
+              "kids",
               "baby",
-              "minor"
+              "babies",
+              "minor",
+              "minors",
+              "teenager",
+              "teenagers"
           ]
 
-          weak_hook_phrases = [
+
+          weak_frame_phrases = [
+
               "everything looks normal",
               "nothing seems wrong",
+              "nothing looks wrong",
               "at first everything",
               "at first the scene",
               "the scene looks normal",
@@ -434,12 +604,14 @@ jobs:
               "normal scene",
               "later something",
               "eventually something",
-              "then something strange",
-              "something strange happens",
-              "something scary happens"
+              "then something strange happens",
+              "something strange happens later",
+              "something scary happens later"
           ]
 
+
           def normalize(text):
+
               return re.sub(
                   r"\s+",
                   " ",
@@ -447,83 +619,208 @@ jobs:
               ).strip()
 
 
+          def contains_banned_phrase(text):
+
+              text = normalize(text)
+
+              for phrase in banned_phrases:
+
+                  # Word-boundary matching for normal phrases.
+                  pattern = (
+                      r"(?<![a-z0-9])"
+                      + re.escape(phrase)
+                      + r"(?![a-z0-9])"
+                  )
+
+                  if re.search(
+                      pattern,
+                      text
+                  ):
+
+                      return phrase
+
+              return None
+
+
           def hard_reject(candidate):
 
-              frame = normalize(
-                  candidate.get("static_frame_1", "")
-              )
-
-              combined = normalize(
-                  " ".join(
-                      str(candidate.get(field, ""))
-                      for field in [
-                          "title",
-                          "premise",
-                          "static_frame_1",
-                          "visual_anomaly",
-                          "escalation",
-                          "ending"
-                      ]
+              title = normalize(
+                  candidate.get(
+                      "title",
+                      ""
                   )
               )
 
-              # Banned mechanisms
-              for term in banned_terms:
+              premise = normalize(
+                  candidate.get(
+                      "premise",
+                      ""
+                  )
+              )
 
-                  if term in combined:
-                      return True, "banned: " + term
+              frame = normalize(
+                  candidate.get(
+                      "static_frame_1",
+                      ""
+                  )
+              )
 
-              # Frame must be detailed enough
+              anomaly = normalize(
+                  candidate.get(
+                      "visual_anomaly",
+                      ""
+                  )
+              )
+
+              escalation = normalize(
+                  candidate.get(
+                      "escalation",
+                      ""
+                  )
+              )
+
+              ending = normalize(
+                  candidate.get(
+                      "ending",
+                      ""
+                  )
+              )
+
+              combined = " ".join(
+                  [
+                      title,
+                      premise,
+                      frame,
+                      anomaly,
+                      escalation,
+                      ending
+                  ]
+              )
+
+
+              # --------------------------------------------------------
+              # BANNED MECHANISM CHECK
+              # --------------------------------------------------------
+
+              banned = contains_banned_phrase(
+                  combined
+              )
+
+              if banned:
+
+                  return True, (
+                      "banned mechanism: "
+                      + banned
+                  )
+
+
+              # --------------------------------------------------------
+              # FIRST FRAME CHECK
+              # --------------------------------------------------------
+
               if len(frame.split()) < 15:
-                  return True, "frame too short"
 
-              # Frame cannot defer the hook
-              for phrase in weak_hook_phrases:
+                  return True, (
+                      "first frame description too short"
+                  )
+
+
+              for phrase in weak_frame_phrases:
 
                   if phrase in frame:
-                      return True, "weak first frame"
 
-              # Frame needs concrete visual nouns
-              visual_words = [
+                      return True, (
+                          "first frame defers horror"
+                      )
+
+
+              # --------------------------------------------------------
+              # FRAME MUST CONTAIN CONCRETE VISUAL LANGUAGE
+              # --------------------------------------------------------
+
+              # We intentionally do NOT use a tiny whitelist such as
+              # "door/man/woman/room".
+              #
+              # Instead, we check that the frame contains enough words
+              # describing physical things/actions.
+
+              concrete_visual_words = [
+
                   "door",
-                  "person",
-                  "man",
-                  "woman",
-                  "hand",
-                  "room",
+                  "doorway",
+                  "wall",
+                  "window",
                   "bed",
                   "desk",
+                  "table",
+                  "chair",
+                  "floor",
+                  "ceiling",
                   "hallway",
+                  "corridor",
+                  "stairs",
+                  "stairwell",
                   "bathroom",
                   "kitchen",
                   "office",
+                  "bedroom",
+                  "room",
+                  "apartment",
+                  "house",
                   "hospital",
-                  "stairs",
-                  "hall",
-                  "floor",
-                  "window",
-                  "chair",
-                  "phone",
-                  "bag",
-                  "coat",
-                  "shower",
-                  "sink",
-                  "closet",
-                  "gate",
                   "store",
                   "counter",
-                  "wall",
-                  "entrance"
+                  "sink",
+                  "shower",
+                  "closet",
+                  "locker",
+                  "bag",
+                  "coat",
+                  "phone",
+                  "laptop",
+                  "cup",
+                  "plate",
+                  "window",
+                  "handle",
+                  "lock",
+                  "key",
+                  "person",
+                  "man",
+                  "woman",
+                  "adult",
+                  "hand",
+                  "standing",
+                  "sitting",
+                  "kneeling",
+                  "opening",
+                  "closed",
+                  "locked",
+                  "holding",
+                  "gripping",
+                  "touching",
+                  "pushing",
+                  "pulling"
               ]
+
 
               visual_count = sum(
                   1
-                  for word in visual_words
-                  if word in frame
+                  for word in concrete_visual_words
+                  if re.search(
+                      r"(?<![a-z0-9])"
+                      + re.escape(word)
+                      + r"(?![a-z0-9])",
+                      frame
+                  )
               )
 
+
               if visual_count < 2:
-                  return True, "frame lacks visual specificity"
+
+                  return True, (
+                      "first frame lacks concrete visual detail"
+                  )
+
 
               return False, "passed"
 
@@ -531,33 +828,51 @@ jobs:
           survivors = []
           rejected = []
 
+
           for candidate in candidates:
 
-              reject, reason = hard_reject(candidate)
+              reject, reason = hard_reject(
+                  candidate
+              )
 
               if reject:
 
                   rejected.append(
                       {
-                          "id": candidate.get("id"),
-                          "title": candidate.get("title"),
-                          "reason": reason
+                          "id":
+                              candidate.get("id"),
+                          "title":
+                              candidate.get("title"),
+                          "reason":
+                              reason
                       }
                   )
 
               else:
 
-                  survivors.append(candidate)
+                  survivors.append(
+                      candidate
+                  )
 
 
           print("")
           print("==========================================")
           print("HARD FILTER")
           print("==========================================")
-          print("Survivors:", len(survivors))
-          print("Rejected:", len(rejected))
+
+          print(
+              "Survivors:",
+              len(survivors)
+          )
+
+          print(
+              "Rejected:",
+              len(rejected)
+          )
+
 
           for item in rejected:
+
               print(
                   "REJECTED:",
                   item["id"],
@@ -566,36 +881,92 @@ jobs:
                   item["reason"]
               )
 
+
+          # We expect most candidates to survive here.
+          # The AI judge is supposed to do the difficult creative filtering.
+
           if len(survivors) < 3:
+
+              print("")
+              print(
+                  "WARNING: fewer than 3 survivors."
+              )
+
+              print(
+                  "The hard filter will NOT automatically"
+                  " invent replacement concepts."
+              )
+
               raise RuntimeError(
-                  "Fewer than 3 concepts survived the hard filter."
+                  "Fewer than 3 concepts survived."
               )
 
 
           # ============================================================
-          # STAGE 3 - AI CREATIVE JUDGE
+          # STAGE 3
+          # AI CREATIVE JUDGE
           # ============================================================
 
           judge_schema = {
+
               "type": "object",
+
               "properties": {
+
                   "ranked_candidates": {
+
                       "type": "array",
+
                       "items": {
+
                           "type": "object",
+
                           "properties": {
-                              "id": {"type": "integer"},
-                              "frame_hook_score": {"type": "integer"},
-                              "visual_clarity_score": {"type": "integer"},
-                              "ending_score": {"type": "integer"},
-                              "flow_feasibility_score": {"type": "integer"},
-                              "originality_score": {"type": "integer"},
-                              "rewatch_score": {"type": "integer"},
-                              "overall_score": {"type": "integer"},
-                              "pass": {"type": "boolean"},
-                              "reason": {"type": "string"}
+
+                              "id": {
+                                  "type": "integer"
+                              },
+
+                              "frame_hook_score": {
+                                  "type": "integer"
+                              },
+
+                              "visual_clarity_score": {
+                                  "type": "integer"
+                              },
+
+                              "ending_score": {
+                                  "type": "integer"
+                              },
+
+                              "flow_feasibility_score": {
+                                  "type": "integer"
+                              },
+
+                              "originality_score": {
+                                  "type": "integer"
+                              },
+
+                              "rewatch_score": {
+                                  "type": "integer"
+                              },
+
+                              "overall_score": {
+                                  "type": "integer"
+                              },
+
+                              "pass": {
+                                  "type": "boolean"
+                              },
+
+                              "reason": {
+                                  "type": "string"
+                              }
+
                           },
+
                           "required": [
+
                               "id",
                               "frame_hook_score",
                               "visual_clarity_score",
@@ -606,43 +977,70 @@ jobs:
                               "overall_score",
                               "pass",
                               "reason"
+
                           ],
+
                           "additionalProperties": False
                       }
                   }
               },
-              "required": ["ranked_candidates"],
+
+              "required": [
+                  "ranked_candidates"
+              ],
+
               "additionalProperties": False
           }
 
+
           judge_prompt = """
+
           You are the STRICT creative director for The Quiet Vault.
 
           Return ONLY valid JSON.
 
-          Judge each supplied horror concept.
+          Judge every supplied horror concept.
 
-          Score every concept from 1 to 10.
+          ============================================================
+          SCORE 1-10
+          ============================================================
 
-          FRAME HOOK:
-          Does frame 1 itself show a disturbing visual?
+          FRAME HOOK
 
-          VISUAL CLARITY:
-          Can the viewer understand the problem without explanation?
+          Does the actual first frame already contain a visible anomaly,
+          threat or disturbing contradiction?
 
-          ENDING:
-          Does the ending create a second realization?
+          A normal-looking first frame followed by horror later scores LOW.
 
-          FLOW FEASIBILITY:
-          Can Google Flow realistically generate it?
+          VISUAL CLARITY
 
-          ORIGINALITY:
-          Does it avoid common short-form horror mechanisms?
+          Can a viewer understand what is wrong visually without
+          narration or reading text?
 
-          REWATCH:
-          Does the viewer have a reason to replay?
+          ENDING
 
-          PASS ONLY IF:
+          Does the ending create a second realization or disturbing
+          payoff?
+
+          FLOW FEASIBILITY
+
+          Can Google Flow realistically generate the scene coherently
+          in a 9-12 second photorealistic video?
+
+          ORIGINALITY
+
+          Does the mechanism feel different from common short-form
+          horror?
+
+          REWATCH
+
+          Does the viewer have a reason to replay the Short?
+
+          ============================================================
+          PASS RULE
+          ============================================================
+
+          Pass only if:
 
           frame_hook >= 7
           visual_clarity >= 7
@@ -654,17 +1052,16 @@ jobs:
 
           Be harsh.
 
-          A creepy written premise with a weak first frame must fail.
+          Do not reward a concept merely because the written premise
+          sounds creepy.
+
+          The first frame must work as a paused screenshot.
 
           Sort strongest to weakest.
 
-          Return:
-          id
-          all six scores
-          overall_score
-          pass
-          reason
+          Do not invent candidates.
           """
+
 
           judge_user = (
               judge_prompt
@@ -674,6 +1071,7 @@ jobs:
                   ensure_ascii=False
               )
           )
+
 
           judged_data = call_groq(
               [
@@ -688,81 +1086,137 @@ jobs:
               max_tokens=7000
           )
 
+
           ranked = judged_data.get(
               "ranked_candidates",
               []
           )
 
+
           if not ranked:
+
               raise RuntimeError(
                   "AI judge returned no candidates."
               )
 
+
           ranked = sorted(
               ranked,
-              key=lambda x: x.get(
-                  "overall_score",
-                  0
-              ),
+              key=lambda item:
+                  item.get(
+                      "overall_score",
+                      0
+                  ),
               reverse=True
           )
 
+
           passed = [
+
               item
               for item in ranked
               if item.get("pass") is True
+
           ]
 
-          if len(passed) < 3:
-
-              print(
-                  "Fewer than 3 explicit passes."
-              )
-
-              passed = ranked[:3]
-
-
-          top_ids = [
-              item["id"]
-              for item in passed[:5]
-          ]
-
-          candidate_map = {
-              candidate["id"]: candidate
-              for candidate in survivors
-          }
-
-          finalists = [
-              candidate_map[item_id]
-              for item_id in top_ids
-              if item_id in candidate_map
-          ]
-
-          if len(finalists) < 3:
-              raise RuntimeError(
-                  "Could not construct 3 finalists."
-              )
 
           print("")
           print("==========================================")
-          print("AI JUDGE")
+          print("AI JUDGE RESULTS")
           print("==========================================")
+
 
           for item in ranked:
 
               print(
+
                   "ID:",
                   item["id"],
+
+                  "| Hook:",
+                  item["frame_hook_score"],
+
+                  "| Clarity:",
+                  item["visual_clarity_score"],
+
+                  "| Ending:",
+                  item["ending_score"],
+
+                  "| Flow:",
+                  item["flow_feasibility_score"],
+
+                  "| Originality:",
+                  item["originality_score"],
+
+                  "| Rewatch:",
+                  item["rewatch_score"],
+
                   "| Overall:",
                   item["overall_score"],
-                  "| Pass:",
+
+                  "| PASS:",
                   item["pass"]
+
               )
 
+
+          # If fewer than 3 explicitly pass, use the strongest
+          # judge-ranked candidates rather than failing the pipeline.
+
+          if len(passed) < 3:
+
+              print("")
+              print(
+                  "Fewer than 3 explicit passes."
+              )
+
+              print(
+                  "Using strongest judge-ranked survivors."
+              )
+
+              selected_ranked = ranked[:3]
+
+          else:
+
+              selected_ranked = passed[:5]
+
+
+          candidate_map = {
+
+              candidate["id"]:
+                  candidate
+
+              for candidate in survivors
+
+          }
+
+
+          finalists = [
+
+              candidate_map[item["id"]]
+
+              for item in selected_ranked
+
+              if item["id"] in candidate_map
+
+          ]
+
+
+          if len(finalists) < 3:
+
+              raise RuntimeError(
+                  "Could not create 3 finalists."
+              )
+
+
           print("")
-          print("FINALISTS:")
+          print("==========================================")
+          print("FINALISTS")
+          print("==========================================")
+
 
           for finalist in finalists:
+
               print(
                   finalist["id"],
                   finalist["title"]
@@ -770,30 +1224,74 @@ jobs:
 
 
           # ============================================================
-          # STAGE 4 - FINAL SHORT PACKAGE
+          # STAGE 4
+          # FINAL PACKAGE WRITER
           # ============================================================
 
           final_schema = {
+
               "type": "object",
+
               "properties": {
+
                   "shorts": {
+
                       "type": "array",
+
                       "items": {
+
                           "type": "object",
+
                           "properties": {
-                              "id": {"type": "integer"},
-                              "title": {"type": "string"},
-                              "short_script": {"type": "string"},
-                              "visual_hook": {"type": "string"},
-                              "flow_prompt": {"type": "string"},
-                              "final_twist": {"type": "string"},
-                              "description": {"type": "string"},
-                              "keywords": {"type": "string"},
-                              "hashtags": {"type": "string"},
-                              "thumbnail_frame": {"type": "string"},
-                              "thumbnail_text": {"type": "string"}
+
+                              "id": {
+                                  "type": "integer"
+                              },
+
+                              "title": {
+                                  "type": "string"
+                              },
+
+                              "short_script": {
+                                  "type": "string"
+                              },
+
+                              "visual_hook": {
+                                  "type": "string"
+                              },
+
+                              "flow_prompt": {
+                                  "type": "string"
+                              },
+
+                              "final_twist": {
+                                  "type": "string"
+                              },
+
+                              "description": {
+                                  "type": "string"
+                              },
+
+                              "keywords": {
+                                  "type": "string"
+                              },
+
+                              "hashtags": {
+                                  "type": "string"
+                              },
+
+                              "thumbnail_frame": {
+                                  "type": "string"
+                              },
+
+                              "thumbnail_text": {
+                                  "type": "string"
+                              }
+
                           },
+
                           "required": [
+
                               "id",
                               "title",
                               "short_script",
@@ -805,56 +1303,85 @@ jobs:
                               "hashtags",
                               "thumbnail_frame",
                               "thumbnail_text"
+
                           ],
+
                           "additionalProperties": False
                       }
                   }
               },
-              "required": ["shorts"],
+
+              "required": [
+                  "shorts"
+              ],
+
               "additionalProperties": False
           }
 
+
           final_prompt = """
+
           You are the final writer for The Quiet Vault.
 
           Return ONLY valid JSON.
 
-          Turn the selected concepts into exactly 3 complete YouTube Shorts packages.
+          Turn the selected finalists into exactly 3 complete YouTube
+          Shorts packages.
 
-          DO NOT invent a different concept.
+          DO NOT change the underlying concept.
 
-          Each Short:
+          ============================================================
+          SHORT FORMAT
+          ============================================================
 
-          - 9-12 seconds
-          - vertical 9:16
-          - photorealistic live action
-          - fictional adults
-          - realistic cinematic lighting
-          - natural movement
-          - no celebrity likeness
-          - no real-person likeness
-          - no children
-          - no gore
-          - no monsters
-          - no ghosts
-          - no mirrors
-          - no reflections
-          - no doppelgangers
+          9-12 seconds.
 
-          FIRST FRAME:
+          Vertical 9:16.
 
-          The first frame must immediately contain the visual anomaly
-          described in the selected candidate.
+          Photorealistic live action.
 
-          Do not begin with:
+          Fictional adults only.
+
+          Realistic cinematic lighting.
+
+          Natural human movement.
+
+          No celebrity likeness.
+
+          No real-person likeness.
+
+          No children.
+
+          No gore.
+
+          No monsters.
+
+          No ghosts.
+
+          No mirrors.
+
+          No reflections.
+
+          No doppelgangers.
+
+          ============================================================
+          FIRST FRAME
+          ============================================================
+
+          The first frame must immediately show the anomaly from the
+          selected finalist.
+
+          Do NOT start with:
 
           - establishing shots
           - empty rooms
           - normal scenes
-          - characters entering the location
+          - characters entering a location
           - slow reveals
 
-          GOOGLE FLOW PROMPT:
+          ============================================================
+          GOOGLE FLOW PROMPT
+          ============================================================
 
           Write ONE complete prompt ready to paste into Google Flow.
 
@@ -863,48 +1390,73 @@ jobs:
           - vertical 9:16
           - photorealistic live action
           - fictional adult characters
-          - character appearance consistency
+          - consistent character appearance
           - location
           - camera framing
-          - EXACT first frame
+          - exact first frame
           - 0-3 second action
           - 3-6 second escalation
           - 6-9/12 second reveal
           - hard cut or loop-friendly ending
           - no text overlays
-          - no subtitles unless dialogue is absolutely necessary
+          - no subtitles unless essential
 
-          SCRIPT:
+          The FIRST FRAME must match the finalist's
+          static_frame_1 description.
+
+          ============================================================
+          SCRIPT
+          ============================================================
 
           Keep dialogue extremely short.
 
-          The visual should carry the story.
+          Let the visuals tell the story.
 
-          DESCRIPTION:
+          ============================================================
+          DESCRIPTION
+          ============================================================
 
           Natural YouTube description.
 
-          KEYWORDS:
+          Do not keyword-stuff.
 
-          Comma-separated.
+          ============================================================
+          KEYWORDS
+          ============================================================
 
-          HASHTAGS:
+          Comma-separated relevant terms.
+
+          ============================================================
+          HASHTAGS
+          ============================================================
 
           Compact and relevant.
 
-          THUMBNAIL:
+          ============================================================
+          THUMBNAIL
+          ============================================================
 
-          Pick the strongest visual frame.
+          Choose the strongest visual frame.
+
+          Specify approximately when it occurs.
+
+          Thumbnail text should be short or empty.
           """
 
+
           final_user = (
+
               final_prompt
+
               + "\n\nSELECTED FINALISTS:\n"
+
               + json.dumps(
                   finalists[:5],
                   ensure_ascii=False
               )
+
           )
+
 
           final_data = call_groq(
               [
@@ -919,15 +1471,19 @@ jobs:
               max_tokens=12000
           )
 
+
           shorts = final_data.get(
               "shorts",
               []
           )
 
+
           if len(shorts) < 3:
+
               raise RuntimeError(
-                  f"Final writer returned only {len(shorts)} Shorts."
+                  "Final writer returned fewer than 3 Shorts."
               )
+
 
           shorts = shorts[:3]
 
@@ -941,13 +1497,26 @@ jobs:
               exist_ok=True
           )
 
+
           complete_output = {
-              "generated_candidates": candidates,
-              "hard_filter_rejected": rejected,
-              "hard_filter_survivors": survivors,
-              "ai_judgement": ranked,
-              "final_shorts": shorts
+
+              "generated_candidates":
+                  candidates,
+
+              "hard_filter_rejected":
+                  rejected,
+
+              "hard_filter_survivors":
+                  survivors,
+
+              "ai_judgement":
+                  ranked,
+
+              "final_shorts":
+                  shorts
+
           }
+
 
           with open(
               "quiet-vault-output/batch.json",
@@ -1005,6 +1574,7 @@ jobs:
           Text: {short['thumbnail_text']}
           """
 
+
               with open(
                   f"quiet-vault-output/short_{index:02d}.md",
                   "w",
@@ -1022,19 +1592,24 @@ jobs:
           print("==========================================")
           print("QUIET VAULT AI PIPELINE SUCCESS")
           print("==========================================")
+
           print(
               "Candidates generated:",
               len(candidates)
           )
+
           print(
               "Hard-filter survivors:",
               len(survivors)
           )
+
           print(
               "Final Shorts:",
               len(shorts)
           )
+
           print("==========================================")
+
 
           for index, short in enumerate(
               shorts,
@@ -1050,6 +1625,7 @@ jobs:
           PY
 
           python generate.py
+
 
       - name: Upload Quiet Vault output
         uses: actions/upload-artifact@v4
