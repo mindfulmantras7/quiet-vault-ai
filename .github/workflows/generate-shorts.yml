@@ -25,7 +25,7 @@ jobs:
           MODEL = "openai/gpt-oss-20b"
 
           # ============================================================
-          # FIXED HORROR STORY LIBRARY
+          # 20-MECHANISM HORROR LIBRARY
           # ============================================================
 
           SEEDS = [
@@ -34,53 +34,46 @@ jobs:
                   "location": "apartment bedroom",
                   "visual": (
                       "A fictional adult woman stands in her bedroom doorway. "
-                      "An unfamiliar adult man is already sitting openly on her bed, "
-                      "holding her house keys in one hand and a kitchen knife in the other. "
-                      "Both adults are clearly visible."
+                      "An unfamiliar adult man is sitting openly on her bed, holding her house keys "
+                      "in one hand and a kitchen knife in the other. Both adults are clearly visible."
                   ),
                   "mechanism": (
-                      "The stranger claims someone inside the apartment invited him "
-                      "and insists this is not his first visit."
+                      "The man calmly says her late husband invited him into the apartment."
                   ),
                   "payoff": (
-                      "The woman realizes the stranger knows about a previous visit "
-                      "that she genuinely cannot remember."
+                      "She says her husband died three years ago. The man answers that he knows, "
+                      "because the husband gave him the key the night before he died."
                   )
               },
               {
                   "id": 2,
-                  "location": "private office",
+                  "location": "apartment kitchen",
                   "visual": (
-                      "A fictional adult man stands inside his private office. "
-                      "An unfamiliar adult woman is seated in his desk chair, "
-                      "holding his access badge in one hand and large office scissors "
-                      "in the other. Both adults are fully visible."
+                      "A fictional adult couple stand together in their kitchen. "
+                      "An unfamiliar adult man is seated openly at their table, holding their apartment key. "
+                      "All three adults are clearly visible."
                   ),
                   "mechanism": (
-                      "The woman calmly claims she was sent to collect something "
-                      "the man has supposedly already handed over."
+                      "The stranger repeats one private sentence from an argument the couple had alone."
                   ),
                   "payoff": (
-                      "She names a private object and exact location that only the man "
-                      "should know about."
+                      "He then gives the exact time of the argument and asks why they stopped "
+                      "when someone knocked on the door."
                   )
               },
               {
                   "id": 3,
-                  "location": "apartment kitchen",
+                  "location": "private office",
                   "visual": (
-                      "A fictional adult couple stand together in their kitchen. "
-                      "An unfamiliar adult man is openly seated at their kitchen table, "
-                      "holding their apartment key and staring directly at them. "
-                      "All three adults are visible."
+                      "A fictional adult man stands inside his private office. "
+                      "An unfamiliar adult woman sits in his desk chair, holding his access badge "
+                      "and a pair of office scissors. Both adults are clearly visible."
                   ),
                   "mechanism": (
-                      "The stranger says one of the couple gave him the key earlier."
+                      "She says she was sent to collect an object hidden in his locked desk."
                   ),
                   "payoff": (
-                      "Both partners deny ever meeting him, but the stranger reveals "
-                      "one private detail about their relationship that proves he has "
-                      "been inside their home before."
+                      "She names the exact drawer and exact object inside it before he opens the drawer."
                   )
               },
               {
@@ -88,58 +81,264 @@ jobs:
                   "location": "hospital room",
                   "visual": (
                       "A fictional adult man enters a private hospital room. "
-                      "An unfamiliar adult man is already sitting beside the visitor chair, "
-                      "holding the patient's phone and staring directly at him. "
+                      "An unfamiliar adult man is already sitting beside the visitor chair, holding the patient's phone. "
                       "Both adults are clearly visible."
                   ),
                   "mechanism": (
-                      "The stranger says the patient asked him to deliver a message "
-                      "before the visitor arrived."
+                      "The stranger says the patient asked him to deliver a message before the visitor arrived."
                   ),
                   "payoff": (
-                      "The message contains a private sentence that the visitor "
-                      "has never told anyone."
+                      "The message contains a private sentence the visitor only said to the patient that morning."
                   )
               },
               {
                   "id": 5,
                   "location": "restaurant private dining room",
                   "visual": (
-                      "A fictional adult woman enters a private dining room where her husband "
-                      "is seated. An unfamiliar adult man is already sitting opposite the husband, "
-                      "holding the husband's wedding ring in his open palm. "
+                      "A fictional adult woman enters a private dining room. "
+                      "An unfamiliar adult man is seated opposite her husband, holding the husband's wedding ring. "
                       "All three adults are clearly visible."
                   ),
                   "mechanism": (
-                      "The stranger claims the husband left the ring with him "
-                      "during an earlier meeting."
+                      "The stranger says her husband left the ring with him during a meeting."
                   ),
                   "payoff": (
-                      "The husband denies meeting him, and the stranger casually states "
-                      "where the husband was that night instead."
+                      "Her husband denies meeting him, and the stranger names the exact restaurant "
+                      "where the husband claimed he was that night."
                   )
               },
               {
                   "id": 6,
-                  "location": "apartment laundry room",
+                  "location": "apartment hallway",
                   "visual": (
-                      "A fictional adult man opens the laundry room door. "
-                      "An unfamiliar adult man is already inside, holding the first man's wallet "
-                      "and standing near the only exit. Both adults are clearly visible."
+                      "A fictional adult woman has opened her apartment door. "
+                      "An unfamiliar adult man is already standing inside, holding a spare apartment key "
+                      "and a framed family photograph. Both adults are clearly visible."
                   ),
                   "mechanism": (
-                      "The stranger says he found the wallet upstairs and has been waiting "
-                      "specifically for its owner."
+                      "The stranger says he found the photograph inside the apartment before she moved in."
                   ),
                   "payoff": (
-                      "The stranger says the man's full name before the man introduces himself, "
-                      "then reveals something that was inside the wallet."
+                      "He points to a person in the photograph and gives a detail about that person's life "
+                      "that contradicts what she was told."
+                  )
+              },
+              {
+                  "id": 7,
+                  "location": "apartment study",
+                  "visual": (
+                      "A fictional adult man stands in his study. "
+                      "An unfamiliar adult woman is seated at the desk, holding a locked metal key box "
+                      "and looking directly at him. Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "She says he asked her to open the box and gives him the combination."
+                  ),
+                  "payoff": (
+                      "He never gave anyone the combination, yet it is the same private number he uses "
+                      "for an important personal date."
+                  )
+              },
+              {
+                  "id": 8,
+                  "location": "office conference room",
+                  "visual": (
+                      "A fictional adult woman enters an office conference room. "
+                      "An unfamiliar adult man is already seated at the table, holding a handwritten note "
+                      "with her name on it. Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "The man says the note was written by her and asks why she changed the last sentence."
+                  ),
+                  "payoff": (
+                      "She recognizes the handwriting, but she has not written the note yet."
+                  )
+              },
+              {
+                  "id": 9,
+                  "location": "apartment living room",
+                  "visual": (
+                      "A fictional adult man enters his living room. "
+                      "An unfamiliar adult woman is openly sitting in his chair, holding his wallet and a house key. "
+                      "Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "She says she was waiting for him because he called her from the apartment."
+                  ),
+                  "payoff": (
+                      "He checks his phone and sees a call from his own number while his phone is in his hand."
+                  )
+              },
+              {
+                  "id": 10,
+                  "location": "hospital waiting room",
+                  "visual": (
+                      "A fictional adult woman sits in a hospital waiting room. "
+                      "An unfamiliar adult man sits directly opposite her, holding her purse and a small knife. "
+                      "Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "He says she left the purse with him when she came through the hospital doors."
+                  ),
+                  "payoff": (
+                      "She has been holding the same purse the entire time and realizes the stranger has another one."
+                  )
+              },
+              {
+                  "id": 11,
+                  "location": "apartment dining room",
+                  "visual": (
+                      "A fictional adult couple stand beside their dining table. "
+                      "An unfamiliar adult woman is seated in their empty chair, holding a sealed envelope addressed to both of them. "
+                      "All three adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "The woman says the envelope was meant to be opened after their anniversary."
+                  ),
+                  "payoff": (
+                      "Their anniversary is six months away, but the envelope is dated tomorrow."
+                  )
+              },
+              {
+                  "id": 12,
+                  "location": "private office",
+                  "visual": (
+                      "A fictional adult man stands at his office doorway. "
+                      "An unfamiliar adult man is inside holding a personal photograph and a box cutter. "
+                      "Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "The stranger claims the photograph was taken inside the man's office."
+                  ),
+                  "payoff": (
+                      "The photograph shows the man asleep at his desk from inside the locked room."
+                  )
+              },
+              {
+                  "id": 13,
+                  "location": "apartment kitchen",
+                  "visual": (
+                      "A fictional adult woman stands in her kitchen. "
+                      "An unfamiliar adult man is openly standing beside the counter, holding a house key "
+                      "and a folded coat. Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "He says the coat belongs to her brother and that her brother asked him to return it."
+                  ),
+                  "payoff": (
+                      "She says her brother never owned that coat. The stranger then gives her the brother's private nickname."
+                  )
+              },
+              {
+                  "id": 14,
+                  "location": "restaurant corridor",
+                  "visual": (
+                      "A fictional adult man stands in a restaurant corridor. "
+                      "An unfamiliar adult woman is openly standing at a private-room door, holding a reservation card "
+                      "and a kitchen knife. Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "She says he reserved the room for the two of them."
+                  ),
+                  "payoff": (
+                      "He never made the reservation, but the card contains his handwriting and tomorrow's date."
+                  )
+              },
+              {
+                  "id": 15,
+                  "location": "apartment study",
+                  "visual": (
+                      "A fictional adult woman enters her study. "
+                      "An unfamiliar adult man is seated at her desk, holding an old cassette recorder and a key. "
+                      "Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "He says he brought back a recording she asked him to make."
+                  ),
+                  "payoff": (
+                      "The recording contains her voice describing the exact room she is standing in, "
+                      "but the recording is dated next week."
+                  )
+              },
+              {
+                  "id": 16,
+                  "location": "hospital corridor",
+                  "visual": (
+                      "A fictional adult man stands outside a hospital room. "
+                      "An unfamiliar adult woman is already standing beside the door, holding his missing wristwatch. "
+                      "Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "She says he gave her the watch earlier that evening."
+                  ),
+                  "payoff": (
+                      "He checks his wrist and realizes he is still wearing the same watch."
+                  )
+              },
+              {
+                  "id": 17,
+                  "location": "apartment entryway",
+                  "visual": (
+                      "A fictional adult woman stands inside her apartment entryway. "
+                      "An unfamiliar adult man is openly sitting on a bench, holding a handwritten note and a key. "
+                      "Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "He says the note tells him exactly when she will come home."
+                  ),
+                  "payoff": (
+                      "The note contains the exact time she entered the apartment and describes the clothes she is wearing now."
+                  )
+              },
+              {
+                  "id": 18,
+                  "location": "office break room",
+                  "visual": (
+                      "A fictional adult man enters an office break room. "
+                      "An unfamiliar adult woman is already seated at the table, holding his employee badge "
+                      "and a sealed lunch box. Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "She says he asked her to keep the lunch for him."
+                  ),
+                  "payoff": (
+                      "He opens it and finds a meal he ordered for tomorrow, including a note written in his own handwriting."
+                  )
+              },
+              {
+                  "id": 19,
+                  "location": "apartment bedroom",
+                  "visual": (
+                      "A fictional adult couple stand in their bedroom. "
+                      "An unfamiliar adult woman is openly seated on the edge of their bed, holding a framed photograph of the couple. "
+                      "All three adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "She says the photograph was taken during their first night in the apartment."
+                  ),
+                  "payoff": (
+                      "The couple has never seen the photograph, and the stranger identifies the exact date they moved in."
+                  )
+              },
+              {
+                  "id": 20,
+                  "location": "private office",
+                  "visual": (
+                      "A fictional adult woman enters her private office. "
+                      "An unfamiliar adult man is openly standing beside her desk, holding her office key and a sealed envelope. "
+                      "Both adults are clearly visible."
+                  ),
+                  "mechanism": (
+                      "He says she asked him to deliver the envelope after she finished reading another letter."
+                  ),
+                  "payoff": (
+                      "She has never met him, but the envelope contains the letter she is currently holding."
                   )
               }
           ]
 
           # ============================================================
-          # GROQ API FUNCTION
+          # GROQ API
           # ============================================================
 
           def groq_call(messages, schema, max_tokens=2200, retries=5):
@@ -182,10 +381,13 @@ jobs:
                           timeout=120
                       ) as response:
 
-                          raw = response.read().decode("utf-8")
-                          result = json.loads(raw)
+                          result = json.loads(
+                              response.read().decode("utf-8")
+                          )
 
-                          content = result["choices"][0]["message"]["content"]
+                          content = (
+                              result["choices"][0]["message"]["content"]
+                          )
 
                           return json.loads(content)
 
@@ -200,7 +402,10 @@ jobs:
                           f"GROQ HTTP ERROR {error.code}: {body}"
                       )
 
-                      if error.code == 429 and attempt < retries - 1:
+                      if (
+                          error.code == 429
+                          and attempt < retries - 1
+                      ):
 
                           retry_after = error.headers.get(
                               "retry-after"
@@ -232,22 +437,53 @@ jobs:
 
                       if attempt < retries - 1:
 
-                          print("Retrying in 10 seconds...")
+                          print(
+                              "Retrying in 10 seconds..."
+                          )
+
                           time.sleep(10)
                           continue
 
                       raise
 
           # ============================================================
-          # STAGE 1 - GENERATE STORY BLUEPRINTS
+          # ROTATE THROUGH THE 20-MECHANISM LIBRARY
           # ============================================================
 
-          seed_text_parts = []
+          run_number = int(
+              os.environ.get(
+                  "GITHUB_RUN_NUMBER",
+                  "1"
+              )
+          )
 
-          for seed in SEEDS:
+          start_index = (
+              ((run_number - 1) * 6)
+              % len(SEEDS)
+          )
 
-              seed_text_parts.append(
-                  f"""
+          selected_seeds = [
+              SEEDS[
+                  (start_index + offset)
+                  % len(SEEDS)
+              ]
+              for offset in range(6)
+          ]
+
+          print("")
+          print("==============================================")
+          print("QUIET VAULT - MECHANISM LIBRARY")
+          print("==============================================")
+
+          for seed in selected_seeds:
+
+              print(
+                  f"Seed {seed['id']}: "
+                  f"{seed['location']}"
+              )
+
+          seed_text = "\n\n".join(
+              f"""
           SEED {seed['id']}
 
           LOCATION:
@@ -256,15 +492,18 @@ jobs:
           FIXED VISUAL:
           {seed['visual']}
 
-          FIXED HORROR MECHANISM:
+          FIXED MECHANISM:
           {seed['mechanism']}
 
           FIXED PAYOFF:
           {seed['payoff']}
           """
-              )
+              for seed in selected_seeds
+          )
 
-          seed_text = "\n".join(seed_text_parts)
+          # ============================================================
+          # STORY BLUEPRINT SCHEMA
+          # ============================================================
 
           blueprint_schema = {
               "name": "quiet_vault_blueprints",
@@ -310,58 +549,45 @@ jobs:
               }
           }
 
+          # ============================================================
+          # GENERATE STORIES
+          # ============================================================
+
           generator_prompt = f"""
-          You write ultra-short realistic cinematic horror stories
-          for YouTube Shorts.
+          Write six ultra-short realistic cinematic horror Shorts.
 
-          Create EXACTLY ONE story for each supplied seed.
+          There is ONE story for each supplied seed.
 
-          The visual, mechanism and payoff are already designed.
+          The visual, mechanism and payoff are FIXED.
 
-          DO NOT change the supplied mechanism.
+          Do not replace them.
 
-          DO NOT invent a different horror concept.
+          Do not invent a different horror mechanism.
 
-          DO NOT remove the visible adult threat.
+          Do not remove the visible adult threat.
 
-          DO NOT introduce:
+          Do not introduce:
+          children, babies, minors, ghosts, demons, monsters,
+          mirrors, reflections, twins, doppelgangers, CCTV,
+          surveillance, elevators, cars, hotels, trains, gore,
+          blood, or supernatural mythology.
 
-          - children
-          - babies
-          - minors
-          - ghosts
-          - demons
-          - monsters
-          - mirrors
-          - reflections
-          - twins
-          - doppelgangers
-          - CCTV
-          - surveillance
-          - elevators
-          - cars
-          - hotels
-          - trains
-          - gore
-          - blood
-          - supernatural mythology
-
-          Each story must have exactly THREE short spoken lines:
+          Each story has exactly three spoken lines:
 
           HOOK:
-          Immediately establish what is wrong.
+          Immediately identify what is wrong.
 
           MIDDLE:
-          Develop the fixed contradiction.
+          Develop the supplied contradiction.
 
           ENDING:
-          Deliver the fixed disturbing payoff.
+          Deliver the supplied payoff.
 
-          Keep the complete spoken story approximately 25-50 words.
+          Total spoken words must be between 25 and 45 words.
 
-          Do not explain the backstory.
+          Do not add characters.
 
-          Do not add unnecessary characters.
+          Do not explain the entire backstory.
 
           Do not use:
           "little did she know"
@@ -369,19 +595,18 @@ jobs:
           "you won't believe"
           "everything changed"
 
-          Make the dialogue sound like a real person speaking.
+          The final line should be the disturbing realization.
 
-          The final line should make the viewer rethink the
-          situation shown in the first frame.
+          Keep the stories realistic.
 
-          FIXED SEEDS:
+          SEEDS:
 
           {seed_text}
           """
 
           print("")
           print("==============================================")
-          print("STAGE 1: GENERATING STORY BLUEPRINTS")
+          print("STAGE 1: GENERATING STORIES")
           print("==============================================")
 
           generated = groq_call(
@@ -390,7 +615,7 @@ jobs:
                       "role": "system",
                       "content": (
                           "You are a concise realistic horror writer. "
-                          "Follow fixed story mechanisms exactly."
+                          "Follow the fixed mechanism exactly."
                       )
                   },
                   {
@@ -405,16 +630,12 @@ jobs:
           stories = generated["stories"]
 
           print(
-              f"Groq returned {len(stories)} story blueprints."
+              f"Groq returned {len(stories)} stories."
           )
-
-          # ============================================================
-          # CONNECT STORIES TO FIXED SEEDS
-          # ============================================================
 
           seed_map = {
               seed["id"]: seed
-              for seed in SEEDS
+              for seed in selected_seeds
           }
 
           candidates = []
@@ -434,14 +655,9 @@ jobs:
                   "hook_line": story["hook_line"].strip(),
                   "middle_line": story["middle_line"].strip(),
                   "ending_line": story["ending_line"].strip(),
-
                   "location": seed["location"],
-
-                  # Python owns the visual.
                   "static_frame_1": seed["visual"],
-
                   "fixed_mechanism": seed["mechanism"],
-
                   "fixed_payoff": seed["payoff"]
               })
 
@@ -478,10 +694,7 @@ jobs:
               "zombie",
               "gore",
               "blood",
-              "supernatural",
-              "teleport",
-              "teleports",
-              "teleported"
+              "supernatural"
           ]
 
           def contains_banned(text):
@@ -496,7 +709,10 @@ jobs:
                       + r"(?![a-z])"
                   )
 
-                  if re.search(pattern, lowered):
+                  if re.search(
+                      pattern,
+                      lowered
+                  ):
                       return True
 
               return False
@@ -505,34 +721,24 @@ jobs:
 
           for candidate in candidates:
 
-              spoken_text = " ".join([
+              spoken = " ".join([
                   candidate["hook_line"],
                   candidate["middle_line"],
                   candidate["ending_line"]
               ])
 
-              if contains_banned(spoken_text):
+              if contains_banned(spoken):
 
                   print(
                       f"OBJECTIVE REJECT "
-                      f"{candidate['id']}: banned element"
+                      f"{candidate['id']}: banned content"
                   )
 
                   continue
 
               word_count = len(
-                  spoken_text.split()
+                  spoken.split()
               )
-
-              if word_count > 50:
-
-                  print(
-                      f"OBJECTIVE REJECT "
-                      f"{candidate['id']}: "
-                      f"{word_count} words"
-                  )
-
-                  continue
 
               if word_count < 20:
 
@@ -544,18 +750,30 @@ jobs:
 
                   continue
 
-              clean_candidates.append(candidate)
+              if word_count > 50:
+
+                  print(
+                      f"OBJECTIVE REJECT "
+                      f"{candidate['id']}: "
+                      f"{word_count} words"
+                  )
+
+                  continue
+
+              clean_candidates.append(
+                  candidate
+              )
 
           print("")
           print(
-              f"After objective filtering: "
+              f"Usable concepts: "
               f"{len(clean_candidates)}"
           )
 
           if len(clean_candidates) < 3:
 
               raise RuntimeError(
-                  "Fewer than 3 usable story blueprints were generated."
+                  "Fewer than 3 usable concepts were generated."
               )
 
           # ============================================================
@@ -565,7 +783,7 @@ jobs:
           selected = clean_candidates[:3]
 
           print("")
-          print("SELECTED STORIES:")
+          print("SELECTED:")
 
           for candidate in selected:
 
@@ -594,56 +812,43 @@ jobs:
               "schema": {
                   "type": "object",
                   "properties": {
-
                       "id": {
                           "type": "integer"
                       },
-
                       "title": {
                           "type": "string"
                       },
-
                       "short_script": {
                           "type": "string"
                       },
-
                       "flow_prompt": {
                           "type": "string"
                       },
-
                       "final_twist": {
                           "type": "string"
                       },
-
                       "description": {
                           "type": "string"
                       },
-
                       "keywords": {
                           "type": "string"
                       },
-
                       "hashtags": {
                           "type": "string"
                       },
-
                       "thumbnail_frame": {
                           "type": "string"
                       },
-
                       "thumbnail_text": {
                           "type": "string"
                       },
-
                       "sound_design": {
                           "type": "string"
                       },
-
                       "pinned_comment": {
                           "type": "string"
                       }
                   },
-
                   "required": [
                       "id",
                       "title",
@@ -658,7 +863,6 @@ jobs:
                       "sound_design",
                       "pinned_comment"
                   ],
-
                   "additionalProperties": False
               }
           }
@@ -669,7 +873,9 @@ jobs:
 
           final_outputs = []
 
-          for index, candidate in enumerate(selected):
+          for index, candidate in enumerate(
+              selected
+          ):
 
               print("")
               print(
@@ -679,12 +885,10 @@ jobs:
               )
 
               final_prompt = f"""
-          Create the final production package for this
-          realistic horror YouTube Short.
+          Create the final production package for this realistic
+          9–12 second horror YouTube Short.
 
-          ============================================================
-          STORY
-          ============================================================
+          FIXED STORY:
 
           TITLE:
           {candidate['title']}
@@ -698,22 +902,13 @@ jobs:
           ENDING:
           {candidate['ending_line']}
 
-          ============================================================
-          FIXED FIRST FRAME
-          ============================================================
-
+          FIXED FIRST FRAME:
           {candidate['static_frame_1']}
 
-          ============================================================
-          FIXED MECHANISM
-          ============================================================
-
+          FIXED MECHANISM:
           {candidate['fixed_mechanism']}
 
-          ============================================================
-          FIXED PAYOFF
-          ============================================================
-
+          FIXED PAYOFF:
           {candidate['fixed_payoff']}
 
           ============================================================
@@ -722,24 +917,27 @@ jobs:
 
           Write the final spoken script.
 
-          Requirements:
+          Maximum 45 words.
 
-          - approximately 9–12 seconds
-          - maximum 50 words
-          - natural spoken English
-          - immediate hook
-          - no exposition dump
-          - no unnecessary dialogue
-          - no new characters
-          - no new plot mechanism
-          - final sentence is the disturbing payoff
-          - hard cut immediately after the payoff
+          Keep the supplied three-part story.
+
+          Do not add characters.
+
+          Do not add plot points.
+
+          Do not explain the backstory.
+
+          The first sentence must immediately establish the problem.
+
+          The final sentence must be the disturbing payoff.
+
+          Cut immediately after the payoff.
 
           ============================================================
           GOOGLE FLOW PROMPT
           ============================================================
 
-          Create ONE Google Flow-ready production prompt.
+          Create ONE Google Flow-ready prompt.
 
           Requirements:
 
@@ -748,12 +946,12 @@ jobs:
           - fictional adults only
           - no celebrity likeness
           - no real-person likeness
-          - realistic human faces
+          - realistic faces
           - realistic movement
           - realistic lighting
-          - cinematic but believable
+          - believable cinematic camera
           - consistent characters
-          - preserve the exact first-frame situation
+          - preserve the exact first frame
           - no children
           - no mirrors
           - no reflections
@@ -763,14 +961,14 @@ jobs:
           - no gore
           - no supernatural effects
 
-          The FIRST FRAME MUST BE:
+          EXACT FIRST FRAME:
 
           {candidate['static_frame_1']}
 
-          Do not replace the first frame.
+          Do not replace this visual.
 
-          The remaining movement should simply act out
-          the supplied three-line story.
+          The rest of the clip should simply act out
+          the three supplied spoken lines.
 
           ============================================================
           FINAL TWIST
@@ -788,34 +986,33 @@ jobs:
           KEYWORDS
           ============================================================
 
-          Give comma-separated search keywords.
+          Give comma-separated relevant keywords.
 
           ============================================================
           HASHTAGS
           ============================================================
 
-          Give 4-6 relevant hashtags.
+          Give 4–6 relevant hashtags.
 
           ============================================================
           THUMBNAIL
           ============================================================
 
-          Select the strongest frame from the sequence.
+          Choose the strongest frame.
 
           Give:
-
-          - exact moment/frame
+          - exact moment
           - optional thumbnail text
 
-          Thumbnail text must be 2-4 words maximum.
+          Thumbnail text must be 2–4 words maximum.
 
-          Do NOT reveal the twist.
+          Do not reveal the twist.
 
           ============================================================
           SOUND DESIGN
           ============================================================
 
-          Give simple sound effects and music cues.
+          Give simple realistic sound cues.
 
           ============================================================
           PINNED COMMENT
@@ -831,8 +1028,8 @@ jobs:
                           "role": "system",
                           "content": (
                               "You are the final production editor "
-                              "for The Quiet Vault. "
-                              "Preserve the supplied story and visual."
+                              "for The Quiet Vault. Preserve the "
+                              "supplied story and visual."
                           )
                       },
                       {
@@ -844,18 +1041,20 @@ jobs:
                   max_tokens=1700
               )
 
-              final_outputs.append(final_result)
+              final_outputs.append(
+                  final_result
+              )
 
               if index < len(selected) - 1:
 
                   print(
-                      "Waiting 12 seconds before next package..."
+                      "Waiting 12 seconds..."
                   )
 
                   time.sleep(12)
 
           # ============================================================
-          # SAVE JSON
+          # SAVE OUTPUT
           # ============================================================
 
           os.makedirs(
@@ -880,10 +1079,6 @@ jobs:
                   ensure_ascii=False,
                   indent=2
               )
-
-          # ============================================================
-          # SAVE HUMAN-READABLE TEXT
-          # ============================================================
 
           with open(
               "output/quiet-vault-shorts.txt",
@@ -980,9 +1175,6 @@ jobs:
           print("==============================================")
           print(
               f"Generated {len(final_outputs)} Shorts."
-          )
-          print(
-              "Artifacts are ready."
           )
           print("==============================================")
           PY
