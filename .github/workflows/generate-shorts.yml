@@ -1,4 +1,4 @@
-name: Quiet Vault AI - V11 Visual Evidence Horror Engine
+name: Quiet Vault AI - V12 Fixed Horror Engine
 
 on:
   workflow_dispatch:
@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Generate 3 visual-evidence horror shorts
+      - name: Generate 3 fixed-mechanism horror shorts
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           RUN_NUMBER: ${{ github.run_number }}
@@ -32,176 +32,273 @@ jobs:
           OUT.mkdir(exist_ok=True)
 
           # ============================================================
-          # V11
+          # V12
           #
-          # HORROR = VISIBLE EVIDENCE
+          # PYTHON OWNS THE HORROR.
+          # GROQ ONLY NATURALIZES THE DIALOGUE.
           #
-          # The viewer should be able to SEE evidence of something
-          # impossible/disturbing before the final line explains it.
+          # Each mechanism contains:
+          #   - exact visual scene
+          #   - exact evidence
+          #   - exact reveal
+          #
+          # Groq is NOT allowed to change any of those.
           # ============================================================
 
           MECHANISMS = [
 
               {
                   "id": "future_note",
-                  "name": "THE NOTE ABOUT SOMETHING THAT HASN'T HAPPENED",
-                  "location": "realistic apartment home office at night",
-                  "visual": (
-                      "An adult woman enters her home office and sees an "
-                      "unfamiliar adult man sitting at her desk writing in "
-                      "her private notebook. The open page visibly contains "
-                      "her name and tomorrow's date, with a short unfinished "
-                      "sentence beneath it. His pen is actively touching the page."
+
+                  "title_seed": "The Note",
+
+                  "location": (
+                      "realistic apartment home office at night"
                   ),
-                  "evidence": (
-                      "The notebook visibly contains the protagonist's name "
-                      "and a future date while the stranger is writing it."
+
+                  "visual_scene": (
+                      "An adult woman opens her home office door. "
+                      "An unfamiliar adult man is already sitting at her desk, "
+                      "actively writing in her private notebook."
                   ),
-                  "ending": (
-                      "The stranger says she asked him to finish the sentence "
-                      "after she came home."
+
+                  "visible_evidence": (
+                      "The open notebook clearly shows the woman's name, "
+                      "tomorrow's date, and the beginning of a sentence. "
+                      "The stranger is holding the pen and writing."
+                  ),
+
+                  "reveal": (
+                      "The stranger says the woman asked him to finish "
+                      "the sentence after she came home tomorrow."
+                  ),
+
+                  "flow_action": (
+                      "The unfamiliar man must already be writing when "
+                      "the woman enters. The notebook must remain visible."
                   )
               },
 
               {
                   "id": "fresh_photo",
-                  "name": "THE PHOTOGRAPH TAKEN MOMENTS AGO",
-                  "location": "realistic apartment living room at night",
-                  "visual": (
-                      "An adult man enters his apartment and finds an unfamiliar "
-                      "adult woman holding a printed photograph. The photograph "
-                      "clearly shows the same man standing in the doorway he is "
-                      "standing in now, apparently photographed from inside the "
-                      "apartment moments earlier."
+
+                  "title_seed": "The Photograph",
+
+                  "location": (
+                      "realistic apartment living room at night"
                   ),
-                  "evidence": (
-                      "The printed photograph visibly shows the protagonist "
-                      "in the exact doorway and room where he currently stands."
+
+                  "visual_scene": (
+                      "An adult man enters his apartment and finds an "
+                      "unfamiliar adult woman holding a printed photograph."
                   ),
-                  "ending": (
-                      "The woman calmly says she took it after he opened the door."
+
+                  "visible_evidence": (
+                      "The photograph visibly shows the same man standing "
+                      "in the same doorway he is standing in now, photographed "
+                      "from inside the apartment."
+                  ),
+
+                  "reveal": (
+                      "The woman calmly says she took the photograph "
+                      "after he opened the door."
+                  ),
+
+                  "flow_action": (
+                      "The photograph must be large enough to recognize. "
+                      "The protagonist and the photograph must both remain visible."
                   )
               },
 
               {
-                  "id": "fresh_meal",
-                  "name": "THE MEAL PREPARED BEFORE HE ARRIVED",
-                  "location": "realistic apartment kitchen at night",
-                  "visual": (
-                      "An adult man enters his kitchen and finds an unfamiliar "
-                      "adult woman placing a freshly prepared meal on the table. "
-                      "The food is steaming and a place is already set specifically "
-                      "for him, including his distinctive mug."
+                  "id": "dead_watch",
+
+                  "title_seed": "Keep It Running",
+
+                  "location": (
+                      "realistic apartment bedroom at night"
                   ),
-                  "evidence": (
-                      "A fresh meal is visibly prepared for the protagonist "
-                      "before he has entered the kitchen."
+
+                  "visual_scene": (
+                      "An adult woman enters her bedroom and finds an "
+                      "unfamiliar adult man beside the bed."
                   ),
-                  "ending": (
-                      "She calmly says his wife told her exactly when he would arrive."
+
+                  "visible_evidence": (
+                      "The stranger is actively winding a distinctive "
+                      "mechanical wristwatch that belonged to the woman's "
+                      "late husband. The watch is visibly running."
+                  ),
+
+                  "reveal": (
+                      "The stranger says her husband asked him to keep "
+                      "the watch running until tonight."
+                  ),
+
+                  "flow_action": (
+                      "The stranger must visibly wind the watch in frame one. "
+                      "Keep the watch and both adults visible."
                   )
               },
 
               {
-                  "id": "freshly_used_item",
-                  "name": "THE PERSONAL ITEM THAT WAS JUST USED",
-                  "location": "realistic apartment bedroom",
-                  "visual": (
-                      "An adult woman enters her bedroom and sees an unfamiliar "
-                      "adult man placing her late husband's distinctive wristwatch "
-                      "back on the bedside table. The watch is visibly running and "
-                      "the man has just finished winding it."
+                  "id": "private_routine",
+
+                  "title_seed": "He Knew How",
+
+                  "location": (
+                      "realistic apartment kitchen at night"
                   ),
-                  "evidence": (
-                      "The late husband's distinctive mechanical watch is visibly "
-                      "running immediately after the stranger has handled it."
+
+                  "visual_scene": (
+                      "An adult woman enters her kitchen and finds an "
+                      "unfamiliar adult man preparing coffee."
                   ),
-                  "ending": (
-                      "He says her husband asked him to keep it running until tonight."
+
+                  "visible_evidence": (
+                      "He is following the woman's late husband's extremely "
+                      "specific coffee routine: the same distinctive mug, "
+                      "same coffee jar, and same measured spoonful."
+                  ),
+
+                  "reveal": (
+                      "The stranger says her husband taught him the routine "
+                      "yesterday."
+                  ),
+
+                  "flow_action": (
+                      "The stranger must already be performing the coffee "
+                      "routine in frame one. Keep the distinctive mug and "
+                      "coffee preparation visible."
                   )
               },
 
               {
-                  "id": "private_message",
-                  "name": "THE PRIVATE MESSAGE ALREADY WRITTEN",
-                  "location": "realistic apartment kitchen",
-                  "visual": (
-                      "An adult woman enters her kitchen and finds an unfamiliar "
-                      "adult man standing beside a sheet of paper on the counter. "
-                      "The paper visibly contains a private sentence that she has "
-                      "never told anyone, followed by the words 'I knew you would come home.'"
+                  "id": "private_notebook",
+
+                  "title_seed": "He Was Writing",
+
+                  "location": (
+                      "realistic apartment home office"
                   ),
-                  "evidence": (
-                      "The paper visibly contains a private fact and predicts "
-                      "the protagonist's arrival."
+
+                  "visual_scene": (
+                      "An adult woman enters her locked home office and "
+                      "finds an unfamiliar adult man writing in her private notebook."
                   ),
-                  "ending": (
-                      "The stranger says her husband wrote the first part and told him "
-                      "to add the second part when she arrived."
+
+                  "visible_evidence": (
+                      "The stranger is actively writing a private sentence "
+                      "that the woman has never told anyone."
+                  ),
+
+                  "reveal": (
+                      "The stranger says her husband told him exactly "
+                      "what to write."
+                  ),
+
+                  "flow_action": (
+                      "The writing action must already be happening in frame one. "
+                      "Keep the notebook open and visible."
                   )
               },
 
               {
-                  "id": "prepared_room",
-                  "name": "THE ROOM PREPARED BEFORE ARRIVAL",
-                  "location": "realistic apartment bedroom",
-                  "visual": (
-                      "An adult man enters his bedroom and finds an unfamiliar "
-                      "adult woman calmly placing his exact preferred pillow and "
-                      "blanket arrangement on the bed. A glass of water is already "
-                      "waiting beside the bed."
+                  "id": "prepared_bed",
+
+                  "title_seed": "Someone Prepared My Bed",
+
+                  "location": (
+                      "realistic apartment bedroom at night"
                   ),
-                  "evidence": (
-                      "The bedroom has visibly been prepared according to the "
-                      "protagonist's private bedtime routine before he arrived."
+
+                  "visual_scene": (
+                      "An adult man enters his bedroom and finds an "
+                      "unfamiliar adult woman calmly making his bed."
                   ),
-                  "ending": (
-                      "She says his wife told her he would want everything exactly this way."
+
+                  "visible_evidence": (
+                      "She has arranged the pillow, blanket and bedside glass "
+                      "exactly according to his late wife's unusual bedtime routine."
+                  ),
+
+                  "reveal": (
+                      "She says his wife showed her how to prepare the room "
+                      "yesterday."
+                  ),
+
+                  "flow_action": (
+                      "The woman must already be making the bed in frame one. "
+                      "The unusual arrangement must be visible."
                   )
               },
 
               {
-                  "id": "unfinished_action",
-                  "name": "THE STRANGER FINISHING AN ACTION BEFORE THE PROTAGONIST",
-                  "location": "realistic apartment entryway",
-                  "visual": (
-                      "An adult woman enters her apartment and sees an unfamiliar "
-                      "adult man calmly placing her keys into the small bowl where "
-                      "she always leaves them. He has already removed his shoes and "
-                      "placed them neatly beside the door."
+                  "id": "private_drawer",
+
+                  "title_seed": "She Put It Back",
+
+                  "location": (
+                      "realistic apartment bedroom"
                   ),
-                  "evidence": (
-                      "The stranger is visibly following the protagonist's exact "
-                      "private arrival routine despite supposedly never having been there."
+
+                  "visual_scene": (
+                      "An adult woman enters her bedroom and finds an "
+                      "unfamiliar adult man opening her bedside drawer."
                   ),
-                  "ending": (
-                      "He says she showed him the routine yesterday."
+
+                  "visible_evidence": (
+                      "He is actively placing her sentimental locket back "
+                      "into the exact hidden compartment where she keeps it."
+                  ),
+
+                  "reveal": (
+                      "He says he was putting it back where she told him "
+                      "it belonged."
+                  ),
+
+                  "flow_action": (
+                      "The drawer, locket, stranger's hand and protagonist "
+                      "must be visible. The stranger must be actively "
+                      "placing the locket inside."
                   )
               },
 
               {
-                  "id": "recent_presence",
-                  "name": "VISIBLE EVIDENCE SOMEONE WAS JUST THERE",
-                  "location": "realistic apartment dining room",
-                  "visual": (
-                      "An adult man enters his apartment dining room and finds an "
-                      "unfamiliar adult woman standing beside the table. One chair "
-                      "is pulled back, a second glass is still visibly wet with "
-                      "fresh condensation, and the woman is calmly holding a warm cup."
+                  "id": "future_arrival",
+
+                  "title_seed": "He Knew I Was Coming",
+
+                  "location": (
+                      "realistic apartment entryway at night"
                   ),
-                  "evidence": (
-                      "The table visibly shows signs that another person was just "
-                      "there moments before the protagonist arrived."
+
+                  "visual_scene": (
+                      "An adult man opens his apartment door and finds an "
+                      "unfamiliar adult woman inside, calmly finishing his "
+                      "usual arrival routine."
                   ),
-                  "ending": (
-                      "She says the other person only stepped out when she heard him "
-                      "unlock the door."
+
+                  "visible_evidence": (
+                      "She has already removed her shoes, placed his keys "
+                      "in his private key bowl, and switched on the exact "
+                      "light he always turns on when he comes home."
+                  ),
+
+                  "reveal": (
+                      "She says he showed her the routine yesterday."
+                  ),
+
+                  "flow_action": (
+                      "The stranger must already be completing the routine "
+                      "when the protagonist enters. Show the keys and bowl clearly."
                   )
               }
+
           ]
 
           # ============================================================
-          # HARD BANS
+          # BANNED CONTENT
           # ============================================================
 
           BANNED = [
@@ -216,10 +313,8 @@ jobs:
               "minor",
               "mirror",
               "reflection",
-              "reflect",
               "doppelganger",
               "doppelgäng",
-              "double",
               "twin",
               "clone",
               "ghost",
@@ -231,7 +326,6 @@ jobs:
               "corpse",
               "cctv",
               "surveillance",
-              "security camera",
               "elevator",
               "hotel",
               "train",
@@ -241,38 +335,43 @@ jobs:
               "phone screen",
               "shadow figure",
               "silhouette",
-              "disappear",
-              "vanish",
               "teleport",
-              "body distortion",
-              "face distortion",
-              "supernatural creature",
+              "magical",
               "magic",
-              "magical"
+              "body transformation"
           ]
 
           # ============================================================
           # GROQ
           # ============================================================
 
-          def call_groq(prompt, retries=3):
+          def groq(prompt, retries=3):
 
               payload = {
+
                   "model": MODEL,
-                  "temperature": 0.55,
-                  "max_completion_tokens": 700,
+
+                  "temperature": 0.5,
+
+                  "max_completion_tokens": 500,
+
                   "reasoning_effort": "low",
 
                   "response_format": {
                       "type": "json_schema",
+
                       "json_schema": {
-                          "name": "quiet_vault_v11",
+
+                          "name": "quiet_vault_v12",
+
                           "strict": True,
 
                           "schema": {
+
                               "type": "object",
 
                               "properties": {
+
                                   "title": {
                                       "type": "string"
                                   },
@@ -292,6 +391,7 @@ jobs:
                                   "hashtags": {
                                       "type": "string"
                                   }
+
                               },
 
                               "required": [
@@ -315,58 +415,63 @@ jobs:
                   ]
               }
 
-              body = json.dumps(payload).encode("utf-8")
+              body = json.dumps(payload).encode()
 
               for attempt in range(retries):
 
-                  request = urllib.request.Request(
+                  req = urllib.request.Request(
+
                       ENDPOINT,
+
                       data=body,
+
                       headers={
                           "Content-Type": "application/json",
                           "Authorization": "Bearer " + KEY,
-                          "User-Agent": "QuietVaultAI/11.0"
+                          "User-Agent": "QuietVaultAI/12.0"
                       },
+
                       method="POST"
                   )
 
                   try:
 
                       with urllib.request.urlopen(
-                          request,
+                          req,
                           timeout=90
                       ) as response:
 
                           data = json.loads(
-                              response.read().decode("utf-8")
+                              response.read().decode()
                           )
 
-                      content = data["choices"][0]["message"]["content"]
+                      content = (
+                          data["choices"][0]
+                          ["message"]["content"]
+                      )
 
                       if not content:
+
                           raise RuntimeError(
-                              "Groq returned empty content"
+                              "Empty Groq response"
                           )
 
                       return json.loads(content)
 
-                  except urllib.error.HTTPError as error:
+                  except urllib.error.HTTPError as e:
 
-                      error_text = error.read().decode(
+                      text = e.read().decode(
                           errors="ignore"
                       )
 
-                      if error.code == 429:
+                      if e.code == 429:
 
-                          retry_after = (
-                              error.headers.get("retry-after")
-                              or "20"
+                          wait = float(
+                              e.headers.get(
+                                  "retry-after",
+                                  "20"
+                              )
                           )
-
-                          try:
-                              wait = float(retry_after)
-                          except:
-                              wait = 20.0
 
                           print(
                               f"RATE LIMITED - waiting {wait:.1f}s"
@@ -378,17 +483,17 @@ jobs:
 
                           print(
                               "GROQ ERROR:",
-                              error.code,
-                              error_text[:1000]
+                              e.code,
+                              text[:1000]
                           )
 
                           time.sleep(5)
 
-                  except Exception as error:
+                  except Exception as e:
 
                       print(
-                          "GENERATION ERROR:",
-                          repr(error)
+                          "ERROR:",
+                          repr(e)
                       )
 
                       time.sleep(5)
@@ -396,50 +501,46 @@ jobs:
               return None
 
           # ============================================================
-          # VALIDATION
+          # LIGHT VALIDATION ONLY
+          #
+          # We deliberately do NOT validate mechanism keywords.
+          # Python already owns the mechanism.
           # ============================================================
 
-          def validate(short, mechanism):
+          def validate(result):
 
-              if not short:
-                  return False, "Empty response"
+              if not result:
 
-              required = [
+                  return False, "No response"
+
+              for field in [
                   "title",
                   "script",
                   "description",
                   "keywords",
                   "hashtags"
-              ]
-
-              for field in required:
+              ]:
 
                   if not isinstance(
-                      short.get(field),
+                      result.get(field),
                       str
                   ):
 
                       return False, (
-                          f"Missing {field}"
+                          "Missing " + field
                       )
 
-                  if not short[field].strip():
-
-                      return False, (
-                          f"Empty {field}"
-                      )
-
-              script = short["script"].strip()
+              script = result["script"].strip()
 
               words = script.split()
 
-              if len(words) < 28:
+              if len(words) < 22:
 
                   return False, (
                       f"Too short: {len(words)} words"
                   )
 
-              if len(words) > 65:
+              if len(words) > 70:
 
                   return False, (
                       f"Too long: {len(words)} words"
@@ -455,134 +556,8 @@ jobs:
                   ):
 
                       return False, (
-                          "Banned: " + banned
+                          "Banned content: " + banned
                       )
-
-              # ========================================================
-              # MECHANISM CUES
-              # ========================================================
-
-              cues = {
-
-                  "future_note": [
-                      "note",
-                      "notebook",
-                      "tomorrow",
-                      "date",
-                      "write",
-                      "writing"
-                  ],
-
-                  "fresh_photo": [
-                      "photo",
-                      "photograph",
-                      "picture",
-                      "doorway"
-                  ],
-
-                  "fresh_meal": [
-                      "meal",
-                      "food",
-                      "dinner",
-                      "kitchen",
-                      "mug"
-                  ],
-
-                  "freshly_used_item": [
-                      "watch",
-                      "wind",
-                      "winding",
-                      "husband"
-                  ],
-
-                  "private_message": [
-                      "paper",
-                      "message",
-                      "written",
-                      "sentence"
-                  ],
-
-                  "prepared_room": [
-                      "bed",
-                      "pillow",
-                      "blanket",
-                      "bedroom"
-                  ],
-
-                  "unfinished_action": [
-                      "keys",
-                      "key",
-                      "bowl",
-                      "shoes"
-                  ],
-
-                  "recent_presence": [
-                      "chair",
-                      "glass",
-                      "cup",
-                      "table"
-                  ]
-              }
-
-              if not any(
-                  cue in lower
-                  for cue in cues[mechanism["id"]]
-              ):
-
-                  return False, (
-                      "Visual mechanism lost"
-                  )
-
-              # ========================================================
-              # MUST HAVE AN UNFAMILIAR ADULT
-              # ========================================================
-
-              stranger_terms = [
-                  "stranger",
-                  "unfamiliar man",
-                  "unfamiliar woman",
-                  "unknown man",
-                  "unknown woman"
-              ]
-
-              if not any(
-                  term in lower
-                  for term in stranger_terms
-              ):
-
-                  return False, (
-                      "No unfamiliar adult"
-                  )
-
-              # ========================================================
-              # MUST HAVE A CONTRADICTION
-              # ========================================================
-
-              contradiction_terms = [
-                  "said",
-                  "told",
-                  "yesterday",
-                  "husband",
-                  "wife",
-                  "father",
-                  "late",
-                  "died",
-                  "dead",
-                  "before",
-                  "after",
-                  "already",
-                  "tomorrow",
-                  "knew"
-              ]
-
-              if not any(
-                  term in lower
-                  for term in contradiction_terms
-              ):
-
-                  return False, (
-                      "No contradiction"
-                  )
 
               return True, "PASS"
 
@@ -590,14 +565,15 @@ jobs:
           # FLOW PROMPT
           # ============================================================
 
-          def build_flow(
+          def make_flow(
               mechanism,
               script
           ):
 
               return f"""
           Create a 9–12 second vertical 9:16
-          photorealistic live-action psychological horror short.
+          photorealistic live-action psychological
+          horror short.
 
           FICTIONAL ADULT ACTORS ONLY.
 
@@ -611,65 +587,68 @@ jobs:
           {mechanism["location"]}
 
           ============================================================
-          FIRST FRAME — CRITICAL
+          FIRST FRAME — ABSOLUTELY CRITICAL
           ============================================================
 
-          {mechanism["visual"]}
+          {mechanism["visual_scene"]}
 
-          The important evidence must be clearly visible
-          in the FIRST FRAME.
-
-          The viewer must be able to understand that
-          something is wrong without relying on dialogue.
-
-          The disturbing action must ALREADY be happening.
-
-          Do NOT begin with an establishing shot.
-
-          Do NOT hide the important object.
-
-          Do NOT use a close-up that removes the
-          protagonist or unfamiliar adult from the scene.
+          The important action must ALREADY be happening
+          in the very first frame.
 
           ============================================================
           VISIBLE EVIDENCE
           ============================================================
 
-          {mechanism["evidence"]}
+          {mechanism["visible_evidence"]}
 
-          The evidence must remain visible for most
-          of the video.
+          The evidence must be clearly visible.
+
+          Do not hide it.
+
+          Do not replace it with a vague reaction.
+
+          The viewer should understand something is wrong
+          before hearing the dialogue.
+
+          ============================================================
+          ACTION
+          ============================================================
+
+          {mechanism["flow_action"]}
+
+          The protagonist enters/notices the situation
+          and freezes.
+
+          The unfamiliar adult remains completely calm.
 
           ============================================================
           DIALOGUE
           ============================================================
 
-          Use this exact script:
+          Use exactly this dialogue:
 
           {script}
 
           No additional dialogue.
 
           ============================================================
-          ENDING
+          FINAL REVEAL
           ============================================================
 
-          {mechanism["ending"]}
+          {mechanism["reveal"]}
 
-          End immediately after the final line.
+          Hard cut immediately after the final line.
 
-          HARD CUT.
-
-          Do NOT fade to black.
+          NO fade to black.
 
           ============================================================
           CAMERA
           ============================================================
 
-          Medium-wide cinematic shot.
+          Medium-wide cinematic framing.
 
-          Keep the protagonist, unfamiliar adult,
-          and evidence visible together.
+          Keep both adults and the important evidence
+          visible together.
 
           Minimal natural camera movement.
 
@@ -680,7 +659,7 @@ jobs:
           ============================================================
 
           Protagonist:
-          restrained genuine fear and disbelief.
+          quiet genuine fear and disbelief.
 
           Unfamiliar adult:
           completely calm and matter-of-fact.
@@ -695,7 +674,7 @@ jobs:
 
           Natural lighting.
 
-          Believable movement.
+          Realistic skin and movement.
 
           Psychological horror.
 
@@ -719,9 +698,8 @@ jobs:
           gore,
           blood,
           corpse,
-          body transformation,
           CCTV,
-          surveillance,
+          surveillance footage,
           phone screens,
           video calls,
           magical effects,
@@ -729,32 +707,35 @@ jobs:
           subtitles,
           text overlays,
           extra dialogue,
-          exaggerated acting.
+          exaggerated acting,
+          face distortion,
+          body distortion.
 
           Do not add another twist.
 
-          Do not change the evidence.
+          Do not change the visual evidence.
+
+          Do not change the action.
 
           Do not replace the unfamiliar adult
           with anything supernatural.
 
           HARD CUT.
-          No fade to black.
           """
 
           # ============================================================
-          # ROTATE MECHANISMS BETWEEN RUNS
+          # ROTATION
           # ============================================================
 
-          start_index = (
+          start = (
               ((RUN - 1) * 3)
               % len(MECHANISMS)
           )
 
-          ordered = (
-              MECHANISMS[start_index:]
+          mechanisms = (
+              MECHANISMS[start:]
               +
-              MECHANISMS[:start_index]
+              MECHANISMS[:start]
           )
 
           approved = []
@@ -762,24 +743,23 @@ jobs:
 
           print("")
           print("==========================================")
-          print(" QUIET VAULT V11")
-          print(" VISUAL EVIDENCE HORROR ENGINE")
+          print(" QUIET VAULT V12")
+          print(" FIXED HORROR ENGINE")
           print("==========================================")
           print("RUN:", RUN)
           print("MODEL:", MODEL)
-          print("TARGET: 3")
           print("")
 
           # ============================================================
-          # GENERATE ONE AT A TIME
+          # GENERATE
           # ============================================================
 
-          for mechanism in ordered:
+          for mechanism in mechanisms:
 
               if len(approved) >= 3:
                   break
 
-              if attempts >= 8:
+              if attempts >= 7:
                   break
 
               attempts += 1
@@ -788,115 +768,91 @@ jobs:
               print("------------------------------------------")
               print(
                   "MECHANISM:",
-                  mechanism["name"]
+                  mechanism["title_seed"]
               )
               print("------------------------------------------")
 
               prompt = f"""
-          Write ONE realistic horror YouTube Short
-          for The Quiet Vault.
+          Write ONE extremely short realistic
+          psychological horror Short for The Quiet Vault.
+
+          The visual horror is already fixed.
+          You are NOT allowed to invent a new premise.
 
           ============================================================
-          CHANNEL DNA
+          FIXED VISUAL SCENE
           ============================================================
 
-          - 9–12 seconds
-          - realistic psychological horror
-          - adult characters only
-          - recognizable real-world location
-          - visible disturbing evidence
-          - minimal dialogue
-          - hard cut ending
-          - no supernatural creatures
+          {mechanism["visual_scene"]}
 
           ============================================================
-          FIXED MECHANISM
+          FIXED VISIBLE EVIDENCE
           ============================================================
 
-          {mechanism["name"]}
-
-          LOCATION:
-
-          {mechanism["location"]}
+          {mechanism["visible_evidence"]}
 
           ============================================================
-          EXACT VISUAL SITUATION
+          FIXED FINAL REVEAL
           ============================================================
 
-          {mechanism["visual"]}
+          {mechanism["reveal"]}
 
           ============================================================
-          VISIBLE EVIDENCE
+          YOUR ONLY JOB
           ============================================================
 
-          {mechanism["evidence"]}
+          Turn this into natural spoken dialogue.
 
-          ============================================================
-          ENDING DIRECTION
-          ============================================================
+          Write approximately 22–55 words.
 
-          {mechanism["ending"]}
+          Start immediately with the protagonist
+          noticing what is happening.
 
-          ============================================================
-          WRITING REQUIREMENTS
-          ============================================================
+          Do NOT write like a narrator.
 
-          Write 28–65 words.
-
-          Make it sound like a real person,
-          NOT a narrator.
-
-          Do NOT write:
+          Do NOT say:
           "an adult woman"
           "an adult man"
           "the camera"
           "the viewer"
 
-          Start with the protagonist noticing
-          the disturbing situation.
-
-          Do not waste words describing the room.
-
-          The unfamiliar adult must be visibly
-          performing the fixed action.
-
-          The protagonist can ask ONE short question.
+          The protagonist may ask ONE short question.
 
           The stranger gets ONE short final line.
 
-          The final line must make the VISIBLE EVIDENCE
-          more disturbing.
-
-          Do not merely create mystery.
-
-          Do not explain everything.
+          The final line must communicate
+          the fixed reveal.
 
           Do not add a second twist.
 
-          Do not change the fixed mechanism.
+          Do not invent another explanation.
 
-          Do not use:
-          children,
-          mirrors,
-          reflections,
-          twins,
-          doppelgängers,
-          ghosts,
-          monsters,
-          gore,
-          CCTV,
-          phones,
-          video calls.
+          Do not change the visual scene.
+
+          Do not change the evidence.
+
+          Do not change the final reveal.
+
+          No children.
+          No mirrors.
+          No reflections.
+          No twins.
+          No doppelgängers.
+          No ghosts.
+          No monsters.
+          No gore.
+          No CCTV.
+          No phones.
+
+          Make it sound like something
+          a real frightened person would say.
 
           Return JSON only.
           """
 
-              result = call_groq(prompt)
+              result = groq(prompt)
 
-              ok, reason = validate(
-                  result,
-                  mechanism
-              )
+              ok, reason = validate(result)
 
               print(
                   "VALIDATION:",
@@ -910,22 +866,22 @@ jobs:
 
                   "slot": len(approved) + 1,
 
-                  "mechanism": mechanism["name"],
+                  "mechanism": mechanism["title_seed"],
 
                   "title": result["title"],
 
                   "short_script": result["script"],
 
-                  "visual_hook": mechanism["visual"],
+                  "visual_hook": mechanism["visual_scene"],
 
-                  "visible_evidence": mechanism["evidence"],
+                  "visible_evidence": mechanism["visible_evidence"],
 
-                  "flow_prompt": build_flow(
+                  "flow_prompt": make_flow(
                       mechanism,
                       result["script"]
                   ),
 
-                  "final_twist": mechanism["ending"],
+                  "final_twist": mechanism["reveal"],
 
                   "description": result["description"],
 
@@ -936,7 +892,7 @@ jobs:
                   "thumbnail_frame": (
                       "Use approximately 0.5–1.5 seconds. "
                       "Show the protagonist, unfamiliar adult, "
-                      "and the visible evidence together."
+                      "and the visible evidence/action together."
                   ),
 
                   "thumbnail_text": "",
@@ -944,11 +900,12 @@ jobs:
                   "sound_design": (
                       "Natural room tone, realistic footsteps "
                       "and object sounds, subtle tension bed, "
-                      "clear dialogue. Hard cut after final line."
+                      "clear dialogue. Hard cut immediately "
+                      "after the final line."
                   ),
 
                   "pinned_comment": (
-                      "Would you have noticed what was wrong?"
+                      "What would you do if you saw this?"
                   )
               }
 
@@ -962,7 +919,7 @@ jobs:
               time.sleep(8)
 
           # ============================================================
-          # SAVE BATCH JSON
+          # SAVE
           # ============================================================
 
           batch = {
@@ -974,7 +931,7 @@ jobs:
               "model": MODEL,
 
               "engine": (
-                  "V11 Visual Evidence Horror Engine"
+                  "V12 Fixed Horror Engine"
               ),
 
               "generated": attempts,
@@ -998,7 +955,7 @@ jobs:
               )
 
           # ============================================================
-          # SAVE INDIVIDUAL MARKDOWN FILES
+          # MARKDOWN PACKAGES
           # ============================================================
 
           for index, short in enumerate(
@@ -1006,7 +963,7 @@ jobs:
               start=1
           ):
 
-              markdown = f"""# {short["title"]}
+              text = f"""# {short["title"]}
 
           ## Script
 
@@ -1069,7 +1026,7 @@ jobs:
                   encoding="utf-8"
               ) as file:
 
-                  file.write(markdown)
+                  file.write(text)
 
           print("")
           print("==========================================")
@@ -1084,7 +1041,7 @@ jobs:
           if len(approved) < 3:
 
               print(
-                  "No weak filler Shorts were created."
+                  "No filler Shorts created."
               )
 
           else:
@@ -1095,8 +1052,8 @@ jobs:
 
           PY
 
-      - name: Upload V11 package
+      - name: Upload V12 package
         uses: actions/upload-artifact@v4
         with:
-          name: quiet-vault-v11-shorts
+          name: quiet-vault-v12-shorts
           path: quiet-vault-output/
