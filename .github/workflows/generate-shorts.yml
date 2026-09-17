@@ -1,4 +1,4 @@
-name: Quiet Vault AI V7.2 - Human Threat Engine
+name: Quiet Vault AI V7.3 - Contradiction Engine
 
 on:
   workflow_dispatch:
@@ -29,179 +29,223 @@ jobs:
           MODEL = "openai/gpt-oss-20b"
 
           # ============================================================
-          # QUIET VAULT CREATIVE DNA
+          # QUIET VAULT DNA
           # ============================================================
 
           DNA = """
-          CHANNEL: The Quiet Vault
+          THE QUIET VAULT
+
+          Create ultra-short realistic human horror.
 
           FORMAT:
-          - YouTube Shorts
           - 9-12 seconds
-          - realistic cinematic horror
-          - fictional adult characters only
-          - immediately understandable
-          - one visual situation
-          - one escalation
-          - one disturbing final reveal
-          - hard cut ending
+          - approximately 30-42 spoken words
+          - fictional adults only
+          - photorealistic live action
+          - recognizable real-world location
+          - threat visible immediately
+          - one simple contradiction
+          - hard cut after the reveal
 
-          THE CORE FORMULA:
+          THE FORMULA:
 
-          RECOGNIZABLE PLACE
+          VISIBLE HUMAN THREAT
           +
-          VISIBLE ADULT THREAT
+          NORMAL SITUATION
           +
-          SIMPLE HUMAN SITUATION
+          ONE IMPOSSIBLE PERSONAL FACT
           +
-          RELATIONSHIP / PERSONAL CONTRADICTION
+          SHORT REVEAL
           +
-          FINAL REVEAL
+          CUT
 
-          The viewer should understand the basic situation almost immediately.
+          The viewer should understand what they are seeing
+          without needing narration or backstory.
 
-          The horror should come from a HUMAN BEING doing something that
-          should be impossible, inappropriate, or deeply wrong.
+          The horror must come from a person and a concrete fact.
 
-          The threat must physically exist on screen.
-
-          GOOD:
-          - stranger already inside the home
-          - unknown adult sitting on someone's bed
-          - stranger possessing a dead person's personal item
-          - unfamiliar adult knowing a private family detail
-          - person entering a supposedly locked room
-          - stranger claiming someone invited them
-          - wrong person performing a familiar household routine
-
-          BAD:
-          - magical objects
-          - objects transforming
-          - countdown clocks
-          - supernatural artifacts
-          - vague shadows
-          - invisible entities
-          - unexplained sounds as the main scare
-          - mirrors
-          - reflections
-          - doubles
-          - clones
-          - doppelgangers
-          - monsters
+          DO NOT use:
           - ghosts
           - demons
+          - monsters
           - zombies
+          - mirrors
+          - reflections
+          - twins
+          - doubles
+          - doppelgangers
+          - clones
+          - children
+          - minors
           - gore
+          - blood
           - body transformation
-          - complicated mythology
-          - time travel
+          - disappearing people
+          - magical objects
+          - object transformations
+          - clocks or countdowns
+          - CCTV
+          - phone-screen horror
           - dream explanations
           - simulation explanations
+          - complicated mythology
 
-          IMPORTANT:
-          Do NOT explain the horror.
+          Never explain the supernatural.
 
-          The final line should make the viewer realize something is
-          terribly wrong.
-
-          Avoid endings such as:
-          "He realized..."
-          "She knew..."
-          "It was actually..."
-          unless the line itself contains a concrete disturbing fact.
-
-          The story must work visually even with the sound turned off.
+          The final line must create a concrete contradiction,
+          not merely say that something feels strange.
           """
 
           # ============================================================
-          # FIXED HUMAN-THREAT SEEDS
-          # Python selects the situations.
-          # Groq does NOT invent the mechanism.
+          # PRE-WRITTEN CONTRADICTION PAIRS
+          #
+          # Groq does NOT invent the horror mechanism.
+          # The contradiction is already defined here.
           # ============================================================
 
-          SEEDS = [
+          SCENARIOS = [
+
               {
-                  "name": "STRANGER ALREADY INSIDE",
-                  "situation": "An adult returns home and immediately sees an unfamiliar adult calmly inside the kitchen."
+                  "name": "THE HOUSE KEY",
+                  "location": "front doorway of a normal home",
+                  "visual": "An unfamiliar adult man stands outside holding a key that visibly fits the protagonist's front-door lock.",
+                  "fact_a": "The protagonist never gave this man a key.",
+                  "fact_b": "The man calmly claims the protagonist gave him the copy yesterday.",
+                  "required_reveal": "The protagonist knows they were not home yesterday."
               },
+
               {
-                  "name": "DEAD PARTNER'S KEY",
-                  "situation": "An unfamiliar adult is inside the home holding a key that belonged to the protagonist's deceased partner."
+                  "name": "THE BEDROOM VISITOR",
+                  "location": "private bedroom",
+                  "visual": "An unfamiliar adult woman is calmly walking out of the protagonist's bedroom.",
+                  "fact_a": "The bedroom was locked.",
+                  "fact_b": "The woman says she was told to wait there by the protagonist's husband.",
+                  "required_reveal": "The husband is currently away on a business trip."
               },
+
               {
-                  "name": "STRANGER LEAVING THE BEDROOM",
-                  "situation": "An adult enters their home and sees an unfamiliar adult calmly walking out of their private bedroom."
+                  "name": "THE DEAD MAN'S WATCH",
+                  "location": "apartment kitchen",
+                  "visual": "An unfamiliar adult man stands in the kitchen holding the protagonist's deceased father's wristwatch.",
+                  "fact_a": "The watch was buried with the father.",
+                  "fact_b": "The stranger says the father asked him to return it.",
+                  "required_reveal": "The father died years ago."
               },
+
               {
-                  "name": "UNINVITED HOUSEGUEST",
-                  "situation": "An unfamiliar adult is sitting comfortably inside the protagonist's home and insists the protagonist invited them."
+                  "name": "THE OFFICE INTRUDER",
+                  "location": "locked private office",
+                  "visual": "An unfamiliar adult is sitting at the protagonist's desk using their personal notebook.",
+                  "fact_a": "The office was locked.",
+                  "fact_b": "The stranger says the protagonist left the notebook for him this morning.",
+                  "required_reveal": "The protagonist has been working from home all morning."
               },
+
               {
-                  "name": "PRIVATE NICKNAME",
-                  "situation": "An unfamiliar adult knows a private nickname that only the protagonist's close family member should know."
+                  "name": "THE DINNER GUEST",
+                  "location": "family dining room",
+                  "visual": "An unfamiliar adult man is calmly sitting in the protagonist's wife's usual chair at dinner.",
+                  "fact_a": "The protagonist has never seen him before.",
+                  "fact_b": "The man says the wife invited him.",
+                  "required_reveal": "The wife quietly says she has never met him."
               },
+
               {
-                  "name": "LOCKED OFFICE",
-                  "situation": "An adult enters a supposedly locked private office and finds an unfamiliar adult already using the desk."
+                  "name": "THE KITCHEN STRANGER",
+                  "location": "home kitchen",
+                  "visual": "An unfamiliar adult woman is calmly cooking the family's usual dinner.",
+                  "fact_a": "The protagonist never told her the recipe.",
+                  "fact_b": "She says the protagonist's wife taught it to her last night.",
+                  "required_reveal": "The wife slept beside the protagonist all night."
               },
+
               {
-                  "name": "WRONG PERSON AT DINNER",
-                  "situation": "An adult arrives for a normal dinner and finds an unfamiliar adult calmly sitting in a family member's usual seat."
+                  "name": "THE GARAGE VISITOR",
+                  "location": "private home garage",
+                  "visual": "An unfamiliar adult man is working on the protagonist's father's old motorcycle.",
+                  "fact_a": "Nobody else has access to the garage.",
+                  "fact_b": "The man says the father asked him to repair it this morning.",
+                  "required_reveal": "The father died before the motorcycle was ever bought."
               },
+
               {
-                  "name": "NEIGHBOR'S KEY",
-                  "situation": "A neighbor appears inside the protagonist's home holding a working key that should not exist."
+                  "name": "THE FAMILY NAME",
+                  "location": "apartment hallway",
+                  "visual": "An unfamiliar adult woman is standing inside the protagonist's locked apartment.",
+                  "fact_a": "The protagonist has never met her.",
+                  "fact_b": "She casually uses the private childhood nickname only the protagonist's late sister used.",
+                  "required_reveal": "The sister died before this woman could have known her."
               },
+
               {
-                  "name": "STRANGER USING THE KITCHEN",
-                  "situation": "An adult discovers an unfamiliar adult preparing food in their kitchen as though they live there."
+                  "name": "THE WRONG HOUSE",
+                  "location": "living room",
+                  "visual": "An unfamiliar adult man is sitting comfortably on the protagonist's sofa as if he lives there.",
+                  "fact_a": "The protagonist has never seen him.",
+                  "fact_b": "He says the protagonist invited him over last night.",
+                  "required_reveal": "The protagonist spent last night alone in a hotel in another city."
               },
+
               {
-                  "name": "FAMILY PHOTOGRAPH",
-                  "situation": "An unfamiliar adult possesses a physical family photograph containing a detail the protagonist cannot explain."
+                  "name": "THE LOCKED APARTMENT",
+                  "location": "apartment entryway",
+                  "visual": "An unfamiliar adult is already inside the protagonist's locked apartment.",
+                  "fact_a": "The protagonist locked the apartment before leaving.",
+                  "fact_b": "The stranger says the protagonist let him in ten minutes ago.",
+                  "required_reveal": "The protagonist has been standing outside the building for ten minutes."
               },
+
               {
-                  "name": "WRONG PERSON IN THE GARAGE",
-                  "situation": "An adult enters their private garage and finds an unfamiliar adult calmly working on something that belongs to the family."
+                  "name": "THE PRIVATE PHOTO",
+                  "location": "home hallway",
+                  "visual": "An unfamiliar adult holds a printed family photograph that should be stored inside the protagonist's locked drawer.",
+                  "fact_a": "The drawer has never been opened by anyone else.",
+                  "fact_b": "The stranger says the protagonist gave him the photograph yesterday.",
+                  "required_reveal": "The protagonist has never met this person."
               },
+
               {
-                  "name": "UNEXPECTED SIBLING VISITOR",
-                  "situation": "An unfamiliar adult claims to be the protagonist's sibling and casually knows a deeply private family fact."
+                  "name": "THE NEIGHBOR",
+                  "location": "front doorway",
+                  "visual": "A familiar-looking adult neighbor stands inside the protagonist's doorway holding the house keys.",
+                  "fact_a": "The protagonist has never given the neighbor a key.",
+                  "fact_b": "The neighbor says the protagonist's wife gave it to him.",
+                  "required_reveal": "The wife died months ago."
               }
           ]
 
-          # Rotate the seeds between runs.
-          start = ((RUN_NUMBER - 1) * 5) % len(SEEDS)
+          # Rotate scenarios between runs.
+          start = ((RUN_NUMBER - 1) * 5) % len(SCENARIOS)
           selected = [
-              SEEDS[(start + i) % len(SEEDS)]
+              SCENARIOS[(start + i) % len(SCENARIOS)]
               for i in range(5)
           ]
 
           print("==========================================")
-          print("QUIET VAULT AI V7.2")
-          print("HUMAN THREAT ENGINE")
+          print("QUIET VAULT AI V7.3")
+          print("CONTRADICTION ENGINE")
           print("==========================================")
           print(f"RUN: {RUN_NUMBER}")
           print()
-          print("SELECTED VISUAL SEEDS:")
+          print("SELECTED CONTRADICTIONS:")
           for i, s in enumerate(selected, 1):
               print(f"{i}. {s['name']}")
 
           # ============================================================
-          # GROQ CALL
+          # GROQ
           # ============================================================
 
           def groq_call(prompt, retries=3):
+
               payload = {
                   "model": MODEL,
                   "messages": [
                       {
                           "role": "system",
                           "content": (
-                              "You write extremely short realistic horror "
-                              "stories for The Quiet Vault. Follow the "
-                              "provided visual situation exactly. Do not "
-                              "invent supernatural mechanisms."
+                              "Write short realistic human horror. "
+                              "Do not invent the underlying contradiction. "
+                              "Use the supplied facts exactly."
                           )
                       },
                       {
@@ -209,7 +253,7 @@ jobs:
                           "content": prompt
                       }
                   ],
-                  "temperature": 0.6,
+                  "temperature": 0.55,
                   "max_completion_tokens": 2600,
                   "reasoning_effort": "low",
                   "reasoning_format": "hidden",
@@ -218,12 +262,13 @@ jobs:
                   }
               }
 
-              data = json.dumps(payload).encode("utf-8")
+              body = json.dumps(payload).encode("utf-8")
 
               for attempt in range(retries):
+
                   req = urllib.request.Request(
                       URL,
-                      data=data,
+                      data=body,
                       headers={
                           "Content-Type": "application/json",
                           "Authorization": f"Bearer {API_KEY}",
@@ -245,9 +290,14 @@ jobs:
                           return content
 
                   except urllib.error.HTTPError as e:
-                      body = e.read().decode("utf-8", errors="ignore")
+
+                      body_text = e.read().decode(
+                          "utf-8",
+                          errors="ignore"
+                      )
 
                       if e.code == 429:
+
                           retry_after = e.headers.get("retry-after")
 
                           try:
@@ -255,15 +305,19 @@ jobs:
                           except:
                               wait = 20
 
-                          print(f"RATE LIMITED. Waiting {wait:.1f}s...")
+                          print(
+                              f"RATE LIMITED. Waiting {wait:.1f}s..."
+                          )
+
                           time.sleep(wait)
                           continue
 
                       print(f"GROQ HTTP {e.code}")
-                      print(body[:1000])
+                      print(body_text[:1000])
                       raise
 
                   except Exception as e:
+
                       print(f"Groq error: {e}")
 
                       if attempt < retries - 1:
@@ -272,122 +326,124 @@ jobs:
                           raise
 
           # ============================================================
-          # GENERATION PROMPT
+          # PROMPT
           # ============================================================
 
-          seed_text = "\n".join(
-              f"{i+1}. {s['name']}: {s['situation']}"
-              for i, s in enumerate(selected)
-          )
+          scenario_text = ""
+
+          for i, s in enumerate(selected, 1):
+
+              scenario_text += f"""
+
+          STORY {i}
+
+          NAME:
+          {s['name']}
+
+          LOCATION:
+          {s['location']}
+
+          OPENING VISUAL:
+          {s['visual']}
+
+          FACT A:
+          {s['fact_a']}
+
+          FACT B:
+          {s['fact_b']}
+
+          REQUIRED FINAL REVEAL:
+          {s['required_reveal']}
+
+          """
 
           prompt = f"""
           {DNA}
 
-          YOU ARE NOT INVENTING THE HORROR MECHANISM.
+          Turn the five supplied scenarios into five Shorts.
 
-          Python has already selected five visual situations.
+          Do not invent new horror mechanisms.
 
-          Your job is to turn EACH situation into one extremely short
-          human horror Short.
+          Do not change the facts.
 
-          SELECTED SITUATIONS:
+          The supplied contradiction is the entire point of the story.
 
-          {seed_text}
-
-          ============================================================
-          ABSOLUTE RULES
-          ============================================================
-
-          1. Produce exactly 5 stories.
-          2. One story per supplied situation.
-          3. Fictional adults only.
-          4. No children or minors.
-          5. The threatening adult must be physically visible.
-          6. The opening frame must already contain the threat or
-             disturbing human situation.
-          7. No object transformation.
-          8. No supernatural object.
-          9. No mirror.
-          10. No reflection.
-          11. No twin.
-          12. No doppelganger.
-          13. No clone.
-          14. No ghost.
-          15. No demon.
-          16. No monster.
-          17. No gore.
-          18. No blood.
-          19. No CCTV.
-          20. No phone-screen horror.
-          21. No disappearing person.
-          22. No body distortion.
-          23. No complicated backstory.
-          24. No explanation of what the threat "really is."
-          25. No vague "something was watching him" endings.
+          {scenario_text}
 
           ============================================================
-          STORY LENGTH
+          WRITING RULES
           ============================================================
 
-          Each spoken script must be approximately 28-42 words.
+          Each script:
 
-          It must be performable naturally in roughly 9-12 seconds.
+          - 30-42 spoken words
+          - 9-12 seconds
+          - first-person narration OR very short dialogue
+          - short sentences
+          - natural human speech
+          - no exposition
+          - no unnecessary names
+          - no explanation
+          - no "I realized..."
+          - no "something felt wrong..."
+          - no generic scary language
 
-          Keep sentences short.
+          Structure:
 
-          ============================================================
-          VISUAL TEST
-          ============================================================
+          FRAME 1:
+          Show the threatening adult immediately.
 
-          Imagine freezing the video at frame 1.
+          SETUP:
+          One short sentence establishing why the person should
+          NOT be there.
 
-          The viewer must be able to see:
+          CONTRADICTION:
+          One short exchange or statement.
 
-          - the protagonist
-          AND
-          - the other adult who should not be there
-
-          OR an equally obvious physical human threat.
-
-          If the first frame looks like a normal scene, rewrite it.
-
-          ============================================================
-          ENDING TEST
-          ============================================================
-
-          The final beat must introduce ONE concrete contradiction.
-
-          Example:
-
-          "My husband died three years ago."
-
-          The stranger looks confused.
-
-          "Three years?"
+          FINAL:
+          Deliver the required reveal.
 
           CUT.
 
-          Do NOT explain what happens afterward.
+          The final line should make the viewer mentally replay
+          the previous few seconds.
+
+          ============================================================
+          IMPORTANT
+          ============================================================
+
+          Do NOT turn the supplied facts into supernatural
+          transformations.
+
+          Do NOT make objects magical.
+
+          Do NOT add ghosts or monsters.
+
+          Do NOT add hidden clones or doubles.
+
+          Do NOT introduce a second twist.
+
+          Do NOT explain who the stranger really is.
 
           ============================================================
           OUTPUT
           ============================================================
 
-          Return ONLY valid JSON.
+          Return ONLY valid JSON:
 
           {{
             "stories": [
               {{
                 "id": 1,
-                "seed": "exact seed name",
+                "seed": "exact scenario name",
                 "title": "short curiosity-driven title",
-                "script": "28-42 spoken words",
-                "visual_hook": "one sentence describing exactly what is visible in frame 1",
-                "ending": "one sentence describing the final disturbing beat"
+                "script": "30-42 spoken words",
+                "visual_hook": "exact first-frame composition",
+                "ending": "exact final reveal"
               }},
               {{
                 "id": 2,
-                "seed": "exact seed name",
+                "seed": "exact scenario name",
                 "title": "...",
                 "script": "...",
                 "visual_hook": "...",
@@ -395,7 +451,7 @@ jobs:
               }},
               {{
                 "id": 3,
-                "seed": "exact seed name",
+                "seed": "exact scenario name",
                 "title": "...",
                 "script": "...",
                 "visual_hook": "...",
@@ -403,7 +459,7 @@ jobs:
               }},
               {{
                 "id": 4,
-                "seed": "exact seed name",
+                "seed": "exact scenario name",
                 "title": "...",
                 "script": "...",
                 "visual_hook": "...",
@@ -411,7 +467,7 @@ jobs:
               }},
               {{
                 "id": 5,
-                "seed": "exact seed name",
+                "seed": "exact scenario name",
                 "title": "...",
                 "script": "...",
                 "visual_hook": "...",
@@ -422,21 +478,17 @@ jobs:
           """
 
           print()
-          print("GENERATING FIVE HUMAN-THREAT STORIES...")
+          print("GENERATING FIVE CONTRADICTION STORIES...")
           print()
 
           raw = groq_call(prompt)
 
-          # ============================================================
-          # PARSE
-          # ============================================================
-
           try:
               data = json.loads(raw)
           except Exception as e:
-              print("JSON PARSE ERROR")
+              print("INVALID JSON")
               print(raw[:3000])
-              raise RuntimeError(f"Invalid JSON from Groq: {e}")
+              raise RuntimeError(str(e))
 
           stories = data.get("stories", [])
 
@@ -446,10 +498,10 @@ jobs:
           print(f"GENERATED: {len(stories)}")
 
           # ============================================================
-          # HARD CREATIVE FILTER
+          # HARD VALIDATION
           # ============================================================
 
-          BANNED = [
+          banned = [
               "child",
               "children",
               "kid",
@@ -467,9 +519,8 @@ jobs:
               "monster",
               "zombie",
               "vampire",
-              "werewolf",
               "cctv",
-              "surveillance camera",
+              "surveillance",
               "phone screen",
               "video call",
               "blood",
@@ -483,7 +534,20 @@ jobs:
               "distorted body"
           ]
 
+          weak = [
+              "something felt wrong",
+              "something was wrong",
+              "i felt watched",
+              "she felt watched",
+              "he felt watched",
+              "eerie",
+              "creepy feeling",
+              "strange feeling",
+              "darkness"
+          ]
+
           def validate(story):
+
               required = [
                   "id",
                   "seed",
@@ -494,17 +558,19 @@ jobs:
               ]
 
               if not all(k in story for k in required):
-                  return False, "missing required field"
+                  return False, "missing field"
 
               script = str(story["script"]).strip()
               hook = str(story["visual_hook"]).strip()
               ending = str(story["ending"]).strip()
 
-              if len(script.split()) < 24:
-                  return False, "script too short"
+              word_count = len(script.split())
 
-              if len(script.split()) > 50:
-                  return False, "script too long"
+              if word_count < 25:
+                  return False, "too short"
+
+              if word_count > 50:
+                  return False, "too long"
 
               combined = (
                   script + " " +
@@ -512,94 +578,139 @@ jobs:
                   ending
               ).lower()
 
-              for word in BANNED:
-                  if re.search(r"\b" + re.escape(word) + r"\b", combined):
-                      return False, f"banned element: {word}"
+              for word in banned:
+                  if re.search(
+                      r"\b" + re.escape(word) + r"\b",
+                      combined
+                  ):
+                      return False, f"banned: {word}"
 
-              weak_hooks = [
-                  "quiet room",
-                  "dark room",
-                  "empty room",
-                  "strange feeling",
-                  "something felt wrong",
-                  "he felt watched",
-                  "she felt watched",
-                  "eerie atmosphere",
-                  "creepy atmosphere",
-                  "darkness",
-                  "shadow"
-              ]
+              for phrase in weak:
+                  if phrase in combined:
+                      return False, f"weak phrase: {phrase}"
 
               hook_lower = hook.lower()
 
-              for weak in weak_hooks:
-                  if weak in hook_lower:
-                      return False, f"weak visual hook: {weak}"
-
               if not any(
-                  word in hook_lower
-                  for word in [
+                  x in hook_lower
+                  for x in [
                       "man",
                       "woman",
                       "stranger",
-                      "person",
                       "adult",
+                      "person",
                       "visitor",
                       "neighbor",
                       "guest"
                   ]
               ):
-                  return False, "no visible adult threat"
+                  return False, "no visible human threat"
 
               return True, "PASS"
+
+          # ============================================================
+          # VERIFY STORY AGAINST ITS ASSIGNED CONTRADICTION
+          # ============================================================
+
+          scenario_by_name = {
+              s["name"]: s
+              for s in selected
+          }
 
           approved = []
 
           print()
-          print("RUNNING HARD CREATIVE FILTER...")
+          print("VALIDATING CONTRADICTIONS...")
           print()
 
           for story in stories:
+
+              seed = str(story.get("seed", ""))
+
+              if seed not in scenario_by_name:
+                  print(
+                      f"REJECT: {story.get('title','UNTITLED')} "
+                      f"-> unknown seed"
+                  )
+                  continue
+
               ok, reason = validate(story)
 
-              title = story.get("title", "UNTITLED")
+              if not ok:
+                  print(
+                      f"REJECT: {story.get('title','UNTITLED')} "
+                      f"-> {reason}"
+                  )
+                  continue
 
-              if ok:
-                  print(f"PASS: {title}")
-                  approved.append(story)
-              else:
-                  print(f"REJECT: {title} -> {reason}")
+              scenario = scenario_by_name[seed]
+
+              combined = (
+                  story["script"] + " " +
+                  story["ending"]
+              ).lower()
+
+              # Require at least one concrete relationship/fact clue.
+              clue_words = [
+                  "wife",
+                  "husband",
+                  "father",
+                  "mother",
+                  "brother",
+                  "sister",
+                  "partner",
+                  "died",
+                  "dead",
+                  "yesterday",
+                  "today",
+                  "morning",
+                  "locked",
+                  "key",
+                  "home",
+                  "house",
+                  "office"
+              ]
+
+              if not any(x in combined for x in clue_words):
+                  print(
+                      f"REJECT: {story['title']} "
+                      f"-> missing concrete contradiction clue"
+                  )
+                  continue
+
+              print(f"PASS: {story['title']}")
+              approved.append(story)
 
           # ============================================================
-          # LOCAL QUALITY SCORING
+          # SCORE
           # ============================================================
 
-          def quality_score(story):
-              script = story["script"].lower()
-              hook = story["visual_hook"].lower()
-              ending = story["ending"].lower()
+          def score(story):
+
+              text = (
+                  story["script"] + " " +
+                  story["visual_hook"] + " " +
+                  story["ending"]
+              ).lower()
 
               score = 0
 
-              # Visible human presence
               if any(
-                  x in hook
+                  x in story["visual_hook"].lower()
                   for x in [
                       "stranger",
                       "man",
                       "woman",
-                      "person",
                       "adult",
-                      "visitor",
                       "neighbor",
+                      "visitor",
                       "guest"
                   ]
               ):
                   score += 3
 
-              # Recognizable location
               if any(
-                  x in (script + " " + hook)
+                  x in text
                   for x in [
                       "home",
                       "house",
@@ -607,133 +718,103 @@ jobs:
                       "bedroom",
                       "office",
                       "garage",
-                      "dinner",
-                      "apartment"
+                      "door",
+                      "dinner"
                   ]
               ):
                   score += 2
 
-              # Relationship/personal contradiction
               if any(
-                  x in script
+                  x in text
                   for x in [
-                      "husband",
                       "wife",
+                      "husband",
+                      "father",
+                      "mother",
                       "brother",
                       "sister",
-                      "family",
-                      "neighbor",
                       "partner",
-                      "husband",
                       "dead",
-                      "died",
-                      "never met",
-                      "don't know"
+                      "died"
                   ]
               ):
                   score += 3
 
-              # Concrete ending
-              if len(ending.split()) >= 5:
+              if len(story["ending"].split()) >= 5:
                   score += 2
-
-              # Penalize generic ending language
-              if any(
-                  x in ending
-                  for x in [
-                      "something",
-                      "felt wrong",
-                      "wasn't what it seemed",
-                      "realized",
-                      "knew something"
-                  ]
-              ):
-                  score -= 3
 
               return score
 
           approved.sort(
-              key=quality_score,
+              key=score,
               reverse=True
           )
 
           approved = approved[:3]
 
-          print()
-          print("==========================================")
-          print(f"APPROVED: {len(approved)}")
-          print("==========================================")
-
-          if len(approved) < 3:
-              print()
-              print("WARNING: Fewer than 3 stories passed.")
-              print("This run will NOT manufacture weak replacements.")
-              print()
-
           # ============================================================
-          # FLOW PROMPT + METADATA
+          # BUILD FLOW PROMPTS
           # ============================================================
 
-          def make_flow(story):
+          def flow_prompt(story):
+
               return f"""
-          Create a 9-12 second vertical 9:16 photorealistic live-action
-          horror Short.
+          Create a 9-12 second vertical 9:16 photorealistic
+          live-action horror Short.
 
           Fictional adult characters only.
           No children.
           No celebrity or real-person likeness.
 
-          IMPORTANT:
-          The opening frame must immediately show the human threat.
+          FRAME 1 IS CRITICAL.
 
-          Opening visual:
+          Start immediately with this exact visual situation:
+
           {story['visual_hook']}
 
           Story:
+
           {story['script']}
 
-          Final beat:
+          Final reveal:
+
           {story['ending']}
 
-          Use realistic adult actors, realistic human behavior,
-          believable facial expressions, natural lighting and a
+          Use realistic adult actors, natural facial expressions,
+          realistic human behavior, believable lighting and a
           recognizable real-world location.
 
-          The threatening adult must remain physically visible.
-
-          No monsters, ghosts, demons, mirrors, reflections, twins,
-          doppelgangers, clones, children, CCTV, phone-screen horror,
-          gore, blood, disappearing people or distorted bodies.
-
-          Keep the camera simple and cinematic.
+          The threatening adult must be physically visible
+          immediately and remain visible.
 
           No slow establishing shot.
 
-          Do not explain the horror.
+          No monsters.
+          No ghosts.
+          No demons.
+          No mirrors.
+          No reflections.
+          No twins.
+          No doppelgangers.
+          No clones.
+          No children.
+          No gore.
+          No blood.
+          No CCTV.
+          No phone-screen horror.
+          No disappearing people.
+          No body distortion.
+          No magical objects.
 
-          End immediately after the final disturbing realization.
+          Keep the horror grounded in the human situation.
+
+          Do not add extra plot.
+
+          End immediately after the final disturbing line.
           """
 
-          def description(story):
-              return (
-                  f"A realistic horror encounter that gets worse "
-                  f"in the final seconds. Watch until the end."
-              )
-
-          keywords = (
-              "horror, horror shorts, scary stories, scary shorts, "
-              "horror stories, psychological horror, realistic horror, "
-              "creepy stories, suspense horror, short horror stories, "
-              "horror storytelling, The Quiet Vault"
-          )
-
-          hashtags = (
-              "#horror #horrorshorts #scarystories "
-              "#psychologicalhorror #creepy #shorts"
-          )
-
           # ============================================================
-          # OUTPUT
+          # OUTPUT FILES
           # ============================================================
 
           out = Path("quiet-vault-output")
@@ -741,28 +822,42 @@ jobs:
 
           final = []
 
-          for index, story in enumerate(approved, 1):
+          for i, story in enumerate(approved, 1):
+
               item = {
                   "title": story["title"],
                   "script": story["script"],
                   "visual_hook": story["visual_hook"],
-                  "flow_prompt": make_flow(story),
+                  "flow_prompt": flow_prompt(story),
                   "final_twist": story["ending"],
-                  "description": description(story),
-                  "keywords": keywords,
-                  "hashtags": hashtags,
+                  "description": (
+                      "A realistic horror encounter with one detail "
+                      "that should not be possible. Watch until the end."
+                  ),
+                  "keywords": (
+                      "horror, horror shorts, scary stories, "
+                      "scary shorts, horror stories, psychological "
+                      "horror, realistic horror, creepy stories, "
+                      "suspense horror, short horror stories, "
+                      "horror storytelling, The Quiet Vault"
+                  ),
+                  "hashtags": (
+                      "#horror #horrorshorts #scarystories "
+                      "#psychologicalhorror #creepy #shorts"
+                  ),
                   "thumbnail_frame": (
-                      "Use the opening frame showing the visible "
-                      "adult threat. Optional text: "
+                      "Use the opening frame showing the "
+                      "visible adult threat. Optional text: "
                       + story["title"]
                   ),
                   "sound_design": (
-                      "Natural room ambience, restrained tension, "
-                      "subtle movement sounds, one sharp sound on "
-                      "the final reveal, then hard cut to silence."
+                      "Natural room ambience, subtle realistic "
+                      "movement sounds, restrained tension, "
+                      "one sharp sound on the final contradiction, "
+                      "then hard cut to silence."
                   ),
                   "pinned_comment": (
-                      "Did you notice what was wrong before the final line?"
+                      "Did you catch the contradiction before the ending?"
                   )
               }
 
@@ -807,7 +902,7 @@ jobs:
           {item['pinned_comment']}
           """
 
-              (out / f"short_{index:02d}.md").write_text(
+              (out / f"short_{i:02d}.md").write_text(
                   md,
                   encoding="utf-8"
               )
@@ -822,13 +917,17 @@ jobs:
           }
 
           (out / "batch.json").write_text(
-              json.dumps(batch, indent=2, ensure_ascii=False),
+              json.dumps(
+                  batch,
+                  indent=2,
+                  ensure_ascii=False
+              ),
               encoding="utf-8"
           )
 
           print()
           print("==========================================")
-          print("QUIET VAULT V7.2 COMPLETE")
+          print("QUIET VAULT V7.3 COMPLETE")
           print("==========================================")
           print(f"Generated: {len(stories)}")
           print(f"Approved:  {len(final)}")
@@ -844,5 +943,5 @@ jobs:
       - name: Upload Shorts
         uses: actions/upload-artifact@v4
         with:
-          name: quiet-vault-v72-shorts
+          name: quiet-vault-v73-shorts
           path: quiet-vault-output/
