@@ -33,14 +33,14 @@ jobs:
 
 
           # ============================================================
-          # GROQ REQUEST WITH RATE-LIMIT HANDLING
+          # GROQ REQUEST
           # ============================================================
 
           def groq_request(
               prompt,
               schema_name,
               schema,
-              max_tokens=5000,
+              max_tokens=4000,
               max_attempts=5
           ):
 
@@ -124,15 +124,11 @@ jobs:
                       print("=" * 60)
                       print("")
 
-                      # ------------------------------------------------
-                      # RATE LIMIT
-                      # ------------------------------------------------
-
                       if e.code == 429:
 
                           if attempt >= max_attempts:
                               raise RuntimeError(
-                                  "Groq rate limit persisted after retries."
+                                  "Groq rate limit persisted."
                               )
 
                           retry_after = None
@@ -145,22 +141,25 @@ jobs:
                               pass
 
                           if retry_after:
+
                               try:
-                                  wait_time = float(retry_after) + 2
+                                  wait_time = float(
+                                      retry_after
+                                  ) + 2
+
                               except ValueError:
                                   wait_time = 10
+
                           else:
 
                               wait_time = min(
-                                  5 * (2 ** (attempt - 1)),
+                                  6 * (2 ** (attempt - 1)),
                                   65
                               )
 
                           print(
-                              f"RATE LIMIT HIT. "
-                              f"Waiting {wait_time:.1f}s "
-                              f"before retry "
-                              f"{attempt + 1}/{max_attempts}..."
+                              f"RATE LIMIT. "
+                              f"Waiting {wait_time:.1f}s..."
                           )
 
                           time.sleep(wait_time)
@@ -183,13 +182,8 @@ jobs:
 
 
           # ============================================================
-          # STAGE 1 — CANDIDATE GENERATION
+          # CANDIDATE SCHEMA
           # ============================================================
-
-          print("")
-          print("=" * 60)
-          print("CANDIDATE GENERATION")
-          print("=" * 60)
 
           candidate_schema = {
               "type": "object",
@@ -232,106 +226,209 @@ jobs:
               "additionalProperties": False
           }
 
-          candidate_prompt = """
-          You are the concept generator for The Quiet Vault, a YouTube Shorts
-          channel focused on realistic cinematic horror.
 
-          Generate EXACTLY 12 different horror Short concepts.
+          # ============================================================
+          # CANDIDATE GENERATOR
+          # ============================================================
 
-          FORMAT:
-          - 9–12 second YouTube Short
-          - English
-          - realistic live-action horror
-          - fictional adult characters
-          - recognizable real-world location
-          - visible human-centered threat or contradiction
-          - disturbing visual present from frame one
-          - simple enough for Google Flow/Veo
-          - strong final payoff
-          - replay-worthy ending
+          def generate_candidates(count=12, starting_id=1):
 
-          FIRST-FRAME RULE:
+              prompt = f"""
+          You are the horror concept generator for The Quiet Vault.
 
-          static_frame_1 must describe ONE frozen screenshot.
+          Generate EXACTLY {count} completely different concepts for
+          9–12 second YouTube Shorts.
 
-          Someone seeing only that screenshot should immediately understand
-          that something is wrong.
+          The channel uses:
+          - realistic cinematic horror
+          - photorealistic live action
+          - fictional ADULT characters
+          - recognizable real-world locations
+          - simple physical situations
+          - visible human threats
+          - immediate visual contradictions
+          - strong endings
+          - replay-worthy final beats
 
-          GOOD:
-          "A woman stands in her bedroom while the locked bedroom door is
-          visibly being opened from the hallway by an unfamiliar adult hand."
+          MOST IMPORTANT RULE:
 
-          BAD:
-          "A woman stands in her bedroom."
+          The FIRST FRAME must already contain the horror.
 
-          BAD:
-          "A man becomes scared."
+          static_frame_1 describes a SINGLE FROZEN SCREENSHOT.
 
-          The first frame must work without narration or explanation.
+          If someone sees ONLY that screenshot for one second, they should
+          immediately notice something wrong, threatening or impossible.
 
-          Prefer:
-          - someone being somewhere they should not be
-          - locked/open contradictions
-          - ordinary actions happening incorrectly
-          - familiar locations containing one clearly wrong human element
-          - adult family or relationship situations
+          GOOD EXAMPLE:
 
-          AVOID:
+          "A woman stands at her apartment door holding grocery bags while
+          the chain lock is visibly fastened from the inside, yet an adult
+          hand is opening the door toward her."
+
+          GOOD EXAMPLE:
+
+          "A man sits alone in a conference room while the glass meeting-room
+          door is visibly locked, but an unfamiliar adult is standing outside
+          holding the man's own office keys."
+
+          BAD EXAMPLE:
+
+          "A woman walks into a room and becomes scared."
+
+          BAD EXAMPLE:
+
+          "A man discovers something strange."
+
+          BAD EXAMPLE:
+
+          "An empty chair looks creepy."
+
+          BAD EXAMPLE:
+
+          "A phone call becomes scary."
+
+          The visual contradiction must be visible immediately.
+
+          PRIORITIZE:
+          - adult couples
+          - adult family members
+          - siblings who are adults
+          - coworkers
+          - roommates
+          - ordinary domestic situations
+          - apartment corridors
+          - offices
+          - kitchens
+          - bathrooms
+          - bedrooms
+          - parking areas
+          - shops
+          - hospitals
+          - stairwells
+          - public buildings
+
+          Prefer a HUMAN threat or human behavior that is visibly wrong.
+
+          EXAMPLES OF GOOD MECHANISMS:
+          - a locked door being opened from the wrong side
+          - someone holding an object they could not physically have
+          - a person appearing in a location they should not be able to access
+          - two adults simultaneously claiming ownership of the same place
+          - an ordinary action happening in an impossible direction
+          - someone reacting to a person who should not be there
+          - a familiar person behaving in a physically contradictory way
+          - a security/access situation that is visibly impossible WITHOUT CCTV
+
+          ABSOLUTELY DO NOT USE:
+
+          children
+          babies
+          infants
+          minors
+          teenagers
+          nursery
+          crib
+          schoolchildren
+          babysitters
+          child portraits
+          baby monitors
+
           elevators
           cars
           hotels
           CCTV
-          security footage
+          security-camera footage
+          surveillance footage
           mirrors
           reflections
+          reflective surfaces
           doppelgangers
+          twins
           hidden people behind characters
+          people appearing behind characters
           printers
           trains
+          buses
           floating objects
+          floating mugs
+          floating cups
           possessed household objects
           objects growing faces
           random body parts
-          disappearing/reappearing people
+          disappearing people
+          reappearing people
+          teleportation
           ghosts
           demons
           monsters
           zombies
-          gore
           giant creatures
+          gore
+          blood
+          severed limbs
           impossible anatomy
           head distortion
+          180-degree head turns
+          faces morphing
+          faces melting
           complicated CGI
+          giant supernatural effects
           mythology
           long conversations
+          exposition-heavy stories
 
-          Do not reuse the same mechanism repeatedly.
+          Do not use a supernatural object as the primary horror mechanism.
 
-          Return EXACTLY 12 candidates.
+          Do not depend on sound alone.
+
+          Do not make the first frame normal and put the horror later.
+
+          Do not reuse the same mechanism across concepts.
+
+          Every concept must be realistic enough for Google Flow to generate
+          reliably.
+
+          Every concept must feature fictional ADULTS.
+
+          IDs should start at {starting_id}.
+
+          Return EXACTLY {count} concepts.
           """
 
-          candidates_data = groq_request(
-              candidate_prompt,
-              "quiet_vault_candidates",
-              candidate_schema,
-              max_tokens=4000
-          )
+              data = groq_request(
+                  prompt,
+                  "quiet_vault_candidates",
+                  candidate_schema,
+                  max_tokens=4000
+              )
 
-          candidates = candidates_data["candidates"]
-
-          print(f"Generated: {len(candidates)}")
+              return data["candidates"]
 
 
           # ============================================================
-          # STAGE 2 — HARD FILTER
+          # BASIC HARD FILTER
           # ============================================================
-
-          print("")
-          print("=" * 60)
-          print("HARD FILTER")
-          print("=" * 60)
 
           banned_phrases = [
+
+              # MINORS
+              "child",
+              "children",
+              "baby",
+              "infant",
+              "kid",
+              "kids",
+              "minor",
+              "teenager",
+              "teen",
+              "nursery",
+              "crib",
+              "schoolchild",
+              "babysitter",
+              "baby monitor",
+              "child portrait",
+
+              # REPEATED / BANNED MECHANISMS
               "elevator",
               "hotel",
               "cctv",
@@ -339,14 +436,13 @@ jobs:
               "surveillance footage",
               "mirror",
               "reflection",
+              "reflective surface",
               "doppelganger",
               "doppelgänger",
-              "behind him",
-              "behind her",
-              "behind the man",
-              "behind the woman",
+              "twin",
               "printer",
               "train",
+              "bus",
               "ghost",
               "demon",
               "zombie",
@@ -354,18 +450,26 @@ jobs:
               "giant creature",
               "floating mug",
               "floating cup",
+              "floating object",
               "possessed object",
               "growing face",
               "body part",
+              "severed limb",
               "disappears",
               "disappearing",
               "reappears",
               "reappearing",
+              "teleport",
+              "teleportation",
               "head spins",
               "head turns 180",
               "head rotates",
-              "gore"
+              "face melts",
+              "face morphs",
+              "gore",
+              "blood"
           ]
+
 
           def contains_phrase(text, phrase):
 
@@ -381,84 +485,125 @@ jobs:
               ) is not None
 
 
-          survivors = []
-          rejected = []
+          def basic_filter(candidates):
 
-          for candidate in candidates:
+              survivors = []
 
-              title = candidate.get("title", "")
-              premise = candidate.get("premise", "")
-              frame = candidate.get("static_frame_1", "")
-              ending = candidate.get("ending", "")
+              print("")
+              print("=" * 60)
+              print("BASIC HARD FILTER")
+              print("=" * 60)
 
-              combined = " ".join([
-                  title,
-                  premise,
-                  frame,
-                  ending
-              ]).lower()
+              for candidate in candidates:
 
-              reason = None
-
-              if not title.strip():
-                  reason = "missing title"
-
-              elif len(premise.strip()) < 25:
-                  reason = "premise too short"
-
-              elif len(frame.strip()) < 45:
-                  reason = "first frame description too short"
-
-              elif len(ending.strip()) < 25:
-                  reason = "ending too short"
-
-              else:
-
-                  for phrase in banned_phrases:
-
-                      if contains_phrase(
-                          combined,
-                          phrase
-                      ):
-
-                          reason = f"banned: {phrase}"
-                          break
-
-              if reason:
-
-                  rejected.append(candidate)
-
-                  print(
-                      f"REJECTED: "
-                      f"{candidate.get('id')} "
-                      f"{title} -> {reason}"
+                  title = candidate.get(
+                      "title",
+                      ""
                   )
 
-              else:
+                  premise = candidate.get(
+                      "premise",
+                      ""
+                  )
 
-                  survivors.append(candidate)
+                  frame = candidate.get(
+                      "static_frame_1",
+                      ""
+                  )
 
-          print("")
-          print(f"Survivors: {len(survivors)}")
-          print(f"Rejected: {len(rejected)}")
+                  ending = candidate.get(
+                      "ending",
+                      ""
+                  )
 
-          if len(survivors) < 3:
+                  combined = " ".join([
+                      title,
+                      premise,
+                      frame,
+                      ending
+                  ]).lower()
 
-              raise RuntimeError(
-                  "Fewer than 3 concepts survived the hard filter."
+                  reason = None
+
+                  if not title.strip():
+                      reason = "missing title"
+
+                  elif len(premise.strip()) < 30:
+                      reason = "premise too short"
+
+                  elif len(frame.strip()) < 60:
+                      reason = "static frame too short"
+
+                  elif len(ending.strip()) < 30:
+                      reason = "ending too short"
+
+                  else:
+
+                      for phrase in banned_phrases:
+
+                          if contains_phrase(
+                              combined,
+                              phrase
+                          ):
+
+                              reason = (
+                                  f"banned: {phrase}"
+                              )
+
+                              break
+
+                  if reason:
+
+                      print(
+                          f"REJECTED: "
+                          f"{candidate.get('id')} "
+                          f"{title} -> {reason}"
+                      )
+
+                  else:
+
+                      survivors.append(
+                          candidate
+                      )
+
+              print("")
+              print(
+                  f"Basic survivors: "
+                  f"{len(survivors)}"
               )
 
+              return survivors
+
 
           # ============================================================
-          # STAGE 3 — AI CREATIVE JUDGE
+          # GENERATE FIRST BATCH
           # ============================================================
 
           print("")
           print("=" * 60)
-          print("AI CREATIVE JUDGE")
+          print("CANDIDATE GENERATION")
           print("=" * 60)
 
-          judge_schema = {
+          candidates = generate_candidates(
+              count=12,
+              starting_id=1
+          )
+
+          print(
+              f"Generated: "
+              f"{len(candidates)}"
+          )
+
+          survivors = basic_filter(
+              candidates
+          )
+
+
+          # ============================================================
+          # STRICT CREATIVE GATE
+          # ============================================================
+
+          gate_schema = {
               "type": "object",
               "properties": {
                   "evaluations": {
@@ -466,111 +611,212 @@ jobs:
                       "items": {
                           "type": "object",
                           "properties": {
+
                               "id": {
                                   "type": "integer"
                               },
-                              "hook": {
-                                  "type": "integer"
+
+                              "hook_pass": {
+                                  "type": "boolean"
                               },
-                              "clarity": {
-                                  "type": "integer"
+
+                              "visible_threat_pass": {
+                                  "type": "boolean"
                               },
-                              "ending": {
-                                  "type": "integer"
+
+                              "flow_pass": {
+                                  "type": "boolean"
                               },
-                              "flow": {
-                                  "type": "integer"
+
+                              "originality_pass": {
+                                  "type": "boolean"
                               },
-                              "originality": {
-                                  "type": "integer"
+
+                              "rule_pass": {
+                                  "type": "boolean"
                               },
-                              "rewatch": {
-                                  "type": "integer"
+
+                              "eligible": {
+                                  "type": "boolean"
                               },
-                              "overall": {
-                                  "type": "integer"
+
+                              "reason": {
+                                  "type": "string"
                               }
                           },
+
                           "required": [
                               "id",
-                              "hook",
-                              "clarity",
-                              "ending",
-                              "flow",
-                              "originality",
-                              "rewatch",
-                              "overall"
+                              "hook_pass",
+                              "visible_threat_pass",
+                              "flow_pass",
+                              "originality_pass",
+                              "rule_pass",
+                              "eligible",
+                              "reason"
                           ],
+
                           "additionalProperties": False
                       }
                   }
               },
+
               "required": [
                   "evaluations"
               ],
+
               "additionalProperties": False
           }
 
-          judge_input = json.dumps(
-              survivors,
-              ensure_ascii=False
-          )
 
-          judge_prompt = f"""
-          You are the strict creative director for The Quiet Vault.
+          def run_creative_gate(
+              candidates
+          ):
 
-          Judge every horror Short concept below.
+              if not candidates:
+                  return []
 
-          Score each from 1 to 10.
+              judge_input = json.dumps(
+                  candidates,
+                  ensure_ascii=False
+              )
 
-          hook:
-          How immediately disturbing is the STATIC FIRST FRAME?
+              prompt = f"""
+          You are the FINAL CREATIVE GATEKEEPER for The Quiet Vault.
 
-          clarity:
-          Can the viewer understand what is wrong visually?
+          Your job is NOT to be generous.
 
-          ending:
-          How strong and surprising is the payoff?
+          Your job is to reject concepts that would produce mediocre
+          YouTube Shorts.
 
-          flow:
-          How reliably can Google Flow create it as realistic live action?
+          Examine each concept below.
 
-          originality:
-          Does it avoid tired horror mechanisms?
+          A concept can become a finalist ONLY if ALL five tests pass.
 
-          rewatch:
-          Does the ending create a reason to replay?
+          TEST 1 — FIRST FRAME HOOK
 
-          overall:
-          Overall YouTube Shorts potential.
+          Look ONLY at static_frame_1.
 
-          The STATIC FIRST FRAME is the most important factor.
+          Ask:
 
-          Do not reward complexity.
-          Prefer simple, immediately understandable visual horror.
+          "If I saw this frozen image for one second with NO audio,
+          NO captions and NO context, would I immediately notice a
+          disturbing contradiction or visible threat?"
 
-          Concepts:
+          PASS only if YES.
+
+          A normal person sitting, standing, walking or looking worried
+          is NOT enough.
+
+          A generic creepy room is NOT enough.
+
+          An empty chair, empty room or ordinary object is NOT enough.
+
+          TEST 2 — VISIBLE THREAT
+
+          The danger must be physically visible.
+
+          A heartbeat, sound, unexplained feeling, narration or implication
+          alone does NOT count.
+
+          PASS only if the viewer can SEE the thing that is wrong.
+
+          TEST 3 — FLOW FEASIBILITY
+
+          Could Google Flow realistically create the scene in 9–12 seconds
+          with simple physical movement?
+
+          PASS only if YES.
+
+          Reject complicated transformations, precise text, tiny visual
+          details, complicated supernatural effects, difficult reflections,
+          or unreliable CGI.
+
+          TEST 4 — ORIGINALITY
+
+          Does the concept avoid tired mechanisms and the banned mechanisms
+          from the concept-generation rules?
+
+          PASS only if the central horror idea feels meaningfully different.
+
+          TEST 5 — RULE COMPLIANCE
+
+          Must use fictional adults only.
+
+          No children, babies, minors or child-centered scenarios.
+
+          No mirrors.
+
+          No reflections.
+
+          No doppelgangers.
+
+          No elevators.
+
+          No cars.
+
+          No hotels.
+
+          No CCTV.
+
+          No ghosts, demons or monsters.
+
+          No gore.
+
+          No disappearing/reappearing mechanism.
+
+          No hidden person simply standing behind someone.
+
+          No possessed household object.
+
+          ELIGIBLE:
+
+          eligible MUST be TRUE only when:
+
+          hook_pass = true
+          AND visible_threat_pass = true
+          AND flow_pass = true
+          AND originality_pass = true
+          AND rule_pass = true
+
+          If even ONE fails, eligible MUST be false.
+
+          Be extremely strict.
+
+          We would rather generate another batch than publish a weak idea.
+
+          CONCEPTS:
 
           {judge_input}
 
-          Return one evaluation for every candidate.
+          Return one evaluation for every concept.
           """
 
-          judge_data = groq_request(
-              judge_prompt,
-              "quiet_vault_judgements",
-              judge_schema,
-              max_tokens=3000
-          )
+              data = groq_request(
+                  prompt,
+                  "quiet_vault_creative_gate",
+                  gate_schema,
+                  max_tokens=3000
+              )
 
-          evaluations = judge_data["evaluations"]
+              return data["evaluations"]
+
+
+          print("")
+          print("=" * 60)
+          print("STRICT CREATIVE GATE")
+          print("=" * 60)
+
+          evaluations = run_creative_gate(
+              survivors
+          )
 
           evaluation_map = {
               item["id"]: item
               for item in evaluations
           }
 
-          ranked = []
+          eligible_candidates = []
 
           for candidate in survivors:
 
@@ -579,61 +825,139 @@ jobs:
               if cid not in evaluation_map:
                   continue
 
-              score = evaluation_map[cid]
+              result = evaluation_map[cid]
 
-              ranked.append(
-                  (
-                      score["overall"],
-                      score["hook"],
-                      score["ending"],
-                      score["rewatch"],
-                      candidate
-                  )
+              eligible = (
+                  result["hook_pass"]
+                  and result["visible_threat_pass"]
+                  and result["flow_pass"]
+                  and result["originality_pass"]
+                  and result["rule_pass"]
+                  and result["eligible"]
               )
-
-          ranked.sort(
-              key=lambda x: (
-                  x[0],
-                  x[1],
-                  x[2],
-                  x[3]
-              ),
-              reverse=True
-          )
-
-          print("")
-          print("JUDGE RESULTS")
-          print("-" * 60)
-
-          for item in ranked:
-
-              candidate = item[4]
-              score = evaluation_map[candidate["id"]]
 
               print(
-                  f"ID: {candidate['id']} "
-                  f"Hook: {score['hook']} "
-                  f"Clarity: {score['clarity']} "
-                  f"Ending: {score['ending']} "
-                  f"Flow: {score['flow']} "
-                  f"Originality: {score['originality']} "
-                  f"Rewatch: {score['rewatch']} "
-                  f"Overall: {score['overall']}"
+                  f"ID {cid} | "
+                  f"Hook={result['hook_pass']} | "
+                  f"Threat={result['visible_threat_pass']} | "
+                  f"Flow={result['flow_pass']} | "
+                  f"Originality={result['originality_pass']} | "
+                  f"Rules={result['rule_pass']} | "
+                  f"ELIGIBLE={eligible}"
+              )
+
+              if eligible:
+
+                  eligible_candidates.append(
+                      candidate
+                  )
+
+              else:
+
+                  print(
+                      f"  REASON: "
+                      f"{result['reason']}"
+                  )
+
+
+          # ============================================================
+          # SECOND BATCH IF NECESSARY
+          # ============================================================
+
+          if len(eligible_candidates) < 3:
+
+              print("")
+              print("=" * 60)
+              print("NOT ENOUGH STRONG CONCEPTS")
+              print("=" * 60)
+
+              print(
+                  f"Only "
+                  f"{len(eligible_candidates)} "
+                  f"concept(s) passed."
+              )
+
+              print(
+                  "Generating 8 additional concepts "
+                  "instead of filling slots with weak ideas."
+              )
+
+              print(
+                  "Waiting 65 seconds for TPM window..."
+              )
+
+              time.sleep(65)
+
+              second_batch = generate_candidates(
+                  count=8,
+                  starting_id=100
+              )
+
+              second_survivors = basic_filter(
+                  second_batch
+              )
+
+              second_evaluations = run_creative_gate(
+                  second_survivors
+              )
+
+              second_map = {
+                  item["id"]: item
+                  for item in second_evaluations
+              }
+
+              for candidate in second_survivors:
+
+                  cid = candidate["id"]
+
+                  if cid not in second_map:
+                      continue
+
+                  result = second_map[cid]
+
+                  eligible = (
+                      result["hook_pass"]
+                      and result["visible_threat_pass"]
+                      and result["flow_pass"]
+                      and result["originality_pass"]
+                      and result["rule_pass"]
+                      and result["eligible"]
+                  )
+
+                  print(
+                      f"SECOND BATCH ID {cid} | "
+                      f"Eligible={eligible}"
+                  )
+
+                  if eligible:
+
+                      eligible_candidates.append(
+                          candidate
+                      )
+
+
+          # ============================================================
+          # FINAL SAFETY CHECK
+          # ============================================================
+
+          if len(eligible_candidates) < 3:
+
+              raise RuntimeError(
+                  "Fewer than 3 concepts passed the strict creative gate. "
+                  "The workflow intentionally refused to manufacture weak "
+                  "finalists."
               )
 
 
           # ============================================================
-          # STAGE 4 — SELECT TOP 3
+          # SELECT THREE
           # ============================================================
 
-          finalists = [
-              item[4]
-              for item in ranked[:3]
-          ]
+          finalists = eligible_candidates[:3]
 
           print("")
           print("=" * 60)
-          print("FINALISTS")
+          print("APPROVED FINALISTS")
           print("=" * 60)
 
           for index, candidate in enumerate(
@@ -642,37 +966,30 @@ jobs:
           ):
 
               print(
-                  f"{index} "
+                  f"{index}. "
                   f"{candidate['title']}"
               )
 
 
           # ============================================================
-          # IMPORTANT RATE-LIMIT PAUSE
+          # WAIT BEFORE FINALIZATION
           # ============================================================
 
           print("")
-          print("=" * 60)
-          print("RATE-LIMIT SAFETY PAUSE")
-          print("=" * 60)
-
           print(
-              "Waiting 65 seconds before finalization "
-              "to clear the rolling Groq TPM window..."
+              "Waiting 65 seconds before finalization..."
           )
 
           time.sleep(65)
 
-          print("Finalization phase starting.")
-
 
           # ============================================================
-          # STAGE 5 — FINAL PACKAGE
-          # ONE REQUEST PER SHORT
+          # FINAL PACKAGE SCHEMA
           # ============================================================
 
           final_schema = {
               "type": "object",
+
               "properties": {
 
                   "id": {
@@ -721,6 +1038,7 @@ jobs:
               },
 
               "required": [
+
                   "id",
                   "title",
                   "short_script",
@@ -732,15 +1050,23 @@ jobs:
                   "hashtags",
                   "thumbnail_frame",
                   "thumbnail_text"
+
               ],
 
               "additionalProperties": False
           }
 
 
-          def validate_final_package(package):
+          # ============================================================
+          # FINAL PACKAGE VALIDATION
+          # ============================================================
 
-              required_fields = [
+          def validate_final_package(
+              package
+          ):
+
+              required = [
+
                   "id",
                   "title",
                   "short_script",
@@ -752,22 +1078,23 @@ jobs:
                   "hashtags",
                   "thumbnail_frame",
                   "thumbnail_text"
+
               ]
 
               missing = [
                   field
-                  for field in required_fields
+                  for field in required
                   if field not in package
               ]
 
               if missing:
 
                   raise RuntimeError(
-                      "Final package missing fields: "
+                      "Missing final fields: "
                       + ", ".join(missing)
                   )
 
-              for field in required_fields:
+              for field in required:
 
                   if field == "id":
                       continue
@@ -778,7 +1105,7 @@ jobs:
                   ):
 
                       raise RuntimeError(
-                          f"Final package field is not text: {field}"
+                          f"Invalid field type: {field}"
                       )
 
                   if (
@@ -787,9 +1114,13 @@ jobs:
                   ):
 
                       raise RuntimeError(
-                          f"Final package field is empty: {field}"
+                          f"Empty field: {field}"
                       )
 
+
+          # ============================================================
+          # FINALIZE ONE SHORT AT A TIME
+          # ============================================================
 
           final_packages = []
 
@@ -801,7 +1132,8 @@ jobs:
               print("")
               print("=" * 60)
               print(
-                  f"FINALIZING SHORT {index}/3"
+                  f"FINALIZING SHORT "
+                  f"{index}/3"
               )
               print("=" * 60)
 
@@ -813,99 +1145,88 @@ jobs:
               final_prompt = f"""
           You are the final scriptwriter for The Quiet Vault.
 
-          Turn this approved horror concept into ONE complete YouTube
-          Shorts package.
+          Turn this APPROVED concept into ONE complete YouTube Shorts package.
 
           APPROVED CONCEPT:
 
           {finalist_json}
 
-          REQUIREMENTS:
+          The concept has already passed a strict creative gate.
 
-          - 9–12 seconds
-          - realistic live-action horror
-          - fictional ADULT characters only
-          - vertical 9:16
-          - photorealistic
-          - recognizable location
-          - visible threat
-          - disturbing first frame
-          - no slow establishing shot
-          - no narration required to understand the visual hook
-          - simple physical action
-          - strong final visual payoff
-          - replay-worthy ending
-          - no minors
-          - no celebrities
-          - no real-person likenesses
-          - no mirrors
-          - no reflections
-          - no elevators
-          - no cars
-          - no hotels
-          - no CCTV
-          - no doppelgangers
-          - no monsters
-          - no ghosts
-          - no demons
-          - no gore
-          - no complicated CGI
-          - no subtitles
-          - no logos
-          - no on-screen text
+          Preserve its core visual idea.
 
-          SHORT SCRIPT:
-          Write a compact timed 9–12 second script.
+          Do NOT replace the central mechanism with a different horror
+          mechanism.
 
-          VISUAL HOOK:
-          Describe exactly what is visible in frame one.
+          FORMAT:
 
-          FLOW PROMPT:
-          Write ONE complete Google Flow prompt ready to paste.
+          9–12 second YouTube Short.
 
-          Include:
-          - vertical 9:16
-          - photorealistic live action
-          - fictional adults
-          - consistent character appearance
-          - location
-          - camera
-          - lighting
-          - first-frame composition
-          - simple movement
-          - timing
-          - realistic behavior
-          - final visual beat
-          - no text
-          - no subtitles
-          - no logos
-          - no celebrity likeness
-          - no minors
+          The first frame must immediately show the exact disturbing
+          situation described in static_frame_1.
 
-          FINAL TWIST:
-          Explain the final visual payoff clearly.
+          No normal establishing shot.
 
-          DESCRIPTION:
-          Write a YouTube Shorts description.
+          The viewer must be able to understand the visual hook without
+          narration.
 
-          KEYWORDS:
-          One comma-separated keyword line.
+          Use fictional ADULT characters only.
 
-          HASHTAGS:
-          One compact hashtag line.
+          Realistic cinematic live action.
 
-          THUMBNAIL FRAME:
-          Identify the strongest frame to use.
+          Vertical 9:16.
 
-          THUMBNAIL TEXT:
-          Give optional 2–5 word text.
-          If text would weaken the thumbnail, return an empty string.
+          Photorealistic.
 
-          CRITICAL:
+          Simple physical movement.
 
-          You MUST return ALL 11 fields.
+          Strong visible ending.
 
-          Required fields:
+          No minors.
+
+          No children.
+
+          No babies.
+
+          No nursery.
+
+          No crib.
+
+          No mirrors.
+
+          No reflections.
+
+          No doppelgangers.
+
+          No elevators.
+
+          No cars.
+
+          No hotels.
+
+          No CCTV.
+
+          No ghosts.
+
+          No demons.
+
+          No monsters.
+
+          No gore.
+
+          No complicated CGI.
+
+          No impossible anatomy.
+
+          No subtitles.
+
+          No on-screen text.
+
+          No logos.
+
+          No celebrity likeness.
+
+          REQUIRED OUTPUT:
 
           id
           title
@@ -919,14 +1240,66 @@ jobs:
           thumbnail_frame
           thumbnail_text
 
-          NEVER omit any field.
+          short_script:
+          Write the complete 9–12 second timed action.
+
+          visual_hook:
+          Describe the exact first frame as a frozen screenshot.
+
+          flow_prompt:
+          Write ONE Google Flow-ready prompt.
+
+          It must specify:
+          - vertical 9:16
+          - photorealistic live action
+          - fictional adult characters
+          - consistent character appearance
+          - recognizable location
+          - exact first-frame composition
+          - camera framing
+          - lighting
+          - simple realistic movements
+          - timing
+          - final visual beat
+          - no text
+          - no subtitles
+          - no logos
+          - no real-person likenesses
+
+          final_twist:
+          Explain exactly what the viewer discovers at the end.
+
+          description:
+          Write a natural YouTube Shorts description.
+
+          keywords:
+          Give useful comma-separated keywords.
+
+          hashtags:
+          Give useful hashtags.
+
+          thumbnail_frame:
+          Specify the strongest frame and approximate timing.
+
+          thumbnail_text:
+          Give optional 2–5 word thumbnail text.
+          Empty string is acceptable if text is unnecessary.
+
+          CRITICAL:
+
+          Return ALL 11 fields.
+
+          Never omit a field.
 
           Return ONLY JSON.
           """
 
               package = None
 
-              for attempt in range(1, 4):
+              for attempt in range(
+                  1,
+                  4
+              ):
 
                   try:
 
@@ -934,8 +1307,7 @@ jobs:
                           final_prompt,
                           "quiet_vault_final_package",
                           final_schema,
-                          max_tokens=3000,
-                          max_attempts=5
+                          max_tokens=3000
                       )
 
                       validate_final_package(
@@ -946,57 +1318,54 @@ jobs:
 
                   except Exception as error:
 
-                      print("")
                       print(
                           f"Finalization attempt "
-                          f"{attempt} failed: {error}"
+                          f"{attempt} failed: "
+                          f"{error}"
                       )
 
-                      if attempt == 3:
+                      if attempt >= 3:
 
                           raise RuntimeError(
-                              f"Could not finalize Short {index}"
+                              f"Could not finalize "
+                              f"Short {index}"
                           )
 
                       print(
-                          "Waiting 10 seconds before "
-                          "retrying finalization..."
+                          "Waiting 10 seconds before retry..."
                       )
 
                       time.sleep(10)
 
-              final_packages.append(package)
+              final_packages.append(
+                  package
+              )
 
               print(
                   f"FINALIZED: "
                   f"{package['title']}"
               )
 
-
-              # Give the TPM window a little breathing room
-              # between final package calls.
               if index < len(finalists):
 
                   print(
-                      "Waiting 8 seconds before next "
-                      "final package..."
+                      "Waiting 10 seconds before "
+                      "next final package..."
                   )
 
-                  time.sleep(8)
+                  time.sleep(10)
 
 
           # ============================================================
-          # STAGE 6 — SAVE OUTPUT
+          # SAVE JSON
           # ============================================================
 
           batch = {
               "shorts": final_packages
           }
 
-          batch_path = OUTPUT_DIR / "batch.json"
-
           with open(
-              batch_path,
+              OUTPUT_DIR / "batch.json",
               "w",
               encoding="utf-8"
           ) as f:
@@ -1008,6 +1377,10 @@ jobs:
                   indent=2
               )
 
+
+          # ============================================================
+          # SAVE MARKDOWN FILES
+          # ============================================================
 
           for index, package in enumerate(
               final_packages,
@@ -1053,19 +1426,19 @@ jobs:
           {package['thumbnail_text']}
           """
 
-              path = (
-                  OUTPUT_DIR
-                  / f"short_{index:02d}.md"
-              )
-
               with open(
-                  path,
+                  OUTPUT_DIR
+                  / f"short_{index:02d}.md",
                   "w",
                   encoding="utf-8"
               ) as f:
 
                   f.write(markdown)
 
+
+          # ============================================================
+          # COMPLETE
+          # ============================================================
 
           print("")
           print("=" * 60)
@@ -1074,11 +1447,17 @@ jobs:
 
           print(
               f"Generated "
-              f"{len(final_packages)} complete Shorts."
+              f"{len(final_packages)} "
+              f"approved Shorts."
           )
 
           print(
-              f"Output directory: "
+              "These concepts passed the strict "
+              "creative gate before finalization."
+          )
+
+          print(
+              f"Output: "
               f"{OUTPUT_DIR}"
           )
 
