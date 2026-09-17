@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Generate 3 horror Shorts
+      - name: Generate and quality-filter 3 horror Shorts
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
@@ -26,33 +26,106 @@ jobs:
               raise SystemExit(1)
 
           prompt = r"""
-          You are the head writer and creative director for "The Quiet Vault",
-          a YouTube Shorts horror channel.
+          You are the senior writer and ruthless creative director for
+          "The Quiet Vault", a realistic cinematic horror YouTube Shorts channel.
 
-          Generate EXACTLY 3 completely different original horror Shorts.
+          Your job is NOT to generate generic horror ideas.
 
-          IMPORTANT CHANNEL STYLE:
+          Your job is to find 3 highly visual, original, believable horror
+          concepts that have a strong chance of stopping a viewer from swiping.
 
-          - Each Short must be 10-15 seconds when produced.
-          - Realistic, cinematic, believable horror.
-          - Fictional ADULT characters only.
-          - No children or minors.
-          - No celebrities or real-person likenesses.
-          - Recognizable everyday locations.
-          - The disturbing visual must be understandable immediately.
-          - The threat/anomaly must be VISIBLE, not merely implied.
-          - One simple physical contradiction is better than complicated mythology.
-          - No gore.
-          - No generic demons or monsters.
-          - No complicated supernatural explanations.
-          - The ending must create an immediate "wait... what?" reaction.
-          - The concept must be easy for an AI video generator to visualize.
-          - Prefer one strong continuous shot or two simple shots.
-          - Avoid long dialogue.
-          - Avoid slow introductions.
-          - The first frame must already contain something wrong.
+          ============================================================
+          CREATIVE TARGET
+          ============================================================
 
-          DO NOT reuse these overused mechanisms:
+          Each Short should feel like:
+
+          "This could almost happen in real life... but one thing is
+          completely wrong."
+
+          The viewer must be able to understand the disturbing visual
+          WITHOUT relying on narration.
+
+          Target duration: 9-15 seconds.
+
+          Use fictional ADULT characters only.
+          No children or minors.
+          No celebrities.
+          No real-person likenesses.
+          No gore.
+
+          ============================================================
+          THE 6-STEP STORY STRUCTURE
+          ============================================================
+
+          Every selected concept MUST contain:
+
+          1. IMMEDIATE VISUAL HOOK
+             The first frame already contains something visibly wrong.
+
+          2. NORMAL CONTEXT
+             The viewer immediately understands where the character is
+             and what they are doing.
+
+          3. SIMPLE ESCALATION
+             Something physically changes within a few seconds.
+
+          4. REVELATION
+             The viewer realizes the situation is stranger than initially
+             understood.
+
+          5. FINAL VISUAL TWIST
+             One strong final image or action.
+
+          6. HARD ENDING
+             End immediately after the reveal.
+             No explanation.
+             No long dialogue.
+
+          ============================================================
+          WHAT WE WANT
+          ============================================================
+
+          Prefer:
+
+          - realistic human behavior
+          - apartments
+          - offices
+          - bathrooms
+          - kitchens
+          - staircases
+          - supermarkets
+          - parking areas
+          - hospitals
+          - restaurants
+          - workplaces
+          - public places
+          - building lobbies
+          - pharmacies
+          - laundromats
+          - rooftops
+          - balconies
+          - convenience stores
+          - ordinary streets
+
+          Strong mechanisms include:
+
+          - someone being somewhere they should not be
+          - an ordinary action happening in an impossible way
+          - a person reacting to something the viewer can clearly see
+          - an object behaving in a physically understandable but disturbing way
+          - a locked/open contradiction
+          - a time/order contradiction
+          - a person knowing something they could not know
+          - an ordinary physical event revealing a disturbing truth
+          - an apparently safe situation becoming unsafe through one visible change
+
+          ============================================================
+          HARD EXCLUSIONS
+          ============================================================
+
+          DO NOT USE:
+
           - elevator horror
           - car horror
           - hotel horror
@@ -65,85 +138,237 @@ jobs:
           - train horror
           - 180-degree head/face distortion
           - disappearing/reappearing people
+          - floating mugs
+          - possessed household objects
+          - cereal boxes with faces
+          - random body parts appearing
+          - objects growing human faces
+          - generic demons
+          - generic ghosts
+          - monsters
+          - zombies
+          - excessive blood
+          - gore
+          - complicated mythology
+          - complicated transformations
+          - impossible anatomy
+          - giant creatures
+          - jump scares with no story
+          - "it was actually me" twists unless the visual execution is
+            extremely clear
+          - twists that require complicated CGI
+          - twists that cannot be understood visually
+          - long conversations
+          - exposition
+          - stories depending entirely on narration
 
-          Create THREE different mechanisms and locations.
+          ============================================================
+          FLOW FEASIBILITY
+          ============================================================
 
-          Examples of acceptable locations:
-          apartment hallway, bathroom, supermarket, office, parking area,
-          staircase, laundromat, restaurant, hospital corridor, rooftop,
-          pharmacy, ATM area, public restroom, kitchen, balcony, workplace,
-          convenience store, bus stop, building lobby.
+          Every concept MUST be easy for Google Flow to generate.
 
-          IMPORTANT:
-          Do not make all three stories use the same relationship or type of threat.
+          Prefer:
 
-          Each Short must include:
+          - one or two adult characters
+          - one location
+          - one camera
+          - one continuous shot or two simple shots
+          - simple human movement
+          - simple physical actions
+          - realistic lighting
+          - realistic environments
+
+          Avoid:
+
+          - complex reflections
+          - complex transformations
+          - many characters
+          - crowds
+          - complicated camera choreography
+          - impossible anatomy
+          - detailed supernatural creatures
+
+          ============================================================
+          GENERATE A LARGE IDEA POOL FIRST
+          ============================================================
+
+          Internally generate at least 12 different concepts.
+
+          They must use different:
+
+          - locations
+          - mechanisms
+          - character situations
+          - types of threat
+          - endings
+
+          Do NOT select the first 3 acceptable ideas.
+
+          ============================================================
+          RUTHLESS QUALITY FILTER
+          ============================================================
+
+          Internally evaluate every idea.
+
+          Reject any idea if:
+
+          - the horror is not visible in frame 1
+          - narration is required to understand what is wrong
+          - it feels like a generic AI horror video
+          - the twist is predictable
+          - the twist requires complicated CGI
+          - it resembles the excluded mechanisms
+          - it is more funny than frightening
+          - the ending is merely "the object disappears"
+          - the ending is merely "the character screams"
+          - the viewer would need an explanation
+          - the visual would probably look fake
+          - the concept feels copied from common horror Shorts
+          - the first frame is ordinary
+          - nothing meaningful changes during the Short
+
+          ============================================================
+          IMPORTANT STOP-SCROLL TEST
+          ============================================================
+
+          For every surviving idea, ask:
+
+          "If I show only the first frame to someone for one second,
+          would they immediately notice something is wrong?"
+
+          If NO: reject it.
+
+          Then ask:
+
+          "If the viewer watches without sound, will they understand
+          the horror?"
+
+          If NO: reject it.
+
+          Then ask:
+
+          "Can Google Flow realistically create the required action?"
+
+          If NO: reject it.
+
+          Then ask:
+
+          "Does the ending create a genuine 'wait... what?' moment?"
+
+          If NO: reject it.
+
+          ============================================================
+          FINAL SELECTION
+          ============================================================
+
+          Select EXACTLY 3 concepts.
+
+          The three concepts must NOT share the same core mechanism.
+
+          Do not select three versions of the same idea.
+
+          ============================================================
+          OUTPUT PACKAGE
+          ============================================================
+
+          For each selected Short provide:
 
           1. TITLE
+
+          Title should create curiosity without explaining the twist.
+
           2. SHORT_SCRIPT
-             - narration/dialogue if any
-             - maximum approximately 35 spoken words
+
+          Maximum approximately 35 spoken words.
+
+          Narration should be minimal.
+          Dialogue only when it adds value.
+
           3. VISUAL_HOOK
-             - describe exactly what is visible in the first frame
+
+          Describe exactly what is visible in frame 1.
+
           4. FLOW_PROMPT
-             - one complete Google Flow prompt ready to paste
-             - vertical 9:16
-             - photorealistic live-action
-             - fictional adult characters
-             - no celebrity likeness
-             - exact visual action
-             - camera movement
-             - lighting
-             - environment
-             - timing
-             - ending
-             - no text rendered inside the video
+
+          Write ONE complete Google Flow prompt ready to paste.
+
+          It must specify:
+
+          - vertical 9:16
+          - 9-15 seconds
+          - photorealistic live-action
+          - fictional adult characters
+          - no celebrity likeness
+          - location
+          - character appearance
+          - camera position
+          - camera movement
+          - lighting
+          - exact physical action
+          - timing
+          - final visual twist
+          - hard ending
+          - no text
+          - no subtitles
+          - no logos
+          - no watermark
+          - no gore
+          - no monsters
+
+          Do not rely on complex visual effects.
+
           5. FINAL_TWIST
+
+          Explain the final visual revelation in one or two sentences.
+
           6. DESCRIPTION
+
+          Natural YouTube description.
+          Do not claim the story is real.
+          Do not mention AI generation.
+          Do not keyword stuff.
+
           7. KEYWORDS
-             - comma-separated
+
+          10-20 relevant comma-separated keywords.
+
           8. HASHTAGS
+
+          4-8 relevant hashtags.
+
           9. THUMBNAIL_FRAME
-             - specify the exact moment/frame to use
+
+          Identify the strongest exact moment/frame.
+
           10. THUMBNAIL_TEXT
-              - maximum 4 words, or "NONE"
 
-          DESCRIPTION RULES:
-          - Write a natural YouTube description.
-          - Do not stuff keywords.
-          - Do not claim the story is real if it is fictional.
-          - Do not mention AI generation.
+          Maximum 4 words.
+          It should create curiosity.
+          Use "NONE" if text would weaken the thumbnail.
 
-          KEYWORD RULES:
-          - 10-20 relevant keywords.
-          - comma-separated.
-          - No keyword stuffing.
+          ============================================================
+          FINAL SELF-CRITIQUE
+          ============================================================
 
-          FLOW PROMPT RULES:
-          - Must be directly usable without additional explanation.
-          - Do not ask Flow to create complex reflections.
-          - Do not use impossible anatomy.
-          - Do not require many characters.
-          - Avoid complicated transformations.
-          - Make the horror visible through a simple physical event.
-          - Maintain consistent adult character appearance throughout.
-          - Use natural human movement.
-          - Photorealistic live-action cinematic horror.
-          - 9:16 vertical.
-          - 10-15 second duration.
-          - No gore.
-          - No monsters.
-          - No text, subtitles, logos or watermarks.
-          - No real person or celebrity likeness.
+          Before returning the final JSON, mentally inspect each selected
+          concept as if the finished video were playing.
 
-          QUALITY RULE:
-          Before finalizing each concept, mentally ask:
-          "If someone watches the generated video without hearing the narration,
-          will they immediately understand that something is wrong?"
+          Reject and replace any concept that would likely look:
 
-          If the answer is no, replace the concept.
+          - silly
+          - confusing
+          - cartoonish
+          - overly supernatural
+          - visually weak
+          - difficult for Flow to generate
+          - boring after the first 2 seconds
 
-          Return ONLY valid JSON using exactly this structure:
+          Quality is more important than variety.
+
+          Return ONLY valid JSON.
+
+          Use exactly this structure:
 
           {
             "shorts": [
@@ -197,15 +422,19 @@ jobs:
               "messages": [
                   {
                       "role": "system",
-                      "content": "You are an expert horror Shorts writer and must return valid JSON only."
+                      "content": (
+                          "You are a senior horror creative director. "
+                          "Generate original, visually clear, realistic "
+                          "horror Shorts. Return valid JSON only."
+                      )
                   },
                   {
                       "role": "user",
                       "content": prompt
                   }
               ],
-              "temperature": 0.9,
-              "max_completion_tokens": 6000,
+              "temperature": 0.95,
+              "max_completion_tokens": 9000,
               "response_format": {
                   "type": "json_object"
               }
@@ -223,7 +452,7 @@ jobs:
           )
 
           try:
-              with urllib.request.urlopen(request, timeout=120) as response:
+              with urllib.request.urlopen(request, timeout=180) as response:
                   result = json.loads(response.read())
 
           except urllib.error.HTTPError as e:
@@ -250,14 +479,34 @@ jobs:
               print("Received:", len(shorts))
               raise SystemExit(1)
 
+          required_fields = [
+              "id",
+              "title",
+              "short_script",
+              "visual_hook",
+              "flow_prompt",
+              "final_twist",
+              "description",
+              "keywords",
+              "hashtags",
+              "thumbnail_frame",
+              "thumbnail_text"
+          ]
+
+          for short in shorts:
+              missing = [field for field in required_fields if field not in short]
+
+              if missing:
+                  print("ERROR: Missing fields in Short", short.get("id"))
+                  print("Missing:", missing)
+                  raise SystemExit(1)
+
           output_dir = Path("quiet-vault-output")
           output_dir.mkdir(exist_ok=True)
 
-          # Save complete JSON
           with open(output_dir / "batch.json", "w", encoding="utf-8") as f:
               json.dump(output, f, ensure_ascii=False, indent=2)
 
-          # Create an easy-to-read Markdown file for each Short
           for short in shorts:
               i = short["id"]
 
