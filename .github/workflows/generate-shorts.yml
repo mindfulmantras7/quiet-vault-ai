@@ -19,6 +19,7 @@ jobs:
           import json
           import os
           import re
+          import time
           import urllib.request
           import urllib.error
           from pathlib import Path
@@ -30,7 +31,19 @@ jobs:
           OUTPUT_DIR = Path("quiet-vault-output")
           OUTPUT_DIR.mkdir(exist_ok=True)
 
-          def groq_request(prompt, schema_name, schema, max_tokens=8000):
+
+          # ============================================================
+          # GROQ REQUEST WITH RATE-LIMIT HANDLING
+          # ============================================================
+
+          def groq_request(
+              prompt,
+              schema_name,
+              schema,
+              max_tokens=5000,
+              max_attempts=5
+          ):
+
               payload = {
                   "model": MODEL,
                   "messages": [
@@ -55,58 +68,118 @@ jobs:
 
               data = json.dumps(payload).encode("utf-8")
 
-              request = urllib.request.Request(
-                  ENDPOINT,
-                  data=data,
-                  headers={
-                      "Content-Type": "application/json",
-                      "Authorization": f"Bearer {API_KEY}",
-                      "User-Agent": "QuietVaultAI/1.0"
-                  },
-                  method="POST"
-              )
+              for attempt in range(1, max_attempts + 1):
 
-              try:
-                  with urllib.request.urlopen(request, timeout=180) as response:
-                      body = response.read().decode("utf-8")
-                      result = json.loads(body)
-
-              except urllib.error.HTTPError as e:
-                  error_body = e.read().decode("utf-8", errors="replace")
-
-                  print("")
-                  print("=" * 60)
-                  print("GROQ ERROR")
-                  print(f"HTTP: {e.code}")
-                  print(error_body)
-                  print("=" * 60)
-                  print("")
-
-                  raise RuntimeError(
-                      f"Groq returned HTTP {e.code}"
+                  request = urllib.request.Request(
+                      ENDPOINT,
+                      data=data,
+                      headers={
+                          "Content-Type": "application/json",
+                          "Authorization": f"Bearer {API_KEY}",
+                          "User-Agent": "QuietVaultAI/1.0"
+                      },
+                      method="POST"
                   )
 
-              except Exception as e:
-                  print("")
-                  print("=" * 60)
-                  print("REQUEST ERROR")
-                  print(str(e))
-                  print("=" * 60)
-                  print("")
-                  raise
+                  try:
 
-              content = result["choices"][0]["message"]["content"]
+                      with urllib.request.urlopen(
+                          request,
+                          timeout=180
+                      ) as response:
 
-              try:
-                  return json.loads(content)
-              except json.JSONDecodeError:
-                  print("")
-                  print("=" * 60)
-                  print("INVALID JSON FROM GROQ")
-                  print(content)
-                  print("=" * 60)
-                  print("")
-                  raise RuntimeError("Groq returned invalid JSON")
+                          body = response.read().decode("utf-8")
+                          result = json.loads(body)
+
+                      content = result["choices"][0]["message"]["content"]
+
+                      try:
+                          return json.loads(content)
+
+                      except json.JSONDecodeError:
+
+                          print("")
+                          print("=" * 60)
+                          print("INVALID JSON FROM GROQ")
+                          print(content)
+                          print("=" * 60)
+                          print("")
+
+                          raise RuntimeError(
+                              "Groq returned invalid JSON"
+                          )
+
+                  except urllib.error.HTTPError as e:
+
+                      error_body = e.read().decode(
+                          "utf-8",
+                          errors="replace"
+                      )
+
+                      print("")
+                      print("=" * 60)
+                      print("GROQ ERROR")
+                      print(f"HTTP: {e.code}")
+                      print(error_body)
+                      print("=" * 60)
+                      print("")
+
+                      # ------------------------------------------------
+                      # RATE LIMIT
+                      # ------------------------------------------------
+
+                      if e.code == 429:
+
+                          if attempt >= max_attempts:
+                              raise RuntimeError(
+                                  "Groq rate limit persisted after retries."
+                              )
+
+                          retry_after = None
+
+                          try:
+                              retry_after = e.headers.get(
+                                  "retry-after"
+                              )
+                          except Exception:
+                              pass
+
+                          if retry_after:
+                              try:
+                                  wait_time = float(retry_after) + 2
+                              except ValueError:
+                                  wait_time = 10
+                          else:
+
+                              wait_time = min(
+                                  5 * (2 ** (attempt - 1)),
+                                  65
+                              )
+
+                          print(
+                              f"RATE LIMIT HIT. "
+                              f"Waiting {wait_time:.1f}s "
+                              f"before retry "
+                              f"{attempt + 1}/{max_attempts}..."
+                          )
+
+                          time.sleep(wait_time)
+                          continue
+
+                      raise RuntimeError(
+                          f"Groq returned HTTP {e.code}"
+                      )
+
+                  except Exception as e:
+
+                      print("")
+                      print("=" * 60)
+                      print("REQUEST ERROR")
+                      print(str(e))
+                      print("=" * 60)
+                      print("")
+
+                      raise
 
 
           # ============================================================
@@ -165,64 +238,50 @@ jobs:
 
           Generate EXACTLY 12 different horror Short concepts.
 
-          TARGET FORMAT:
+          FORMAT:
           - 9–12 second YouTube Short
           - English
-          - Realistic live-action horror
-          - Mostly adult fictional characters
-          - Simple enough for Google Flow/Veo
-          - A recognizable real-world location
-          - A human-centered threat or contradiction
-          - The scary thing must be VISUALLY PRESENT
-          - The first frame must already contain something wrong
-          - The viewer should understand the danger without needing narration
-          - Strong ending/payoff
-          - Designed for replay
+          - realistic live-action horror
+          - fictional adult characters
+          - recognizable real-world location
+          - visible human-centered threat or contradiction
+          - disturbing visual present from frame one
+          - simple enough for Google Flow/Veo
+          - strong final payoff
+          - replay-worthy ending
 
-          IMPORTANT FIRST-FRAME RULE:
+          FIRST-FRAME RULE:
 
-          static_frame_1 must describe a SINGLE frozen screenshot.
+          static_frame_1 must describe ONE frozen screenshot.
 
-          Someone looking only at that screenshot should immediately see
-          something disturbing, impossible, dangerous, or clearly wrong.
+          Someone seeing only that screenshot should immediately understand
+          that something is wrong.
 
           GOOD:
           "A woman stands in her bedroom while the locked bedroom door is
           visibly being opened from the hallway by an unfamiliar adult hand."
 
-          GOOD:
-          "A man sits alone at his office desk while the office door behind
-          him is visibly locked with a person standing on the wrong side of
-          the glass."
-
           BAD:
           "A woman stands in her bedroom."
 
           BAD:
-          "A man looks scared."
+          "A man becomes scared."
 
-          BAD:
-          "A strange thing happens later."
+          The first frame must work without narration or explanation.
 
-          BAD:
-          "The viewer slowly realizes something is wrong."
-
-          The first frame must work WITHOUT dialogue, captions, narration,
-          or knowledge of the ending.
-
-          FAVOR:
+          Prefer:
           - someone being somewhere they should not be
-          - a locked/open contradiction
-          - an ordinary action happening incorrectly
-          - a person visibly reacting to a clear physical anomaly
-          - a familiar place containing one unmistakably wrong human element
-          - family or relationship situations involving adults
+          - locked/open contradictions
+          - ordinary actions happening incorrectly
+          - familiar locations containing one clearly wrong human element
+          - adult family or relationship situations
 
           AVOID:
           elevators
           cars
           hotels
-          CCTV/security footage
+          CCTV
+          security footage
           mirrors
           reflections
           doppelgangers
@@ -230,27 +289,23 @@ jobs:
           printers
           trains
           floating objects
-          objects growing faces
           possessed household objects
+          objects growing faces
           random body parts
           disappearing/reappearing people
           ghosts
           demons
           monsters
           zombies
-          giant creatures
           gore
-          complicated CGI
+          giant creatures
           impossible anatomy
           head distortion
-          long conversations
+          complicated CGI
           mythology
-          complicated supernatural explanations
+          long conversations
 
-          Do not reuse the same mechanism across multiple concepts.
-
-          Every concept must be practical for a short photorealistic
-          Google Flow video.
+          Do not reuse the same mechanism repeatedly.
 
           Return EXACTLY 12 candidates.
           """
@@ -259,7 +314,7 @@ jobs:
               candidate_prompt,
               "quiet_vault_candidates",
               candidate_schema,
-              8000
+              max_tokens=4000
           )
 
           candidates = candidates_data["candidates"]
@@ -313,6 +368,7 @@ jobs:
           ]
 
           def contains_phrase(text, phrase):
+
               text = text.lower()
               phrase = phrase.lower()
 
@@ -329,6 +385,7 @@ jobs:
           rejected = []
 
           for candidate in candidates:
+
               title = candidate.get("title", "")
               premise = candidate.get("premise", "")
               frame = candidate.get("static_frame_1", "")
@@ -356,18 +413,29 @@ jobs:
                   reason = "ending too short"
 
               else:
+
                   for phrase in banned_phrases:
-                      if contains_phrase(combined, phrase):
+
+                      if contains_phrase(
+                          combined,
+                          phrase
+                      ):
+
                           reason = f"banned: {phrase}"
                           break
 
               if reason:
+
                   rejected.append(candidate)
+
                   print(
-                      f"REJECTED: {candidate.get('id')} "
+                      f"REJECTED: "
+                      f"{candidate.get('id')} "
                       f"{title} -> {reason}"
                   )
+
               else:
+
                   survivors.append(candidate)
 
           print("")
@@ -375,6 +443,7 @@ jobs:
           print(f"Rejected: {len(rejected)}")
 
           if len(survivors) < 3:
+
               raise RuntimeError(
                   "Fewer than 3 concepts survived the hard filter."
               )
@@ -450,9 +519,9 @@ jobs:
           judge_prompt = f"""
           You are the strict creative director for The Quiet Vault.
 
-          Judge the following horror Short concepts.
+          Judge every horror Short concept below.
 
-          SCORE EACH FROM 1 TO 10.
+          Score each from 1 to 10.
 
           hook:
           How immediately disturbing is the STATIC FIRST FRAME?
@@ -464,22 +533,18 @@ jobs:
           How strong and surprising is the payoff?
 
           flow:
-          How reliably can Google Flow create this as realistic live action?
+          How reliably can Google Flow create it as realistic live action?
 
           originality:
           Does it avoid tired horror mechanisms?
 
           rewatch:
-          Does the ending make the viewer want to replay the Short?
+          Does the ending create a reason to replay?
 
           overall:
-          Your overall assessment of the concept as a YouTube Short.
+          Overall YouTube Shorts potential.
 
-          VERY IMPORTANT:
-          The first-frame screenshot matters more than the written premise.
-
-          Reject concepts mentally if the screenshot would look normal
-          without narration or explanation.
+          The STATIC FIRST FRAME is the most important factor.
 
           Do not reward complexity.
           Prefer simple, immediately understandable visual horror.
@@ -495,7 +560,7 @@ jobs:
               judge_prompt,
               "quiet_vault_judgements",
               judge_schema,
-              8000
+              max_tokens=3000
           )
 
           evaluations = judge_data["evaluations"]
@@ -508,6 +573,7 @@ jobs:
           ranked = []
 
           for candidate in survivors:
+
               cid = candidate["id"]
 
               if cid not in evaluation_map:
@@ -539,7 +605,9 @@ jobs:
           print("JUDGE RESULTS")
           print("-" * 60)
 
-          for overall, hook, ending, rewatch, candidate in ranked:
+          for item in ranked:
+
+              candidate = item[4]
               score = evaluation_map[candidate["id"]]
 
               print(
@@ -568,7 +636,11 @@ jobs:
           print("FINALISTS")
           print("=" * 60)
 
-          for index, candidate in enumerate(finalists, 1):
+          for index, candidate in enumerate(
+              finalists,
+              1
+          ):
+
               print(
                   f"{index} "
                   f"{candidate['title']}"
@@ -576,47 +648,78 @@ jobs:
 
 
           # ============================================================
+          # IMPORTANT RATE-LIMIT PAUSE
+          # ============================================================
+
+          print("")
+          print("=" * 60)
+          print("RATE-LIMIT SAFETY PAUSE")
+          print("=" * 60)
+
+          print(
+              "Waiting 65 seconds before finalization "
+              "to clear the rolling Groq TPM window..."
+          )
+
+          time.sleep(65)
+
+          print("Finalization phase starting.")
+
+
+          # ============================================================
           # STAGE 5 — FINAL PACKAGE
-          # ONE GROQ CALL PER SHORT
+          # ONE REQUEST PER SHORT
           # ============================================================
 
           final_schema = {
               "type": "object",
               "properties": {
+
                   "id": {
                       "type": "integer"
                   },
+
                   "title": {
                       "type": "string"
                   },
+
                   "short_script": {
                       "type": "string"
                   },
+
                   "visual_hook": {
                       "type": "string"
                   },
+
                   "flow_prompt": {
                       "type": "string"
                   },
+
                   "final_twist": {
                       "type": "string"
                   },
+
                   "description": {
                       "type": "string"
                   },
+
                   "keywords": {
                       "type": "string"
                   },
+
                   "hashtags": {
                       "type": "string"
                   },
+
                   "thumbnail_frame": {
                       "type": "string"
                   },
+
                   "thumbnail_text": {
                       "type": "string"
                   }
               },
+
               "required": [
                   "id",
                   "title",
@@ -630,11 +733,13 @@ jobs:
                   "thumbnail_frame",
                   "thumbnail_text"
               ],
+
               "additionalProperties": False
           }
 
 
           def validate_final_package(package):
+
               required_fields = [
                   "id",
                   "title",
@@ -656,21 +761,31 @@ jobs:
               ]
 
               if missing:
+
                   raise RuntimeError(
                       "Final package missing fields: "
                       + ", ".join(missing)
                   )
 
               for field in required_fields:
+
                   if field == "id":
                       continue
 
-                  if not isinstance(package[field], str):
+                  if not isinstance(
+                      package[field],
+                      str
+                  ):
+
                       raise RuntimeError(
                           f"Final package field is not text: {field}"
                       )
 
-                  if not package[field].strip():
+                  if (
+                      not package[field].strip()
+                      and field != "thumbnail_text"
+                  ):
+
                       raise RuntimeError(
                           f"Final package field is empty: {field}"
                       )
@@ -678,11 +793,16 @@ jobs:
 
           final_packages = []
 
-          for index, finalist in enumerate(finalists, 1):
+          for index, finalist in enumerate(
+              finalists,
+              1
+          ):
 
               print("")
               print("=" * 60)
-              print(f"FINALIZING SHORT {index}/3")
+              print(
+                  f"FINALIZING SHORT {index}/3"
+              )
               print("=" * 60)
 
               finalist_json = json.dumps(
@@ -700,45 +820,49 @@ jobs:
 
           {finalist_json}
 
-          ABSOLUTE REQUIREMENTS:
+          REQUIREMENTS:
 
-          1. The finished video must work as a 9–12 second Short.
-
-          2. The first frame must immediately show the disturbing visual
-             described by static_frame_1.
-
-          3. Do NOT begin with a normal establishing shot.
-
-          4. Do NOT require narration to understand the visual hook.
-
-          5. Use fictional ADULT characters only.
-
-          6. Photorealistic live-action style.
-
-          7. Vertical 9:16.
-
-          8. No celebrities or real-person likenesses.
-
-          9. No minors.
-
-          10. No mirrors, reflections, elevators, cars, hotels, CCTV,
-              doppelgangers, monsters, ghosts, demons, gore, or complicated
-              CGI.
-
-          11. Keep the physical action simple and reliable for Google Flow.
-
-          12. The threat must be visually understandable.
-
-          13. The ending should create a strong reason to replay.
+          - 9–12 seconds
+          - realistic live-action horror
+          - fictional ADULT characters only
+          - vertical 9:16
+          - photorealistic
+          - recognizable location
+          - visible threat
+          - disturbing first frame
+          - no slow establishing shot
+          - no narration required to understand the visual hook
+          - simple physical action
+          - strong final visual payoff
+          - replay-worthy ending
+          - no minors
+          - no celebrities
+          - no real-person likenesses
+          - no mirrors
+          - no reflections
+          - no elevators
+          - no cars
+          - no hotels
+          - no CCTV
+          - no doppelgangers
+          - no monsters
+          - no ghosts
+          - no demons
+          - no gore
+          - no complicated CGI
+          - no subtitles
+          - no logos
+          - no on-screen text
 
           SHORT SCRIPT:
-          Write a compact 9–12 second script with timed beats.
+          Write a compact timed 9–12 second script.
 
           VISUAL HOOK:
-          Describe exactly what is visible in the first frame.
+          Describe exactly what is visible in frame one.
 
           FLOW PROMPT:
           Write ONE complete Google Flow prompt ready to paste.
+
           Include:
           - vertical 9:16
           - photorealistic live action
@@ -747,41 +871,41 @@ jobs:
           - location
           - camera
           - lighting
-          - exact first-frame composition
-          - simple physical movement
-          - timing from 0–3s, 3–6s, 6–9s, 9–12s where useful
-          - realistic human behavior
+          - first-frame composition
+          - simple movement
+          - timing
+          - realistic behavior
           - final visual beat
-          - no text on screen
+          - no text
           - no subtitles
           - no logos
           - no celebrity likeness
           - no minors
 
           FINAL TWIST:
-          Clearly explain the final visual payoff in one or two sentences.
+          Explain the final visual payoff clearly.
 
           DESCRIPTION:
           Write a YouTube Shorts description.
 
           KEYWORDS:
-          Give relevant YouTube keywords as one comma-separated line.
+          One comma-separated keyword line.
 
           HASHTAGS:
-          Give relevant hashtags as one compact line.
+          One compact hashtag line.
 
           THUMBNAIL FRAME:
-          Identify the strongest exact moment/frame to use.
+          Identify the strongest frame to use.
 
           THUMBNAIL TEXT:
-          Give very short optional thumbnail text, preferably 2–5 words.
-          It can also be an empty string if text would weaken the thumbnail.
+          Give optional 2–5 word text.
+          If text would weaken the thumbnail, return an empty string.
 
-          CRITICAL JSON REQUIREMENT:
+          CRITICAL:
 
           You MUST return ALL 11 fields.
 
-          The mandatory fields are:
+          Required fields:
 
           id
           title
@@ -795,45 +919,70 @@ jobs:
           thumbnail_frame
           thumbnail_text
 
-          NEVER omit a field.
+          NEVER omit any field.
 
-          Every field must contain a value.
-          thumbnail_text may be an empty string only if absolutely necessary.
-
-          Return ONLY the JSON object.
+          Return ONLY JSON.
           """
 
               package = None
 
-              for attempt in range(1, 3):
+              for attempt in range(1, 4):
+
                   try:
+
                       package = groq_request(
                           final_prompt,
                           "quiet_vault_final_package",
                           final_schema,
-                          8000
+                          max_tokens=3000,
+                          max_attempts=5
                       )
 
-                      validate_final_package(package)
+                      validate_final_package(
+                          package
+                      )
+
                       break
 
                   except Exception as error:
+
                       print("")
                       print(
-                          f"Finalization attempt {attempt} failed: "
-                          f"{error}"
+                          f"Finalization attempt "
+                          f"{attempt} failed: {error}"
                       )
 
-                      if attempt == 2:
+                      if attempt == 3:
+
                           raise RuntimeError(
                               f"Could not finalize Short {index}"
                           )
 
+                      print(
+                          "Waiting 10 seconds before "
+                          "retrying finalization..."
+                      )
+
+                      time.sleep(10)
+
               final_packages.append(package)
 
               print(
-                  f"FINALIZED: {package['title']}"
+                  f"FINALIZED: "
+                  f"{package['title']}"
               )
+
+
+              # Give the TPM window a little breathing room
+              # between final package calls.
+              if index < len(finalists):
+
+                  print(
+                      "Waiting 8 seconds before next "
+                      "final package..."
+                  )
+
+                  time.sleep(8)
 
 
           # ============================================================
@@ -851,6 +1000,7 @@ jobs:
               "w",
               encoding="utf-8"
           ) as f:
+
               json.dump(
                   batch,
                   f,
@@ -903,13 +1053,17 @@ jobs:
           {package['thumbnail_text']}
           """
 
-              path = OUTPUT_DIR / f"short_{index:02d}.md"
+              path = (
+                  OUTPUT_DIR
+                  / f"short_{index:02d}.md"
+              )
 
               with open(
                   path,
                   "w",
                   encoding="utf-8"
               ) as f:
+
                   f.write(markdown)
 
 
@@ -917,11 +1071,15 @@ jobs:
           print("=" * 60)
           print("SUCCESS")
           print("=" * 60)
+
           print(
-              f"Generated {len(final_packages)} complete Shorts."
+              f"Generated "
+              f"{len(final_packages)} complete Shorts."
           )
+
           print(
-              f"Output directory: {OUTPUT_DIR}"
+              f"Output directory: "
+              f"{OUTPUT_DIR}"
           )
 
           PY
