@@ -1,4 +1,4 @@
-name: Generate 3 Quiet Vault Shorts
+name: Quiet Vault AI - Candidate Judge Finalize
 
 on:
   workflow_dispatch:
@@ -8,325 +8,526 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Generate and quality-filter 3 horror Shorts
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate, filter, judge and finalize
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-          python - <<'PY'
+          cat > generate.py <<'PY'
           import os
           import json
+          import re
           import urllib.request
           import urllib.error
-          from pathlib import Path
 
-          api_key = os.environ.get("GROQ_API_KEY")
+          API_KEY = os.environ["GROQ_API_KEY"]
+          ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
+          MODEL = "openai/gpt-oss-20b"
 
-          if not api_key:
-              print("ERROR: GROQ_API_KEY secret was not found.")
-              raise SystemExit(1)
+          def call_groq(messages, schema_name, schema, temperature=0.8, max_tokens=12000):
+              payload = {
+                  "model": MODEL,
+                  "messages": messages,
+                  "temperature": temperature,
+                  "max_completion_tokens": max_tokens,
+                  "reasoning_effort": "low",
+                  "response_format": {
+                      "type": "json_schema",
+                      "json_schema": {
+                          "name": schema_name,
+                          "strict": True,
+                          "schema": schema
+                      }
+                  }
+              }
 
-          # ============================================================
-          # QUIET VAULT CREATIVE BRIEF
-          # ============================================================
+              data = json.dumps(payload).encode("utf-8")
 
-          prompt = r"""
-          You are the senior writer and creative director for
-          "The Quiet Vault", a realistic cinematic horror YouTube Shorts
-          channel.
+              request = urllib.request.Request(
+                  ENDPOINT,
+                  data=data,
+                  method="POST",
+                  headers={
+                      "Content-Type": "application/json",
+                      "Authorization": f"Bearer {API_KEY}",
+                      "User-Agent": "QuietVaultAI/1.0"
+                  }
+              )
 
-          Your job is to create EXACTLY 3 original horror Shorts that are
-          visually strong, realistic, easy for Google Flow to generate,
-          and capable of stopping a viewer from swiping.
+              try:
+                  with urllib.request.urlopen(request, timeout=180) as response:
+                      body = response.read().decode("utf-8")
+                      result = json.loads(body)
+                      content = result["choices"][0]["message"]["content"]
+                      return json.loads(content)
 
-          Do NOT create generic AI horror.
+              except urllib.error.HTTPError as e:
+                  error_body = e.read().decode("utf-8", errors="replace")
+                  print("Groq HTTP ERROR:", e.code)
+                  print(error_body)
+                  raise
 
-          ============================================================
-          CORE STYLE
-          ============================================================
+          # ------------------------------------------------------------
+          # STAGE 1: GENERATE CANDIDATES
+          # ------------------------------------------------------------
 
-          Each story should feel like:
+          candidate_schema = {
+              "type": "object",
+              "properties": {
+                  "candidates": {
+                      "type": "array",
+                      "items": {
+                          "type": "object",
+                          "properties": {
+                              "id": {"type": "integer"},
+                              "title": {"type": "string"},
+                              "premise": {"type": "string"},
+                              "static_frame_1": {"type": "string"},
+                              "visual_anomaly": {"type": "string"},
+                              "escalation": {"type": "string"},
+                              "ending": {"type": "string"},
+                              "relationship_context": {"type": "string"},
+                              "flow_feasibility": {"type": "string"}
+                          },
+                          "required": [
+                              "id",
+                              "title",
+                              "premise",
+                              "static_frame_1",
+                              "visual_anomaly",
+                              "escalation",
+                              "ending",
+                              "relationship_context",
+                              "flow_feasibility"
+                          ],
+                          "additionalProperties": False
+                      }
+                  }
+              },
+              "required": ["candidates"],
+              "additionalProperties": False
+          }
 
-          "This could almost happen in real life, except one thing is
-          completely wrong."
+          generator_system = """
+          You are the concept generator for The Quiet Vault, a realistic cinematic horror
+          Shorts channel.
 
-          Requirements:
+          Generate 12 genuinely different horror concepts.
 
-          - 9-15 seconds.
-          - Fictional ADULT characters only.
-          - No children or minors.
-          - No celebrities or real-person likenesses.
-          - No gore.
-          - No monsters.
-          - Realistic live-action appearance.
-          - Recognizable everyday locations.
-          - The disturbing thing must be VISIBLE immediately.
-          - The viewer must understand the basic horror without narration.
-          - Minimal dialogue.
-          - One strong visual idea is better than complicated mythology.
-          - One or two characters maximum.
-          - One location per story.
-          - Prefer one continuous shot or two simple shots.
-          - End immediately after the reveal.
-
-          ============================================================
-          FRAME-1 RULE
-          ============================================================
-
-          The FIRST FRAME must already contain something wrong.
-
-          Bad:
-          Person walks into an empty room.
-          Something scary happens 8 seconds later.
-
-          Good:
-          Person is already standing in a room while something visibly
-          impossible is happening behind or beside them.
-
-          The viewer should notice the anomaly within one second.
-
-          ============================================================
-          STORY STRUCTURE
-          ============================================================
-
-          Every selected story must have:
-
-          1. Immediate visual anomaly.
-          2. Simple recognizable situation.
-          3. Small escalation.
-          4. Visual revelation.
-          5. Strong final image.
-          6. Hard cut ending.
-
-          The final image should create:
-
-          "Wait... what?"
-
-          and ideally make the viewer want to replay the Short.
-
-          ============================================================
-          PREFERRED HORROR
-          ============================================================
-
-          Prefer realistic situations involving:
-
-          - apartments
-          - offices
-          - bathrooms
-          - kitchens
-          - staircases
-          - supermarkets
-          - hospitals
-          - restaurants
-          - parking areas
-          - building lobbies
-          - workplaces
-          - laundromats
-          - pharmacies
-          - rooftops
-          - balconies
-          - convenience stores
-          - ordinary streets
-          - public areas
-
-          Prefer threats involving:
-
-          - a person being somewhere they should not be
-          - an ordinary action happening incorrectly
-          - a locked/open contradiction
-          - something physically impossible but simple
-          - a person reacting to something clearly visible
-          - an object revealing something disturbing
-          - an ordinary environment containing one impossible detail
-          - a physical event that changes the meaning of the scene
-
-          ============================================================
-          HARD EXCLUSIONS
-          ============================================================
-
-          DO NOT USE:
-
-          - elevator horror
-          - car horror
-          - hotel horror
-          - CCTV footage
-          - mirror/reflection tricks
-          - doppelgängers
-          - hidden person behind someone
-          - printer horror
-          - moving empty chair
-          - train horror
-          - 180-degree head distortion
-          - disappearing/reappearing people
-          - floating mugs
-          - cereal boxes with faces
-          - possessed household objects
-          - random body parts appearing
-          - objects growing human faces
-          - generic ghosts
-          - generic demons
-          - monsters
-          - zombies
-          - gore
-          - blood-heavy horror
-          - complicated transformations
-          - impossible anatomy
-          - giant creatures
-          - complicated CGI
-          - long conversations
-          - exposition
-          - "the character screams" as the entire ending
-          - "the object disappears" as the entire ending
-          - "it was actually me" unless the visual explanation is extremely clear
-          - anything that looks more funny than frightening
-
-          ============================================================
-          ORIGINALITY
-          ============================================================
-
-          First generate a large internal pool of at least 12 different
-          concepts.
-
-          Do NOT return the first three acceptable concepts.
-
-          The concepts must use different:
-
-          - locations
-          - mechanisms
-          - character situations
-          - visual threats
-          - endings
-
-          Reject concepts that feel like common AI horror templates.
-
-          ============================================================
-          QUALITY FILTER
-          ============================================================
-
-          Internally reject any concept if the answer to ANY of these is NO:
-
-          1. Is something clearly wrong in the first frame?
-
-          2. Can the viewer understand the visual problem without sound?
-
-          3. Is the horror believable enough to look like live action?
-
-          4. Can Google Flow create the action without complicated effects?
-
-          5. Does something meaningful happen before the ending?
-
-          6. Does the final image create a genuine "wait... what?" reaction?
-
-          7. Is the concept different from the other selected concepts?
-
-          8. Would this feel like The Quiet Vault rather than a generic
-             AI-generated horror video?
-
-          If NO, discard the concept and replace it.
-
-          ============================================================
-          FLOW REQUIREMENTS
-          ============================================================
-
-          Every Flow prompt must include:
-
-          - 9:16 vertical
-          - 9-15 second duration
+          TARGET FORMAT:
+          - 9 to 12 second YouTube Short
           - photorealistic live-action
           - fictional adult characters
-          - no celebrity likeness
-          - realistic environment
-          - realistic lighting
-          - camera position
-          - simple camera movement
-          - exact physical action
-          - timing
-          - final visual reveal
-          - hard ending
-          - no text
-          - no subtitles
-          - no logos
-          - no watermark
-          - no gore
-          - no monsters
+          - recognizable everyday locations
+          - simple visual storytelling
+          - visible human-centered threat or contradiction
+          - strong first frame
+          - very little dialogue
+          - clear ending
+          - suitable for Google Flow video generation
 
-          Do not ask Flow to create complicated reflections,
-          impossible anatomy, crowds, or complicated transformations.
+          THE MOST IMPORTANT RULE:
 
-          ============================================================
-          FINAL THREE
-          ============================================================
+          The FIRST FRAME must already contain something visually wrong, threatening,
+          impossible or deeply unsettling.
 
-          Return exactly 3 selected concepts.
+          Imagine pausing the video at frame 1 and showing the screenshot to someone.
+          They should be able to point at something in the image and say:
+          "That should not be happening."
 
-          They must be genuinely different from each other.
+          GOOD EXAMPLE:
+          "A woman is sitting alone in her bedroom while the locked bedroom door
+          behind her is visibly being pushed inward by an adult hand."
 
-          For each one provide:
+          BAD EXAMPLE:
+          "A woman is sitting in her bedroom and something scary happens later."
 
-          TITLE
-          SHORT_SCRIPT
-          VISUAL_HOOK
-          FLOW_PROMPT
-          FINAL_TWIST
-          DESCRIPTION
-          KEYWORDS
-          HASHTAGS
-          THUMBNAIL_FRAME
-          THUMBNAIL_TEXT
+          Another good example:
+          "A man is washing his hands in a public restroom while another adult man
+          is visibly standing inside the locked stall facing the wall."
 
-          SHORT_SCRIPT:
-          - maximum approximately 35 spoken words
-          - minimal narration
-          - dialogue only when useful
+          The anomaly must be visually obvious.
 
-          VISUAL_HOOK:
-          - describe exactly what is visible in frame 1
+          PRIORITIZE:
+          - family or relationship situations involving adults
+          - parent/adult child relationships
+          - husband/wife
+          - siblings
+          - coworkers
+          - friends
+          - ordinary human behavior that is subtly wrong
+          - someone being somewhere they should not be
+          - a locked/open contradiction
+          - an ordinary action happening incorrectly
+          - a person reacting to a visible anomaly
+          - emotionally understandable situations
 
-          FINAL_TWIST:
-          - explain the final visual revelation
+          DO NOT USE:
+          - elevators
+          - cars
+          - hotels
+          - CCTV/security-camera concepts
+          - mirrors
+          - reflections
+          - doppelgangers
+          - people hiding behind other people
+          - printers
+          - moving empty chairs
+          - trains
+          - floating household objects
+          - household objects with faces
+          - possessed objects
+          - random body parts
+          - ghosts
+          - demons
+          - monsters
+          - zombies
+          - giant creatures
+          - gore
+          - complicated transformations
+          - impossible anatomy
+          - disappearing/reappearing people
+          - head distortion
+          - elaborate supernatural mythology
+          - long conversations
+          - text on paper/screens as the main horror
+          - "it was actually me" twists unless the visual logic is extremely clear
 
-          DESCRIPTION:
-          - natural YouTube description
-          - no keyword stuffing
-          - do not claim the story is real
-          - do not mention AI generation
+          Do not recycle the same mechanism across concepts.
 
-          KEYWORDS:
-          - 10-20 relevant comma-separated keywords
+          Every candidate must be substantially different from the others.
 
-          HASHTAGS:
-          - 4-8 relevant hashtags
+          For STATIC_FRAME_1, describe only what is visibly present in the first
+          frame, as if describing a paused photograph to a cinematographer.
 
-          THUMBNAIL_FRAME:
-          - identify the strongest exact moment
+          Do not say "something is wrong" without explaining exactly what is visible.
 
-          THUMBNAIL_TEXT:
-          - maximum 4 words
-          - use NONE if text would weaken the thumbnail
+          The final ending should create a second realization, not merely:
+          "the character screams."
 
-          ============================================================
-          IMPORTANT
-          ============================================================
-
-          The final concepts must be practical to produce.
-
-          Do not sacrifice visual quality just to make the idea more
-          supernatural.
-
-          A realistic person in the wrong place is often scarier than
-          a monster.
-
-          A simple physical contradiction is often scarier than CGI.
-
-          Return ONLY the requested structured data.
+          All characters must be fictional adults. No children.
           """
 
-          # ============================================================
-          # GROQ REQUEST
-          # ============================================================
+          generator_user = """
+          Create 12 candidate concepts for The Quiet Vault.
 
-          url = "https://api.groq.com/openai/v1/chat/completions"
+          Make the ideas realistic enough that the viewer could initially believe
+          the scene is happening in a real apartment, house, office, hospital,
+          bathroom, classroom, hallway, store, parking area, workplace, etc.
 
-          schema = {
+          Each candidate must work visually in approximately 9-12 seconds.
+          """
+
+          candidates_data = call_groq(
+              [
+                  {"role": "system", "content": generator_system},
+                  {"role": "user", "content": generator_user}
+              ],
+              "quiet_vault_candidates",
+              candidate_schema,
+              temperature=0.9,
+              max_tokens=10000
+          )
+
+          candidates = candidates_data["candidates"]
+
+          print(f"Generated {len(candidates)} candidates.")
+
+          # ------------------------------------------------------------
+          # STAGE 2: PYTHON HARD FILTER
+          # ------------------------------------------------------------
+
+          banned_terms = [
+              "elevator",
+              "car",
+              "hotel",
+              "cctv",
+              "security camera",
+              "mirror",
+              "reflection",
+              "doppelganger",
+              "double of",
+              "behind her",
+              "behind him",
+              "printer",
+              "empty chair",
+              "train",
+              "floating mug",
+              "floating cup",
+              "cereal box",
+              "object with a face",
+              "face on the object",
+              "possessed object",
+              "ghost",
+              "demon",
+              "monster",
+              "zombie",
+              "giant creature",
+              "gore",
+              "decapitat",
+              "head spins",
+              "head turns 180",
+              "disappears",
+              "disappearing",
+              "reappears",
+              "reappearing",
+              "teleport",
+              "teleports",
+              "limbs grow",
+              "body part",
+              "random hand",
+              "floating",
+              "child",
+              "children",
+              "kid",
+              "boy",
+              "girl",
+              "baby"
+          ]
+
+          weak_hook_phrases = [
+              "standing in an ordinary",
+              "sitting in an ordinary",
+              "a normal",
+              "normal bedroom",
+              "normal kitchen",
+              "normal office",
+              "ordinary bedroom",
+              "ordinary kitchen",
+              "ordinary office",
+              "nothing seems wrong",
+              "at first everything",
+              "the scene looks normal",
+              "later",
+              "eventually something",
+              "then something scary",
+              "something strange happens"
+          ]
+
+          def normalize(text):
+              return re.sub(r"\s+", " ", text.lower()).strip()
+
+          def hard_reject(candidate):
+              combined = " ".join([
+                  candidate.get("title", ""),
+                  candidate.get("premise", ""),
+                  candidate.get("static_frame_1", ""),
+                  candidate.get("visual_anomaly", ""),
+                  candidate.get("escalation", ""),
+                  candidate.get("ending", "")
+              ])
+
+              text = normalize(combined)
+              frame = normalize(candidate.get("static_frame_1", ""))
+
+              # Banned mechanisms
+              for term in banned_terms:
+                  if term in text:
+                      return True, f"banned mechanism: {term}"
+
+              # Frame must be concrete
+              if len(frame.split()) < 12:
+                  return True, "frame-1 description too short"
+
+              # Reject descriptions that explicitly defer the hook
+              for phrase in weak_hook_phrases:
+                  if phrase in frame:
+                      return True, f"weak frame wording: {phrase}"
+
+              # Frame should contain some concrete visual relationship/action.
+              visual_words = [
+                  "door", "person", "man", "woman", "hand", "room",
+                  "standing", "sitting", "opening", "closed", "locked",
+                  "window", "bed", "desk", "hallway", "bathroom",
+                  "kitchen", "office", "hospital", "stairs", "hall",
+                  "floor", "chair", "phone", "bag", "coat", "shower",
+                  "sink", "closet", "gate", "store"
+              ]
+
+              visual_count = sum(1 for word in visual_words if word in frame)
+
+              if visual_count < 2:
+                  return True, "frame lacks concrete visual information"
+
+              return False, "passed"
+
+          survivors = []
+          rejected = []
+
+          for candidate in candidates:
+              reject, reason = hard_reject(candidate)
+
+              if reject:
+                  rejected.append({
+                      "id": candidate.get("id"),
+                      "title": candidate.get("title"),
+                      "reason": reason
+                  })
+              else:
+                  survivors.append(candidate)
+
+          print(f"Hard filter survivors: {len(survivors)}")
+          print(f"Hard filter rejected: {len(rejected)}")
+
+          for item in rejected:
+              print(f"REJECTED {item['id']}: {item['title']} -> {item['reason']}")
+
+          if len(survivors) < 3:
+              raise RuntimeError(
+                  f"Only {len(survivors)} candidates survived hard filtering. "
+                  "Need at least 3."
+              )
+
+          # ------------------------------------------------------------
+          # STAGE 3: AI CREATIVE JUDGE
+          # ------------------------------------------------------------
+
+          judge_schema = {
+              "type": "object",
+              "properties": {
+                  "ranked_candidates": {
+                      "type": "array",
+                      "items": {
+                          "type": "object",
+                          "properties": {
+                              "id": {"type": "integer"},
+                              "frame_hook_score": {"type": "integer"},
+                              "visual_clarity_score": {"type": "integer"},
+                              "ending_score": {"type": "integer"},
+                              "flow_feasibility_score": {"type": "integer"},
+                              "originality_score": {"type": "integer"},
+                              "rewatch_score": {"type": "integer"},
+                              "overall_score": {"type": "integer"},
+                              "pass": {"type": "boolean"},
+                              "reason": {"type": "string"}
+                          },
+                          "required": [
+                              "id",
+                              "frame_hook_score",
+                              "visual_clarity_score",
+                              "ending_score",
+                              "flow_feasibility_score",
+                              "originality_score",
+                              "rewatch_score",
+                              "overall_score",
+                              "pass",
+                              "reason"
+                          ],
+                          "additionalProperties": False
+                      }
+                  }
+              },
+              "required": ["ranked_candidates"],
+              "additionalProperties": False
+          }
+
+          judge_prompt = """
+          You are the strict creative director for The Quiet Vault.
+
+          Judge these horror Short concepts.
+
+          SCORE EACH FROM 1 TO 10:
+
+          1. FRAME HOOK
+          Does the FIRST FRAME itself show a compelling anomaly or threat?
+          If the first frame could be mistaken for a completely normal scene,
+          score it low.
+
+          2. VISUAL CLARITY
+          Can the viewer understand what is wrong without reading text or hearing
+          a long explanation?
+
+          3. ENDING
+          Does the ending create a second realization or disturbing payoff?
+
+          4. FLOW FEASIBILITY
+          Could Google Flow realistically generate the scene in a coherent
+          9-12 second live-action clip?
+
+          5. ORIGINALITY
+          Does it avoid mechanisms already heavily used in short-form horror?
+
+          6. REWATCH
+          Would viewers want to replay the clip to understand the visual clue
+          or ending?
+
+          OVERALL SCORE:
+          Judge the complete concept, but give strong weight to frame hook,
+          clarity and ending.
+
+          PASS REQUIREMENTS:
+          - frame hook >= 7
+          - visual clarity >= 7
+          - ending >= 7
+          - flow feasibility >= 7
+          - originality >= 6
+          - rewatch >= 6
+          - overall >= 7
+
+          Be harsh.
+
+          Do not pass a concept simply because the premise sounds creepy.
+          A good written horror idea with a weak first frame is a failure
+          for this channel.
+
+          Return the candidates sorted from strongest to weakest.
+          """
+
+          judge_user = json.dumps(
+              {"candidates": survivors},
+              ensure_ascii=False
+          )
+
+          judged_data = call_groq(
+              [
+                  {"role": "system", "content": judge_prompt},
+                  {"role": "user", "content": judge_user}
+              ],
+              "quiet_vault_judgement",
+              judge_schema,
+              temperature=0.35,
+              max_tokens=10000
+          )
+
+          ranked = judged_data["ranked_candidates"]
+
+          passed = [x for x in ranked if x["pass"]]
+
+          print(f"AI judge passed: {len(passed)}")
+
+          if len(passed) < 3:
+              # If fewer than 3 explicitly pass, take the strongest 3,
+              # but only after the hard filter.
+              passed = ranked[:3]
+              print("Fewer than 3 explicit passes; using top 3 judge-ranked survivors.")
+
+          top_ids = [x["id"] for x in passed[:5]]
+
+          candidate_map = {
+              c["id"]: c
+              for c in survivors
+          }
+
+          finalists = [
+              candidate_map[i]
+              for i in top_ids
+              if i in candidate_map
+          ]
+
+          if len(finalists) < 3:
+              raise RuntimeError("Could not construct at least 3 finalists.")
+
+          print("FINALISTS:")
+          for f in finalists:
+              print(f"- {f['id']}: {f['title']}")
+
+          # ------------------------------------------------------------
+          # STAGE 4: FINAL PACKAGE WRITER
+          # ------------------------------------------------------------
+
+          final_schema = {
               "type": "object",
               "properties": {
                   "shorts": {
@@ -334,39 +535,17 @@ jobs:
                       "items": {
                           "type": "object",
                           "properties": {
-                              "id": {
-                                  "type": "integer"
-                              },
-                              "title": {
-                                  "type": "string"
-                              },
-                              "short_script": {
-                                  "type": "string"
-                              },
-                              "visual_hook": {
-                                  "type": "string"
-                              },
-                              "flow_prompt": {
-                                  "type": "string"
-                              },
-                              "final_twist": {
-                                  "type": "string"
-                              },
-                              "description": {
-                                  "type": "string"
-                              },
-                              "keywords": {
-                                  "type": "string"
-                              },
-                              "hashtags": {
-                                  "type": "string"
-                              },
-                              "thumbnail_frame": {
-                                  "type": "string"
-                              },
-                              "thumbnail_text": {
-                                  "type": "string"
-                              }
+                              "id": {"type": "integer"},
+                              "title": {"type": "string"},
+                              "short_script": {"type": "string"},
+                              "visual_hook": {"type": "string"},
+                              "flow_prompt": {"type": "string"},
+                              "final_twist": {"type": "string"},
+                              "description": {"type": "string"},
+                              "keywords": {"type": "string"},
+                              "hashtags": {"type": "string"},
+                              "thumbnail_frame": {"type": "string"},
+                              "thumbnail_text": {"type": "string"}
                           },
                           "required": [
                               "id",
@@ -385,213 +564,195 @@ jobs:
                       }
                   }
               },
-              "required": [
-                  "shorts"
-              ],
+              "required": ["shorts"],
               "additionalProperties": False
           }
 
-          data = {
-              "model": "openai/gpt-oss-20b",
-              "messages": [
-                  {
-                      "role": "system",
-                      "content": (
-                          "You are a senior horror creative director "
-                          "for The Quiet Vault. "
-                          "Create original realistic horror Shorts "
-                          "and follow the requested schema exactly."
-                      )
-                  },
-                  {
-                      "role": "user",
-                      "content": prompt
-                  }
-              ],
-              "temperature": 0.85,
-              "max_completion_tokens": 12000,
-              "reasoning_effort": "low",
-              "response_format": {
-                  "type": "json_schema",
-                  "json_schema": {
-                      "name": "quiet_vault_shorts",
-                      "strict": True,
-                      "schema": schema
-                  }
-              }
-          }
+          final_system = """
+          You are the final writer for The Quiet Vault.
 
-          request = urllib.request.Request(
-              url,
-              data=json.dumps(data).encode("utf-8"),
-              headers={
-                  "Content-Type": "application/json",
-                  "Authorization": "Bearer " + api_key,
-                  "User-Agent": "QuietVaultAI/1.0"
-              },
-              method="POST"
+          Turn the selected concepts into complete YouTube Shorts packages.
+
+          IMPORTANT:
+          The first frame is the most important frame.
+
+          The Google Flow prompt MUST describe the exact first frame clearly
+          enough that the generated video begins with the visual anomaly.
+
+          Do NOT start with:
+          - establishing shots
+          - empty rooms
+          - characters walking into rooms
+          - normal-looking scenes
+          - slow camera reveals
+
+          The viewer should see the disturbing visual immediately.
+
+          FORMAT:
+          - 9-12 seconds
+          - vertical 9:16
+          - photorealistic live-action
+          - fictional adults only
+          - realistic cinematic lighting
+          - natural human movement
+          - no celebrity likeness
+          - no real-person likeness
+          - no gore
+          - no monsters
+          - no ghosts
+          - no complicated CGI
+
+          FLOW PROMPT REQUIREMENTS:
+
+          Write ONE complete Google Flow prompt ready to paste.
+
+          Include:
+          1. vertical 9:16
+          2. photorealistic live-action
+          3. fictional adult characters
+          4. exact character appearance consistency
+          5. exact location
+          6. camera framing
+          7. exact FIRST FRAME
+          8. timed action beats
+          9. final reveal
+          10. hard cut or loop-friendly ending
+
+          The first frame must match STATIC_FRAME_1 from the selected concept.
+
+          Do not replace the selected concept with another mechanism.
+
+          SCRIPT:
+          Keep narration/dialogue extremely short.
+          Visual storytelling should carry the Short.
+
+          DESCRIPTION:
+          Natural YouTube description. Do not keyword-stuff.
+
+          KEYWORDS:
+          Comma-separated relevant search terms.
+
+          HASHTAGS:
+          Keep compact and relevant.
+
+          THUMBNAIL:
+          Choose the strongest single frame from the video and specify
+          approximately when it occurs.
+
+          Thumbnail text should be short or empty.
+          """
+
+          final_user = json.dumps(
+              {"selected_finalists": finalists},
+              ensure_ascii=False
           )
 
-          try:
-              with urllib.request.urlopen(request, timeout=180) as response:
-                  result = json.loads(response.read())
+          final_data = call_groq(
+              [
+                  {"role": "system", "content": final_system},
+                  {"role": "user", "content": final_user}
+              ],
+              "quiet_vault_final_shorts",
+              final_schema,
+              temperature=0.75,
+              max_tokens=14000
+          )
 
-          except urllib.error.HTTPError as e:
-              print("")
-              print("===== GROQ API ERROR =====")
-              print("HTTP STATUS:", e.code)
-              print(e.read().decode("utf-8"))
-              print("==========================")
-              raise
-
-          # ============================================================
-          # PARSE RESPONSE
-          # ============================================================
-
-          content = result["choices"][0]["message"]["content"]
-
-          try:
-              output = json.loads(content)
-          except json.JSONDecodeError:
-              print("ERROR: Groq returned invalid JSON.")
-              print(content)
-              raise
-
-          shorts = output.get("shorts", [])
+          shorts = final_data["shorts"][:3]
 
           if len(shorts) != 3:
-              print("ERROR: Expected exactly 3 Shorts.")
-              print("Received:", len(shorts))
-              raise SystemExit(1)
+              raise RuntimeError(
+                  f"Final writer returned {len(shorts)} Shorts instead of 3."
+              )
 
-          required_fields = [
-              "id",
-              "title",
-              "short_script",
-              "visual_hook",
-              "flow_prompt",
-              "final_twist",
-              "description",
-              "keywords",
-              "hashtags",
-              "thumbnail_frame",
-              "thumbnail_text"
-          ]
-
-          for short in shorts:
-              missing = [
-                  field
-                  for field in required_fields
-                  if field not in short
-              ]
-
-              if missing:
-                  print(
-                      "ERROR: Missing fields in Short",
-                      short.get("id")
-                  )
-                  print("Missing:", missing)
-                  raise SystemExit(1)
-
-          # ============================================================
+          # ------------------------------------------------------------
           # SAVE OUTPUT
-          # ============================================================
+          # ------------------------------------------------------------
 
-          output_dir = Path("quiet-vault-output")
-          output_dir.mkdir(exist_ok=True)
+          os.makedirs("quiet-vault-output", exist_ok=True)
 
           with open(
-              output_dir / "batch.json",
+              "quiet-vault-output/batch.json",
               "w",
               encoding="utf-8"
           ) as f:
               json.dump(
-                  output,
+                  {
+                      "generated_candidates": candidates,
+                      "hard_filter_rejected": rejected,
+                      "hard_filter_survivors": survivors,
+                      "ai_judgement": ranked,
+                      "final_shorts": shorts
+                  },
                   f,
-                  ensure_ascii=False,
-                  indent=2
+                  indent=2,
+                  ensure_ascii=False
               )
 
-          for short in shorts:
-              i = short["id"]
+          for index, short in enumerate(shorts, start=1):
 
-              markdown = f"""# THE QUIET VAULT — SHORT {i}
+              markdown = f"""# {short['title']}
 
-          ## TITLE
+          ## Script
 
-          {short["title"]}
+          {short['short_script']}
 
-          ## SHORT SCRIPT
+          ## Visual Hook
 
-          {short["short_script"]}
+          {short['visual_hook']}
 
-          ## VISUAL HOOK
+          ## Google Flow Prompt
 
-          {short["visual_hook"]}
+          {short['flow_prompt']}
 
-          ## GOOGLE FLOW PROMPT
+          ## Final Twist
 
-          {short["flow_prompt"]}
+          {short['final_twist']}
 
-          ## FINAL TWIST
+          ## Description
 
-          {short["final_twist"]}
+          {short['description']}
 
-          ## DESCRIPTION
+          ## Keywords
 
-          {short["description"]}
+          {short['keywords']}
 
-          ## KEYWORDS
+          ## Hashtags
 
-          {short["keywords"]}
+          {short['hashtags']}
 
-          ## HASHTAGS
+          ## Thumbnail
 
-          {short["hashtags"]}
+          Frame: {short['thumbnail_frame']}
 
-          ## THUMBNAIL FRAME
-
-          {short["thumbnail_frame"]}
-
-          ## THUMBNAIL TEXT
-
-          {short["thumbnail_text"]}
+          Text: {short['thumbnail_text']}
           """
 
               with open(
-                  output_dir / f"short_{i:02d}.md",
+                  f"quiet-vault-output/short_{index:02d}.md",
                   "w",
                   encoding="utf-8"
               ) as f:
                   f.write(markdown)
 
-          # ============================================================
-          # SUCCESS OUTPUT
-          # ============================================================
+          print("")
+          print("==========================================")
+          print("QUIET VAULT AI PIPELINE SUCCESS")
+          print("==========================================")
+          print(f"Candidates generated: {len(candidates)}")
+          print(f"Hard-filter survivors: {len(survivors)}")
+          print(f"AI finalists: {len(finalists)}")
+          print(f"Final Shorts: {len(shorts)}")
+          print("==========================================")
 
-          print("")
-          print("========================================")
-          print("   QUIET VAULT — 3 SHORTS GENERATED")
-          print("========================================")
-          print("")
-
-          for short in shorts:
-              print(
-                  f'{short["id"]}. {short["title"]}'
-              )
-
-          print("")
-          print("Files created:")
-          print("  short_01.md")
-          print("  short_02.md")
-          print("  short_03.md")
-          print("  batch.json")
-          print("")
-          print("========================================")
+          for i, short in enumerate(shorts, start=1):
+              print(f"{i}. {short['title']}")
 
           PY
 
-      - name: Upload generated Shorts package
+          python generate.py
+
+      - name: Upload Quiet Vault output
         uses: actions/upload-artifact@v4
         with:
           name: quiet-vault-3-shorts
