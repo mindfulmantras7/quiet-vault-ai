@@ -1,0 +1,88 @@
+name: OpenRouter Diagnostic Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-openrouter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test OpenRouter
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          echo "================================"
+          echo "TESTING OPENROUTER"
+          echo "================================"
+
+          python - <<'PY'
+          import os
+          import json
+          import urllib.request
+          import urllib.error
+
+          api_key = os.environ["OPENROUTER_API_KEY"]
+
+          url = "https://openrouter.ai/api/v1/chat/completions"
+
+          payload = {
+              "model": "openrouter/free",
+              "messages": [
+                  {
+                      "role": "user",
+                      "content": "Reply with exactly: OPENROUTER_OK"
+                  }
+              ],
+              "max_tokens": 10,
+              "temperature": 0
+          }
+
+          request = urllib.request.Request(
+              url,
+              data=json.dumps(payload).encode("utf-8"),
+              headers={
+                  "Content-Type": "application/json",
+                  "Authorization": f"Bearer {api_key}",
+                  "HTTP-Referer": "https://github.com/mindfulmantras7/quiet-vault-ai",
+                  "X-Title": "Quiet Vault AI Provider Test",
+                  "User-Agent": "QuietVaultProviderTest/1.0"
+              },
+              method="POST"
+          )
+
+          try:
+              with urllib.request.urlopen(request, timeout=60) as response:
+                  body = response.read().decode("utf-8")
+                  data = json.loads(body)
+
+                  text = (
+                      data["choices"][0]["message"]["content"]
+                      .strip()
+                  )
+
+                  model_used = data.get("model", "unknown")
+
+                  print("OpenRouter HTTP:", response.status)
+                  print("OpenRouter model:", model_used)
+                  print("OpenRouter response:", text)
+                  print("OPENROUTER_TEST_SUCCESS")
+
+          except urllib.error.HTTPError as error:
+              body = error.read().decode("utf-8")
+
+              print("OpenRouter HTTP ERROR:", error.code)
+              print("OpenRouter response:", body)
+              print("OPENROUTER_TEST_FAILED")
+
+          except Exception as error:
+              print("OpenRouter unexpected error:", repr(error))
+              print("OPENROUTER_TEST_FAILED")
+
+
+      - name: Diagnostic Complete
+        run: |
+          echo ""
+          echo "================================"
+          echo "OPENROUTER DIAGNOSTIC COMPLETE"
+          echo "================================"
