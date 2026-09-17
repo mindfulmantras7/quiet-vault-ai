@@ -25,100 +25,119 @@ jobs:
               print("ERROR: GROQ_API_KEY secret was not found.")
               raise SystemExit(1)
 
+          # ============================================================
+          # QUIET VAULT CREATIVE BRIEF
+          # ============================================================
+
           prompt = r"""
-          You are the senior writer and ruthless creative director for
-          "The Quiet Vault", a realistic cinematic horror YouTube Shorts channel.
+          You are the senior writer and creative director for
+          "The Quiet Vault", a realistic cinematic horror YouTube Shorts
+          channel.
 
-          Your job is NOT to generate generic horror ideas.
+          Your job is to create EXACTLY 3 original horror Shorts that are
+          visually strong, realistic, easy for Google Flow to generate,
+          and capable of stopping a viewer from swiping.
 
-          Your job is to find 3 highly visual, original, believable horror
-          concepts that have a strong chance of stopping a viewer from swiping.
+          Do NOT create generic AI horror.
 
           ============================================================
-          CREATIVE TARGET
+          CORE STYLE
           ============================================================
 
-          Each Short should feel like:
+          Each story should feel like:
 
-          "This could almost happen in real life... but one thing is
+          "This could almost happen in real life, except one thing is
           completely wrong."
 
-          The viewer must be able to understand the disturbing visual
-          WITHOUT relying on narration.
+          Requirements:
 
-          Target duration: 9-15 seconds.
-
-          Use fictional ADULT characters only.
-          No children or minors.
-          No celebrities.
-          No real-person likenesses.
-          No gore.
-
-          ============================================================
-          THE 6-STEP STORY STRUCTURE
-          ============================================================
-
-          Every selected concept MUST contain:
-
-          1. IMMEDIATE VISUAL HOOK
-             The first frame already contains something visibly wrong.
-
-          2. NORMAL CONTEXT
-             The viewer immediately understands where the character is
-             and what they are doing.
-
-          3. SIMPLE ESCALATION
-             Something physically changes within a few seconds.
-
-          4. REVELATION
-             The viewer realizes the situation is stranger than initially
-             understood.
-
-          5. FINAL VISUAL TWIST
-             One strong final image or action.
-
-          6. HARD ENDING
-             End immediately after the reveal.
-             No explanation.
-             No long dialogue.
+          - 9-15 seconds.
+          - Fictional ADULT characters only.
+          - No children or minors.
+          - No celebrities or real-person likenesses.
+          - No gore.
+          - No monsters.
+          - Realistic live-action appearance.
+          - Recognizable everyday locations.
+          - The disturbing thing must be VISIBLE immediately.
+          - The viewer must understand the basic horror without narration.
+          - Minimal dialogue.
+          - One strong visual idea is better than complicated mythology.
+          - One or two characters maximum.
+          - One location per story.
+          - Prefer one continuous shot or two simple shots.
+          - End immediately after the reveal.
 
           ============================================================
-          WHAT WE WANT
+          FRAME-1 RULE
           ============================================================
 
-          Prefer:
+          The FIRST FRAME must already contain something wrong.
 
-          - realistic human behavior
+          Bad:
+          Person walks into an empty room.
+          Something scary happens 8 seconds later.
+
+          Good:
+          Person is already standing in a room while something visibly
+          impossible is happening behind or beside them.
+
+          The viewer should notice the anomaly within one second.
+
+          ============================================================
+          STORY STRUCTURE
+          ============================================================
+
+          Every selected story must have:
+
+          1. Immediate visual anomaly.
+          2. Simple recognizable situation.
+          3. Small escalation.
+          4. Visual revelation.
+          5. Strong final image.
+          6. Hard cut ending.
+
+          The final image should create:
+
+          "Wait... what?"
+
+          and ideally make the viewer want to replay the Short.
+
+          ============================================================
+          PREFERRED HORROR
+          ============================================================
+
+          Prefer realistic situations involving:
+
           - apartments
           - offices
           - bathrooms
           - kitchens
           - staircases
           - supermarkets
-          - parking areas
           - hospitals
           - restaurants
-          - workplaces
-          - public places
+          - parking areas
           - building lobbies
-          - pharmacies
+          - workplaces
           - laundromats
+          - pharmacies
           - rooftops
           - balconies
           - convenience stores
           - ordinary streets
+          - public areas
 
-          Strong mechanisms include:
+          Prefer threats involving:
 
-          - someone being somewhere they should not be
-          - an ordinary action happening in an impossible way
-          - a person reacting to something the viewer can clearly see
-          - an object behaving in a physically understandable but disturbing way
+          - a person being somewhere they should not be
+          - an ordinary action happening incorrectly
           - a locked/open contradiction
-          - a time/order contradiction
-          - a person knowing something they could not know
-          - an ordinary physical event revealing a disturbing truth
-          - an apparently safe situation becoming unsafe through one visible change
+          - something physically impossible but simple
+          - a person reacting to something clearly visible
+          - an object revealing something disturbing
+          - an ordinary environment containing one impossible detail
+          - a physical event that changes the meaning of the scene
 
           ============================================================
           HARD EXCLUSIONS
@@ -136,178 +155,92 @@ jobs:
           - printer horror
           - moving empty chair
           - train horror
-          - 180-degree head/face distortion
+          - 180-degree head distortion
           - disappearing/reappearing people
           - floating mugs
-          - possessed household objects
           - cereal boxes with faces
+          - possessed household objects
           - random body parts appearing
           - objects growing human faces
-          - generic demons
           - generic ghosts
+          - generic demons
           - monsters
           - zombies
-          - excessive blood
           - gore
-          - complicated mythology
+          - blood-heavy horror
           - complicated transformations
           - impossible anatomy
           - giant creatures
-          - jump scares with no story
-          - "it was actually me" twists unless the visual execution is
-            extremely clear
-          - twists that require complicated CGI
-          - twists that cannot be understood visually
+          - complicated CGI
           - long conversations
           - exposition
-          - stories depending entirely on narration
+          - "the character screams" as the entire ending
+          - "the object disappears" as the entire ending
+          - "it was actually me" unless the visual explanation is extremely clear
+          - anything that looks more funny than frightening
 
           ============================================================
-          FLOW FEASIBILITY
+          ORIGINALITY
           ============================================================
 
-          Every concept MUST be easy for Google Flow to generate.
+          First generate a large internal pool of at least 12 different
+          concepts.
 
-          Prefer:
+          Do NOT return the first three acceptable concepts.
 
-          - one or two adult characters
-          - one location
-          - one camera
-          - one continuous shot or two simple shots
-          - simple human movement
-          - simple physical actions
-          - realistic lighting
-          - realistic environments
-
-          Avoid:
-
-          - complex reflections
-          - complex transformations
-          - many characters
-          - crowds
-          - complicated camera choreography
-          - impossible anatomy
-          - detailed supernatural creatures
-
-          ============================================================
-          GENERATE A LARGE IDEA POOL FIRST
-          ============================================================
-
-          Internally generate at least 12 different concepts.
-
-          They must use different:
+          The concepts must use different:
 
           - locations
           - mechanisms
           - character situations
-          - types of threat
+          - visual threats
           - endings
 
-          Do NOT select the first 3 acceptable ideas.
+          Reject concepts that feel like common AI horror templates.
 
           ============================================================
-          RUTHLESS QUALITY FILTER
+          QUALITY FILTER
           ============================================================
 
-          Internally evaluate every idea.
+          Internally reject any concept if the answer to ANY of these is NO:
 
-          Reject any idea if:
+          1. Is something clearly wrong in the first frame?
 
-          - the horror is not visible in frame 1
-          - narration is required to understand what is wrong
-          - it feels like a generic AI horror video
-          - the twist is predictable
-          - the twist requires complicated CGI
-          - it resembles the excluded mechanisms
-          - it is more funny than frightening
-          - the ending is merely "the object disappears"
-          - the ending is merely "the character screams"
-          - the viewer would need an explanation
-          - the visual would probably look fake
-          - the concept feels copied from common horror Shorts
-          - the first frame is ordinary
-          - nothing meaningful changes during the Short
+          2. Can the viewer understand the visual problem without sound?
 
-          ============================================================
-          IMPORTANT STOP-SCROLL TEST
-          ============================================================
+          3. Is the horror believable enough to look like live action?
 
-          For every surviving idea, ask:
+          4. Can Google Flow create the action without complicated effects?
 
-          "If I show only the first frame to someone for one second,
-          would they immediately notice something is wrong?"
+          5. Does something meaningful happen before the ending?
 
-          If NO: reject it.
+          6. Does the final image create a genuine "wait... what?" reaction?
 
-          Then ask:
+          7. Is the concept different from the other selected concepts?
 
-          "If the viewer watches without sound, will they understand
-          the horror?"
+          8. Would this feel like The Quiet Vault rather than a generic
+             AI-generated horror video?
 
-          If NO: reject it.
-
-          Then ask:
-
-          "Can Google Flow realistically create the required action?"
-
-          If NO: reject it.
-
-          Then ask:
-
-          "Does the ending create a genuine 'wait... what?' moment?"
-
-          If NO: reject it.
+          If NO, discard the concept and replace it.
 
           ============================================================
-          FINAL SELECTION
+          FLOW REQUIREMENTS
           ============================================================
 
-          Select EXACTLY 3 concepts.
+          Every Flow prompt must include:
 
-          The three concepts must NOT share the same core mechanism.
-
-          Do not select three versions of the same idea.
-
-          ============================================================
-          OUTPUT PACKAGE
-          ============================================================
-
-          For each selected Short provide:
-
-          1. TITLE
-
-          Title should create curiosity without explaining the twist.
-
-          2. SHORT_SCRIPT
-
-          Maximum approximately 35 spoken words.
-
-          Narration should be minimal.
-          Dialogue only when it adds value.
-
-          3. VISUAL_HOOK
-
-          Describe exactly what is visible in frame 1.
-
-          4. FLOW_PROMPT
-
-          Write ONE complete Google Flow prompt ready to paste.
-
-          It must specify:
-
-          - vertical 9:16
-          - 9-15 seconds
+          - 9:16 vertical
+          - 9-15 second duration
           - photorealistic live-action
           - fictional adult characters
           - no celebrity likeness
-          - location
-          - character appearance
+          - realistic environment
+          - realistic lighting
           - camera position
-          - camera movement
-          - lighting
+          - simple camera movement
           - exact physical action
           - timing
-          - final visual twist
+          - final visual reveal
           - hard ending
           - no text
           - no subtitles
@@ -316,106 +249,147 @@ jobs:
           - no gore
           - no monsters
 
-          Do not rely on complex visual effects.
-
-          5. FINAL_TWIST
-
-          Explain the final visual revelation in one or two sentences.
-
-          6. DESCRIPTION
-
-          Natural YouTube description.
-          Do not claim the story is real.
-          Do not mention AI generation.
-          Do not keyword stuff.
-
-          7. KEYWORDS
-
-          10-20 relevant comma-separated keywords.
-
-          8. HASHTAGS
-
-          4-8 relevant hashtags.
-
-          9. THUMBNAIL_FRAME
-
-          Identify the strongest exact moment/frame.
-
-          10. THUMBNAIL_TEXT
-
-          Maximum 4 words.
-          It should create curiosity.
-          Use "NONE" if text would weaken the thumbnail.
+          Do not ask Flow to create complicated reflections,
+          impossible anatomy, crowds, or complicated transformations.
 
           ============================================================
-          FINAL SELF-CRITIQUE
+          FINAL THREE
           ============================================================
 
-          Before returning the final JSON, mentally inspect each selected
-          concept as if the finished video were playing.
+          Return exactly 3 selected concepts.
 
-          Reject and replace any concept that would likely look:
+          They must be genuinely different from each other.
 
-          - silly
-          - confusing
-          - cartoonish
-          - overly supernatural
-          - visually weak
-          - difficult for Flow to generate
-          - boring after the first 2 seconds
+          For each one provide:
 
-          Quality is more important than variety.
+          TITLE
+          SHORT_SCRIPT
+          VISUAL_HOOK
+          FLOW_PROMPT
+          FINAL_TWIST
+          DESCRIPTION
+          KEYWORDS
+          HASHTAGS
+          THUMBNAIL_FRAME
+          THUMBNAIL_TEXT
 
-          Return ONLY valid JSON.
+          SHORT_SCRIPT:
+          - maximum approximately 35 spoken words
+          - minimal narration
+          - dialogue only when useful
 
-          Use exactly this structure:
+          VISUAL_HOOK:
+          - describe exactly what is visible in frame 1
 
-          {
-            "shorts": [
-              {
-                "id": 1,
-                "title": "...",
-                "short_script": "...",
-                "visual_hook": "...",
-                "flow_prompt": "...",
-                "final_twist": "...",
-                "description": "...",
-                "keywords": "...",
-                "hashtags": "...",
-                "thumbnail_frame": "...",
-                "thumbnail_text": "..."
-              },
-              {
-                "id": 2,
-                "title": "...",
-                "short_script": "...",
-                "visual_hook": "...",
-                "flow_prompt": "...",
-                "final_twist": "...",
-                "description": "...",
-                "keywords": "...",
-                "hashtags": "...",
-                "thumbnail_frame": "...",
-                "thumbnail_text": "..."
-              },
-              {
-                "id": 3,
-                "title": "...",
-                "short_script": "...",
-                "visual_hook": "...",
-                "flow_prompt": "...",
-                "final_twist": "...",
-                "description": "...",
-                "keywords": "...",
-                "hashtags": "...",
-                "thumbnail_frame": "...",
-                "thumbnail_text": "..."
-              }
-            ]
-          }
+          FINAL_TWIST:
+          - explain the final visual revelation
+
+          DESCRIPTION:
+          - natural YouTube description
+          - no keyword stuffing
+          - do not claim the story is real
+          - do not mention AI generation
+
+          KEYWORDS:
+          - 10-20 relevant comma-separated keywords
+
+          HASHTAGS:
+          - 4-8 relevant hashtags
+
+          THUMBNAIL_FRAME:
+          - identify the strongest exact moment
+
+          THUMBNAIL_TEXT:
+          - maximum 4 words
+          - use NONE if text would weaken the thumbnail
+
+          ============================================================
+          IMPORTANT
+          ============================================================
+
+          The final concepts must be practical to produce.
+
+          Do not sacrifice visual quality just to make the idea more
+          supernatural.
+
+          A realistic person in the wrong place is often scarier than
+          a monster.
+
+          A simple physical contradiction is often scarier than CGI.
+
+          Return ONLY the requested structured data.
           """
 
+          # ============================================================
+          # GROQ REQUEST
+          # ============================================================
+
           url = "https://api.groq.com/openai/v1/chat/completions"
+
+          schema = {
+              "type": "object",
+              "properties": {
+                  "shorts": {
+                      "type": "array",
+                      "items": {
+                          "type": "object",
+                          "properties": {
+                              "id": {
+                                  "type": "integer"
+                              },
+                              "title": {
+                                  "type": "string"
+                              },
+                              "short_script": {
+                                  "type": "string"
+                              },
+                              "visual_hook": {
+                                  "type": "string"
+                              },
+                              "flow_prompt": {
+                                  "type": "string"
+                              },
+                              "final_twist": {
+                                  "type": "string"
+                              },
+                              "description": {
+                                  "type": "string"
+                              },
+                              "keywords": {
+                                  "type": "string"
+                              },
+                              "hashtags": {
+                                  "type": "string"
+                              },
+                              "thumbnail_frame": {
+                                  "type": "string"
+                              },
+                              "thumbnail_text": {
+                                  "type": "string"
+                              }
+                          },
+                          "required": [
+                              "id",
+                              "title",
+                              "short_script",
+                              "visual_hook",
+                              "flow_prompt",
+                              "final_twist",
+                              "description",
+                              "keywords",
+                              "hashtags",
+                              "thumbnail_frame",
+                              "thumbnail_text"
+                          ],
+                          "additionalProperties": False
+                      }
+                  }
+              },
+              "required": [
+                  "shorts"
+              ],
+              "additionalProperties": False
+          }
 
           data = {
               "model": "openai/gpt-oss-20b",
@@ -423,9 +397,10 @@ jobs:
                   {
                       "role": "system",
                       "content": (
-                          "You are a senior horror creative director. "
-                          "Generate original, visually clear, realistic "
-                          "horror Shorts. Return valid JSON only."
+                          "You are a senior horror creative director "
+                          "for The Quiet Vault. "
+                          "Create original realistic horror Shorts "
+                          "and follow the requested schema exactly."
                       )
                   },
                   {
@@ -433,10 +408,16 @@ jobs:
                       "content": prompt
                   }
               ],
-              "temperature": 0.95,
-              "max_completion_tokens": 9000,
+              "temperature": 0.85,
+              "max_completion_tokens": 12000,
+              "reasoning_effort": "low",
               "response_format": {
-                  "type": "json_object"
+                  "type": "json_schema",
+                  "json_schema": {
+                      "name": "quiet_vault_shorts",
+                      "strict": True,
+                      "schema": schema
+                  }
               }
           }
 
@@ -462,6 +443,10 @@ jobs:
               print(e.read().decode("utf-8"))
               print("==========================")
               raise
+
+          # ============================================================
+          # PARSE RESPONSE
+          # ============================================================
 
           content = result["choices"][0]["message"]["content"]
 
@@ -494,18 +479,38 @@ jobs:
           ]
 
           for short in shorts:
-              missing = [field for field in required_fields if field not in short]
+              missing = [
+                  field
+                  for field in required_fields
+                  if field not in short
+              ]
 
               if missing:
-                  print("ERROR: Missing fields in Short", short.get("id"))
+                  print(
+                      "ERROR: Missing fields in Short",
+                      short.get("id")
+                  )
                   print("Missing:", missing)
                   raise SystemExit(1)
+
+          # ============================================================
+          # SAVE OUTPUT
+          # ============================================================
 
           output_dir = Path("quiet-vault-output")
           output_dir.mkdir(exist_ok=True)
 
-          with open(output_dir / "batch.json", "w", encoding="utf-8") as f:
-              json.dump(output, f, ensure_ascii=False, indent=2)
+          with open(
+              output_dir / "batch.json",
+              "w",
+              encoding="utf-8"
+          ) as f:
+              json.dump(
+                  output,
+                  f,
+                  ensure_ascii=False,
+                  indent=2
+              )
 
           for short in shorts:
               i = short["id"]
@@ -560,6 +565,10 @@ jobs:
               ) as f:
                   f.write(markdown)
 
+          # ============================================================
+          # SUCCESS OUTPUT
+          # ============================================================
+
           print("")
           print("========================================")
           print("   QUIET VAULT — 3 SHORTS GENERATED")
@@ -567,7 +576,9 @@ jobs:
           print("")
 
           for short in shorts:
-              print(f'{short["id"]}. {short["title"]}')
+              print(
+                  f'{short["id"]}. {short["title"]}'
+              )
 
           print("")
           print("Files created:")
@@ -577,6 +588,8 @@ jobs:
           print("  batch.json")
           print("")
           print("========================================")
+
+          PY
 
       - name: Upload generated Shorts package
         uses: actions/upload-artifact@v4
