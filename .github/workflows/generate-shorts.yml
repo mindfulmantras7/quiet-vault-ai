@@ -1,4 +1,4 @@
-name: Quiet Vault AI - Generate Shorts
+name: Quiet Vault AI - Evidence Based Generator
 
 on:
   workflow_dispatch:
@@ -8,353 +8,63 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Generate Shorts
+
+      # ============================================================
+      # GENERATE, FILTER, JUDGE AND FINALIZE
+      # ============================================================
+
+      - name: Generate evidence-based Quiet Vault Shorts
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
-          python3 <<'PY'
-          import json
+
+          cat > generate.py <<'PY'
+
           import os
+          import json
           import re
           import time
           import urllib.request
           import urllib.error
 
+
+          # ============================================================
+          # CONFIG
+          # ============================================================
+
           API_KEY = os.environ["GROQ_API_KEY"]
-          URL = "https://api.groq.com/openai/v1/chat/completions"
+
+          ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
+
           MODEL = "openai/gpt-oss-20b"
 
-          # ============================================================
-          # 20-MECHANISM HORROR LIBRARY
-          # ============================================================
-
-          SEEDS = [
-              {
-                  "id": 1,
-                  "location": "apartment bedroom",
-                  "visual": (
-                      "A fictional adult woman stands in her bedroom doorway. "
-                      "An unfamiliar adult man is sitting openly on her bed, holding her house keys "
-                      "in one hand and a kitchen knife in the other. Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "The man calmly says her late husband invited him into the apartment."
-                  ),
-                  "payoff": (
-                      "She says her husband died three years ago. The man answers that he knows, "
-                      "because the husband gave him the key the night before he died."
-                  )
-              },
-              {
-                  "id": 2,
-                  "location": "apartment kitchen",
-                  "visual": (
-                      "A fictional adult couple stand together in their kitchen. "
-                      "An unfamiliar adult man is seated openly at their table, holding their apartment key. "
-                      "All three adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "The stranger repeats one private sentence from an argument the couple had alone."
-                  ),
-                  "payoff": (
-                      "He then gives the exact time of the argument and asks why they stopped "
-                      "when someone knocked on the door."
-                  )
-              },
-              {
-                  "id": 3,
-                  "location": "private office",
-                  "visual": (
-                      "A fictional adult man stands inside his private office. "
-                      "An unfamiliar adult woman sits in his desk chair, holding his access badge "
-                      "and a pair of office scissors. Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "She says she was sent to collect an object hidden in his locked desk."
-                  ),
-                  "payoff": (
-                      "She names the exact drawer and exact object inside it before he opens the drawer."
-                  )
-              },
-              {
-                  "id": 4,
-                  "location": "hospital room",
-                  "visual": (
-                      "A fictional adult man enters a private hospital room. "
-                      "An unfamiliar adult man is already sitting beside the visitor chair, holding the patient's phone. "
-                      "Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "The stranger says the patient asked him to deliver a message before the visitor arrived."
-                  ),
-                  "payoff": (
-                      "The message contains a private sentence the visitor only said to the patient that morning."
-                  )
-              },
-              {
-                  "id": 5,
-                  "location": "restaurant private dining room",
-                  "visual": (
-                      "A fictional adult woman enters a private dining room. "
-                      "An unfamiliar adult man is seated opposite her husband, holding the husband's wedding ring. "
-                      "All three adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "The stranger says her husband left the ring with him during a meeting."
-                  ),
-                  "payoff": (
-                      "Her husband denies meeting him, and the stranger names the exact restaurant "
-                      "where the husband claimed he was that night."
-                  )
-              },
-              {
-                  "id": 6,
-                  "location": "apartment hallway",
-                  "visual": (
-                      "A fictional adult woman has opened her apartment door. "
-                      "An unfamiliar adult man is already standing inside, holding a spare apartment key "
-                      "and a framed family photograph. Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "The stranger says he found the photograph inside the apartment before she moved in."
-                  ),
-                  "payoff": (
-                      "He points to a person in the photograph and gives a detail about that person's life "
-                      "that contradicts what she was told."
-                  )
-              },
-              {
-                  "id": 7,
-                  "location": "apartment study",
-                  "visual": (
-                      "A fictional adult man stands in his study. "
-                      "An unfamiliar adult woman is seated at the desk, holding a locked metal key box "
-                      "and looking directly at him. Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "She says he asked her to open the box and gives him the combination."
-                  ),
-                  "payoff": (
-                      "He never gave anyone the combination, yet it is the same private number he uses "
-                      "for an important personal date."
-                  )
-              },
-              {
-                  "id": 8,
-                  "location": "office conference room",
-                  "visual": (
-                      "A fictional adult woman enters an office conference room. "
-                      "An unfamiliar adult man is already seated at the table, holding a handwritten note "
-                      "with her name on it. Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "The man says the note was written by her and asks why she changed the last sentence."
-                  ),
-                  "payoff": (
-                      "She recognizes the handwriting, but she has not written the note yet."
-                  )
-              },
-              {
-                  "id": 9,
-                  "location": "apartment living room",
-                  "visual": (
-                      "A fictional adult man enters his living room. "
-                      "An unfamiliar adult woman is openly sitting in his chair, holding his wallet and a house key. "
-                      "Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "She says she was waiting for him because he called her from the apartment."
-                  ),
-                  "payoff": (
-                      "He checks his phone and sees a call from his own number while his phone is in his hand."
-                  )
-              },
-              {
-                  "id": 10,
-                  "location": "hospital waiting room",
-                  "visual": (
-                      "A fictional adult woman sits in a hospital waiting room. "
-                      "An unfamiliar adult man sits directly opposite her, holding her purse and a small knife. "
-                      "Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "He says she left the purse with him when she came through the hospital doors."
-                  ),
-                  "payoff": (
-                      "She has been holding the same purse the entire time and realizes the stranger has another one."
-                  )
-              },
-              {
-                  "id": 11,
-                  "location": "apartment dining room",
-                  "visual": (
-                      "A fictional adult couple stand beside their dining table. "
-                      "An unfamiliar adult woman is seated in their empty chair, holding a sealed envelope addressed to both of them. "
-                      "All three adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "The woman says the envelope was meant to be opened after their anniversary."
-                  ),
-                  "payoff": (
-                      "Their anniversary is six months away, but the envelope is dated tomorrow."
-                  )
-              },
-              {
-                  "id": 12,
-                  "location": "private office",
-                  "visual": (
-                      "A fictional adult man stands at his office doorway. "
-                      "An unfamiliar adult man is inside holding a personal photograph and a box cutter. "
-                      "Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "The stranger claims the photograph was taken inside the man's office."
-                  ),
-                  "payoff": (
-                      "The photograph shows the man asleep at his desk from inside the locked room."
-                  )
-              },
-              {
-                  "id": 13,
-                  "location": "apartment kitchen",
-                  "visual": (
-                      "A fictional adult woman stands in her kitchen. "
-                      "An unfamiliar adult man is openly standing beside the counter, holding a house key "
-                      "and a folded coat. Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "He says the coat belongs to her brother and that her brother asked him to return it."
-                  ),
-                  "payoff": (
-                      "She says her brother never owned that coat. The stranger then gives her the brother's private nickname."
-                  )
-              },
-              {
-                  "id": 14,
-                  "location": "restaurant corridor",
-                  "visual": (
-                      "A fictional adult man stands in a restaurant corridor. "
-                      "An unfamiliar adult woman is openly standing at a private-room door, holding a reservation card "
-                      "and a kitchen knife. Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "She says he reserved the room for the two of them."
-                  ),
-                  "payoff": (
-                      "He never made the reservation, but the card contains his handwriting and tomorrow's date."
-                  )
-              },
-              {
-                  "id": 15,
-                  "location": "apartment study",
-                  "visual": (
-                      "A fictional adult woman enters her study. "
-                      "An unfamiliar adult man is seated at her desk, holding an old cassette recorder and a key. "
-                      "Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "He says he brought back a recording she asked him to make."
-                  ),
-                  "payoff": (
-                      "The recording contains her voice describing the exact room she is standing in, "
-                      "but the recording is dated next week."
-                  )
-              },
-              {
-                  "id": 16,
-                  "location": "hospital corridor",
-                  "visual": (
-                      "A fictional adult man stands outside a hospital room. "
-                      "An unfamiliar adult woman is already standing beside the door, holding his missing wristwatch. "
-                      "Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "She says he gave her the watch earlier that evening."
-                  ),
-                  "payoff": (
-                      "He checks his wrist and realizes he is still wearing the same watch."
-                  )
-              },
-              {
-                  "id": 17,
-                  "location": "apartment entryway",
-                  "visual": (
-                      "A fictional adult woman stands inside her apartment entryway. "
-                      "An unfamiliar adult man is openly sitting on a bench, holding a handwritten note and a key. "
-                      "Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "He says the note tells him exactly when she will come home."
-                  ),
-                  "payoff": (
-                      "The note contains the exact time she entered the apartment and describes the clothes she is wearing now."
-                  )
-              },
-              {
-                  "id": 18,
-                  "location": "office break room",
-                  "visual": (
-                      "A fictional adult man enters an office break room. "
-                      "An unfamiliar adult woman is already seated at the table, holding his employee badge "
-                      "and a sealed lunch box. Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "She says he asked her to keep the lunch for him."
-                  ),
-                  "payoff": (
-                      "He opens it and finds a meal he ordered for tomorrow, including a note written in his own handwriting."
-                  )
-              },
-              {
-                  "id": 19,
-                  "location": "apartment bedroom",
-                  "visual": (
-                      "A fictional adult couple stand in their bedroom. "
-                      "An unfamiliar adult woman is openly seated on the edge of their bed, holding a framed photograph of the couple. "
-                      "All three adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "She says the photograph was taken during their first night in the apartment."
-                  ),
-                  "payoff": (
-                      "The couple has never seen the photograph, and the stranger identifies the exact date they moved in."
-                  )
-              },
-              {
-                  "id": 20,
-                  "location": "private office",
-                  "visual": (
-                      "A fictional adult woman enters her private office. "
-                      "An unfamiliar adult man is openly standing beside her desk, holding her office key and a sealed envelope. "
-                      "Both adults are clearly visible."
-                  ),
-                  "mechanism": (
-                      "He says she asked him to deliver the envelope after she finished reading another letter."
-                  ),
-                  "payoff": (
-                      "She has never met him, but the envelope contains the letter she is currently holding."
-                  )
-              }
-          ]
 
           # ============================================================
-          # GROQ API
+          # GROQ REQUEST
           # ============================================================
 
-          def groq_call(messages, schema, max_tokens=2200, retries=5):
+          def groq_request(
+              messages,
+              schema_name,
+              schema,
+              temperature,
+              max_tokens,
+              retries=4
+          ):
 
               payload = {
                   "model": MODEL,
                   "messages": messages,
-                  "temperature": 0.65,
+                  "temperature": temperature,
                   "max_completion_tokens": max_tokens,
                   "reasoning_effort": "low",
+                  "reasoning_format": "hidden",
                   "response_format": {
                       "type": "json_schema",
                       "json_schema": {
-                          "name": schema["name"],
+                          "name": schema_name,
                           "strict": True,
-                          "schema": schema["schema"]
+                          "schema": schema
                       }
                   }
               }
@@ -364,7 +74,7 @@ jobs:
               for attempt in range(retries):
 
                   request = urllib.request.Request(
-                      URL,
+                      ENDPOINT,
                       data=data,
                       method="POST",
                       headers={
@@ -378,810 +88,1639 @@ jobs:
 
                       with urllib.request.urlopen(
                           request,
-                          timeout=120
+                          timeout=180
                       ) as response:
 
-                          result = json.loads(
-                              response.read().decode("utf-8")
-                          )
+                          body = response.read().decode("utf-8")
+                          result = json.loads(body)
 
-                          content = (
-                              result["choices"][0]["message"]["content"]
-                          )
+                          content = result["choices"][0]["message"]["content"]
 
                           return json.loads(content)
 
-                  except urllib.error.HTTPError as error:
+                  except urllib.error.HTTPError as e:
 
-                      body = error.read().decode(
+                      error_body = e.read().decode(
                           "utf-8",
-                          errors="ignore"
+                          errors="replace"
                       )
 
-                      print(
-                          f"GROQ HTTP ERROR {error.code}: {body}"
-                      )
+                      print("")
+                      print("==========================================")
+                      print("GROQ ERROR")
+                      print("HTTP:", e.code)
+                      print(error_body)
+                      print("==========================================")
 
-                      if (
-                          error.code == 429
-                          and attempt < retries - 1
-                      ):
+                      if e.code == 429 and attempt < retries - 1:
 
-                          retry_after = error.headers.get(
-                              "retry-after"
+                          retry_seconds = 65
+
+                          match = re.search(
+                              r"retry-after[^0-9]*([0-9]+)",
+                              error_body,
+                              re.I
                           )
 
-                          try:
-                              wait_seconds = max(
+                          if match:
+                              retry_seconds = max(
                                   65,
-                                  int(float(retry_after)) + 2
+                                  int(match.group(1)) + 5
                               )
-                          except Exception:
-                              wait_seconds = 65
 
                           print(
-                              f"Rate limit detected. "
-                              f"Waiting {wait_seconds} seconds..."
+                              f"Rate limited. Waiting {retry_seconds} seconds..."
                           )
 
-                          time.sleep(wait_seconds)
+                          time.sleep(retry_seconds)
+
                           continue
 
-                      raise
-
-                  except Exception as error:
-
-                      print(
-                          f"GROQ ERROR: {error}"
+                      raise RuntimeError(
+                          f"Groq returned HTTP {e.code}"
                       )
 
-                      if attempt < retries - 1:
-
-                          print(
-                              "Retrying in 10 seconds..."
-                          )
-
-                          time.sleep(10)
-                          continue
-
-                      raise
 
           # ============================================================
-          # ROTATE THROUGH THE 20-MECHANISM LIBRARY
+          # HISTORICAL CREATIVE DNA
           # ============================================================
 
-          run_number = int(
-              os.environ.get(
-                  "GITHUB_RUN_NUMBER",
-                  "1"
-              )
-          )
+          CREATIVE_DNA = """
 
-          start_index = (
-              ((run_number - 1) * 6)
-              % len(SEEDS)
-          )
+          THE QUIET VAULT — HISTORICAL CREATIVE DNA
 
-          selected_seeds = [
-              SEEDS[
-                  (start_index + offset)
-                  % len(SEEDS)
-              ]
-              for offset in range(6)
+          The channel's strongest observed Shorts demonstrated:
+
+          1. IMMEDIATE VISUAL PROBLEM
+
+          The viewer should see something wrong before they need to
+          understand the entire story.
+
+          The first frame must contain a person, object, action or situation
+          that is obviously out of place.
+
+          Do not begin with:
+          - someone walking into a room
+          - empty room
+          - normal establishing shot
+          - person simply looking worried
+          - ordinary conversation
+          - atmospheric darkness
+
+          The first screenshot should already make the viewer ask:
+
+          "Why is THAT person there?"
+
+          or:
+
+          "How is THAT possible?"
+
+          or:
+
+          "Why is THAT happening?"
+
+
+
+          2. VISIBLE THREAT
+
+          Horror should be physically visible.
+
+          A strange adult standing somewhere they should not be.
+
+          A stranger holding something that belongs to the protagonist.
+
+          An adult doing something that proves they know impossible/private
+          information.
+
+          An adult occupying a place that should be inaccessible.
+
+          The viewer should not need narration to discover that something
+          is wrong.
+
+
+
+          3. SIMPLE CONTRADICTION
+
+          The strongest structure is:
+
+          NORMAL REALITY
+          +
+          ONE IMPOSSIBLE CONTRADICTION
+          +
+          SECOND REALIZATION
+
+          Do not build mythology.
+
+          Do not explain ghosts.
+
+          Do not explain supernatural rules.
+
+          Do not create elaborate backstory.
+
+          One contradiction is enough.
+
+
+
+          4. RELATIONSHIP OR PERSONAL STAKES
+
+          Family/relationship context has been useful.
+
+          Preferred adult relationships:
+
+          husband / wife
+          brother / sister
+          adult siblings
+          close friends
+          roommates
+          colleagues
+          neighbors
+          ex-partners
+
+          Adults only.
+
+          Never use children or minors.
+
+
+
+          5. REWATCH VALUE
+
+          The viewer should be able to notice a clue on replay.
+
+          Good:
+
+          "He said he came yesterday."
+
+          while the protagonist knows he was not there.
+
+          Bad:
+
+          "The ancient demon of the house appears because..."
+
+          The viewer should understand the premise immediately and discover
+          one additional implication after thinking about it.
+
+
+
+          6. GOOGLE FLOW FEASIBILITY
+
+          Prefer:
+
+          - 2 or 3 adults maximum
+          - one recognizable location
+          - one camera angle
+          - simple walking / turning / holding / opening actions
+          - normal human faces
+          - realistic lighting
+
+          Avoid complicated transformations.
+
+          Avoid tiny text that must be read.
+
+          Avoid phone screens as the primary horror mechanism.
+
+          Avoid reflections.
+
+          Avoid visual effects.
+
+
+
+          7. IMPORTANT PERFORMANCE LESSON
+
+          High APV alone is not enough.
+
+          A clever story that people swipe away from is still a weak Short.
+
+          Therefore:
+
+          FIRST FRAME > STORY COMPLEXITY
+
+          The first frame must sell the horror.
+
+          """
+
+
+
+          # ============================================================
+          # MECHANISM LIBRARY
+          #
+          # These are NOT stories.
+          #
+          # They are controlled horror structures.
+          # ============================================================
+
+          MECHANISMS = [
+
+              {
+                  "id": 1,
+                  "name": "WRONG ACCESS",
+                  "rule":
+                  "An unfamiliar adult is visibly inside a private locked space "
+                  "using something that should only belong to the protagonist."
+              },
+
+              {
+                  "id": 2,
+                  "name": "DEAD PERSON'S OBJECT",
+                  "rule":
+                  "A stranger is visibly holding or returning an ordinary object "
+                  "that belongs to someone the protagonist knows is dead."
+              },
+
+              {
+                  "id": 3,
+                  "name": "IMPOSSIBLE VISIT",
+                  "rule":
+                  "A stranger calmly claims they visited the protagonist recently "
+                  "when the protagonist knows the place was inaccessible."
+              },
+
+              {
+                  "id": 4,
+                  "name": "PRIVATE MEMORY",
+                  "rule":
+                  "An unfamiliar adult reveals one extremely specific private event "
+                  "that only someone present could know."
+              },
+
+              {
+                  "id": 5,
+                  "name": "WRONG OWNER",
+                  "rule":
+                  "A stranger confidently identifies a private possession as theirs "
+                  "and gives a detail proving unusual familiarity."
+              },
+
+              {
+                  "id": 6,
+                  "name": "WRONG ROOM",
+                  "rule":
+                  "An adult is visibly occupying a room or workplace they should "
+                  "have no reason or permission to enter."
+              },
+
+              {
+                  "id": 7,
+                  "name": "WRONG INSTRUCTION",
+                  "rule":
+                  "A stranger performs an ordinary action exactly as instructed by "
+                  "someone who could not have communicated with them."
+              },
+
+              {
+                  "id": 8,
+                  "name": "UNEXPECTED VISITOR",
+                  "rule":
+                  "A stranger is already comfortably inside a familiar home and "
+                  "speaks as though their presence was expected."
+              },
+
+              {
+                  "id": 9,
+                  "name": "RELATIONSHIP CONTRADICTION",
+                  "rule":
+                  "A stranger claims a personal relationship with one protagonist "
+                  "that the other protagonist knows is impossible."
+              },
+
+              {
+                  "id": 10,
+                  "name": "WRONG CONVERSATION",
+                  "rule":
+                  "Two adults are visibly speaking while one refers to a private "
+                  "conversation that supposedly happened when they were apart."
+              },
+
+              {
+                  "id": 11,
+                  "name": "IMPOSSIBLE DELIVERY",
+                  "rule":
+                  "An adult delivers an ordinary item while claiming it was ordered "
+                  "or requested by someone who could not have done so."
+              },
+
+              {
+                  "id": 12,
+                  "name": "WRONG TIME",
+                  "rule":
+                  "An adult appears with knowledge or evidence that places them "
+                  "inside the location at a time they could not have been there."
+              },
+
+              {
+                  "id": 13,
+                  "name": "PERSONAL WARNING",
+                  "rule":
+                  "A stranger warns the protagonist about a very specific private "
+                  "event that has not happened yet."
+              },
+
+              {
+                  "id": 14,
+                  "name": "WRONG NAME",
+                  "rule":
+                  "A stranger addresses the protagonist using a private name or "
+                  "nickname that almost nobody knows."
+              },
+
+              {
+                  "id": 15,
+                  "name": "IMPOSSIBLE FAMILIARITY",
+                  "rule":
+                  "A stranger behaves inside the home like someone who has lived "
+                  "there before."
+              },
+
+              {
+                  "id": 16,
+                  "name": "THE OTHER WITNESS",
+                  "rule":
+                  "A stranger describes an event witnessed by someone who was "
+                  "supposedly alone with the protagonist."
+              },
+
+              {
+                  "id": 17,
+                  "name": "WRONG DESTINATION",
+                  "rule":
+                  "A stranger arrives at an ordinary location and confidently says "
+                  "the protagonist personally sent them there."
+              },
+
+              {
+                  "id": 18,
+                  "name": "FAMILIAR ROUTINE",
+                  "rule":
+                  "A stranger performs one highly personal household routine "
+                  "belonging to someone close to the protagonist."
+              },
+
+              {
+                  "id": 19,
+                  "name": "IMPOSSIBLE KNOWLEDGE",
+                  "rule":
+                  "A stranger knows a private physical detail about the location "
+                  "that the protagonist has never told anyone."
+              },
+
+              {
+                  "id": 20,
+                  "name": "THE WRONG PERSON IS CALM",
+                  "rule":
+                  "A visible adult threat is already present, but the stranger "
+                  "calmly behaves as though the protagonist is the unusual one."
+              }
+
           ]
 
-          print("")
-          print("==============================================")
-          print("QUIET VAULT - MECHANISM LIBRARY")
-          print("==============================================")
-
-          for seed in selected_seeds:
-
-              print(
-                  f"Seed {seed['id']}: "
-                  f"{seed['location']}"
-              )
-
-          seed_text = "\n\n".join(
-              f"""
-          SEED {seed['id']}
-
-          LOCATION:
-          {seed['location']}
-
-          FIXED VISUAL:
-          {seed['visual']}
-
-          FIXED MECHANISM:
-          {seed['mechanism']}
-
-          FIXED PAYOFF:
-          {seed['payoff']}
-          """
-              for seed in selected_seeds
-          )
 
           # ============================================================
-          # STORY BLUEPRINT SCHEMA
+          # CANDIDATE SCHEMA
           # ============================================================
 
-          blueprint_schema = {
-              "name": "quiet_vault_blueprints",
-              "schema": {
-                  "type": "object",
-                  "properties": {
-                      "stories": {
-                          "type": "array",
-                          "items": {
-                              "type": "object",
-                              "properties": {
-                                  "id": {
-                                      "type": "integer"
-                                  },
-                                  "title": {
-                                      "type": "string"
-                                  },
-                                  "hook_line": {
-                                      "type": "string"
-                                  },
-                                  "middle_line": {
-                                      "type": "string"
-                                  },
-                                  "ending_line": {
-                                      "type": "string"
-                                  }
+          candidate_schema = {
+              "type": "object",
+              "properties": {
+                  "candidates": {
+                      "type": "array",
+                      "items": {
+                          "type": "object",
+                          "properties": {
+                              "id": {
+                                  "type": "integer"
                               },
-                              "required": [
-                                  "id",
-                                  "title",
-                                  "hook_line",
-                                  "middle_line",
-                                  "ending_line"
-                              ],
-                              "additionalProperties": False
-                          }
+                              "mechanism_id": {
+                                  "type": "integer"
+                              },
+                              "title": {
+                                  "type": "string"
+                              },
+                              "premise": {
+                                  "type": "string"
+                              },
+                              "static_frame_1": {
+                                  "type": "string"
+                              },
+                              "visible_threat": {
+                                  "type": "string"
+                              },
+                              "contradiction": {
+                                  "type": "string"
+                              },
+                              "ending": {
+                                  "type": "string"
+                              }
+                          },
+                          "required": [
+                              "id",
+                              "mechanism_id",
+                              "title",
+                              "premise",
+                              "static_frame_1",
+                              "visible_threat",
+                              "contradiction",
+                              "ending"
+                          ],
+                          "additionalProperties": False
                       }
-                  },
-                  "required": [
-                      "stories"
-                  ],
-                  "additionalProperties": False
-              }
+                  }
+              },
+              "required": [
+                  "candidates"
+              ],
+              "additionalProperties": False
           }
 
+
           # ============================================================
-          # GENERATE STORIES
+          # STAGE 1 — GENERATE 12 CONTROLLED CONCEPTS
           # ============================================================
+
+          selected_mechanisms = MECHANISMS.copy()
 
           generator_prompt = f"""
-          Write six ultra-short realistic cinematic horror Shorts.
 
-          There is ONE story for each supplied seed.
+          You are the horror concept architect for The Quiet Vault.
 
-          The visual, mechanism and payoff are FIXED.
+          {CREATIVE_DNA}
 
-          Do not replace them.
+          You are NOT allowed to invent a random horror mechanism.
 
-          Do not invent a different horror mechanism.
+          You must use the supplied mechanism library.
 
-          Do not remove the visible adult threat.
+          Generate EXACTLY 12 candidates.
 
-          Do not introduce:
-          children, babies, minors, ghosts, demons, monsters,
-          mirrors, reflections, twins, doppelgangers, CCTV,
-          surveillance, elevators, cars, hotels, trains, gore,
-          blood, or supernatural mythology.
+          Each candidate must use a DIFFERENT mechanism.
 
-          Each story has exactly three spoken lines:
+          MECHANISM LIBRARY:
 
-          HOOK:
-          Immediately identify what is wrong.
+          {json.dumps(selected_mechanisms, indent=2)}
 
-          MIDDLE:
-          Develop the supplied contradiction.
+          ============================================================
+          CRITICAL FIRST-FRAME RULE
+          ============================================================
 
-          ENDING:
-          Deliver the supplied payoff.
+          The first frame is treated like a thumbnail.
 
-          Total spoken words must be between 25 and 45 words.
+          If the viewer pauses on frame 1 with NO AUDIO,
+          they must see something clearly wrong.
 
-          Do not add characters.
+          GOOD:
 
-          Do not explain the entire backstory.
+          - unfamiliar adult already inside private home
+          - stranger holding a personal object
+          - two adults confronting a visibly misplaced third adult
+          - adult standing inside a locked/private area
+          - stranger performing an obviously intimate/familiar action
+
+          BAD:
+
+          - person looking scared
+          - dark hallway
+          - empty room
+          - ordinary dinner
+          - person walking into a room
+          - phone call
+          - text message
+          - reflection
+          - mysterious object by itself
+
+          ============================================================
+          THREAT RULE
+          ============================================================
+
+          Every concept needs a visible adult human threat or visibly
+          disturbing adult situation.
+
+          "Something is watching."
+
+          is NOT enough.
+
+          "A stranger is sitting at the protagonist's kitchen table."
+
+          IS enough.
+
+          ============================================================
+          CONTRADICTION RULE
+          ============================================================
+
+          The contradiction must be explainable in ONE sentence.
+
+          Example:
+
+          "The stranger says the dead man's key was given to him yesterday."
+
+          Do NOT require mythology or a paragraph of explanation.
+
+          ============================================================
+          ENDING RULE
+          ============================================================
+
+          The final beat must add a SECOND piece of information.
+
+          It should not merely reveal:
+
+          "It was a ghost."
+
+          Prefer:
+
+          "The stranger knows the exact private detail."
+
+          or:
+
+          "The supposedly dead person's object is still warm."
+
+          or:
+
+          "The stranger says something that proves he was there before."
+
+          ============================================================
+          ADULT ONLY
+
+          All characters are fictional adults.
+
+          No children.
+          No minors.
+          No babies.
+          No teenagers.
+
+          ============================================================
+          HARD BANS
 
           Do not use:
-          "little did she know"
-          "what happened next"
-          "you won't believe"
-          "everything changed"
 
-          The final line should be the disturbing realization.
+          mirrors
+          reflections
+          doppelgängers
+          twins
+          CCTV
+          elevators
+          cars as the central mechanism
+          hotels
+          trains
+          printers
+          empty-chair horror
+          video-call horror
+          phone-screen horror
+          disappearing people
+          reappearing people
+          monsters
+          demons
+          zombies
+          ghosts as the explanation
+          face distortion
+          body transformation
+          gore
+          blood
+          elaborate supernatural mythology
 
-          Keep the stories realistic.
+          ============================================================
+          OUTPUT QUALITY
 
-          SEEDS:
+          The premise should work even if the viewer never hears the dialogue.
 
-          {seed_text}
+          Do not write the final script yet.
+
+          Think VISUAL first.
+
+          Return ONLY JSON.
           """
 
-          print("")
-          print("==============================================")
-          print("STAGE 1: GENERATING STORIES")
-          print("==============================================")
 
-          generated = groq_call(
+          generated = groq_request(
               [
                   {
                       "role": "system",
-                      "content": (
-                          "You are a concise realistic horror writer. "
-                          "Follow the fixed mechanism exactly."
-                      )
+                      "content":
+                      "You are a strict visual horror concept architect."
                   },
                   {
                       "role": "user",
-                      "content": generator_prompt
+                      "content":
+                      generator_prompt
                   }
               ],
-              blueprint_schema,
-              max_tokens=2200
+              "quiet_vault_candidates",
+              candidate_schema,
+              0.85,
+              7000
           )
 
-          stories = generated["stories"]
 
-          print(
-              f"Groq returned {len(stories)} stories."
-          )
+          candidates = generated["candidates"]
 
-          seed_map = {
-              seed["id"]: seed
-              for seed in selected_seeds
-          }
-
-          candidates = []
-
-          for story in stories:
-
-              story_id = story.get("id")
-
-              if story_id not in seed_map:
-                  continue
-
-              seed = seed_map[story_id]
-
-              candidates.append({
-                  "id": story_id,
-                  "title": story["title"].strip(),
-                  "hook_line": story["hook_line"].strip(),
-                  "middle_line": story["middle_line"].strip(),
-                  "ending_line": story["ending_line"].strip(),
-                  "location": seed["location"],
-                  "static_frame_1": seed["visual"],
-                  "fixed_mechanism": seed["mechanism"],
-                  "fixed_payoff": seed["payoff"]
-              })
 
           # ============================================================
-          # OBJECTIVE FILTER
+          # HARD FILTER
           # ============================================================
 
           banned_terms = [
+
+              "mirror",
+              "reflection",
+              "doppelganger",
+              "doppelgänger",
+              "twin",
+              "cctv",
+              "elevator",
+              "hotel",
+              "train",
+              "printer",
+              "empty chair",
+              "video call",
+              "video-call",
+              "phone screen",
+              "ghost",
+              "demon",
+              "zombie",
+              "monster",
+              "gore",
+              "blood",
+              "face distortion",
+              "head spins",
+              "disappear",
+              "disappears",
+              "reappears",
               "child",
               "children",
               "kid",
               "baby",
-              "boy",
-              "girl",
-              "minor",
-              "nursery",
-              "babysitter",
-              "mirror",
-              "reflection",
-              "reflected",
-              "twin",
-              "doppelganger",
-              "cctv",
-              "surveillance",
-              "security camera",
-              "elevator",
-              "car",
-              "vehicle",
-              "hotel",
-              "train",
-              "ghost",
-              "demon",
-              "monster",
-              "zombie",
-              "gore",
-              "blood",
-              "supernatural"
+              "teenager",
+              "teen",
+              "minor"
           ]
 
-          def contains_banned(text):
 
-              lowered = text.lower()
+          def normalize(text):
+              return re.sub(
+                  r"\s+",
+                  " ",
+                  text.lower()
+              ).strip()
+
+
+          def hard_filter(candidate):
+
+              combined = normalize(
+                  " ".join([
+                      candidate["title"],
+                      candidate["premise"],
+                      candidate["static_frame_1"],
+                      candidate["visible_threat"],
+                      candidate["contradiction"],
+                      candidate["ending"]
+                  ])
+              )
 
               for term in banned_terms:
 
-                  pattern = (
-                      r"(?<![a-z])"
-                      + re.escape(term)
-                      + r"(?![a-z])"
-                  )
-
                   if re.search(
-                      pattern,
-                      lowered
+                      r"\b" + re.escape(term) + r"\b",
+                      combined
                   ):
-                      return True
 
-              return False
+                      return False, (
+                          "banned mechanism: "
+                          + term
+                      )
 
-          clean_candidates = []
+
+              frame = normalize(
+                  candidate["static_frame_1"]
+              )
+
+
+              weak_frame_terms = [
+                  "walks into",
+                  "enters the room",
+                  "opens the door",
+                  "looks around",
+                  "stands alone",
+                  "empty room",
+                  "dimly lit room",
+                  "dark room",
+                  "ordinary room",
+                  "camera shows"
+              ]
+
+
+              for term in weak_frame_terms:
+
+                  if term in frame:
+
+                      return False, (
+                          "weak first frame: "
+                          + term
+                      )
+
+
+              if len(frame.split()) < 16:
+
+                  return False, "first frame lacks visual detail"
+
+
+              threat = normalize(
+                  candidate["visible_threat"]
+              )
+
+
+              if len(threat.split()) < 8:
+
+                  return False, "visible threat too vague"
+
+
+              ending = normalize(
+                  candidate["ending"]
+              )
+
+
+              if len(ending.split()) < 10:
+
+                  return False, "ending too weak"
+
+
+              return True, "passed"
+
+
+          survivors = []
+          rejected = []
+
 
           for candidate in candidates:
 
-              spoken = " ".join([
-                  candidate["hook_line"],
-                  candidate["middle_line"],
-                  candidate["ending_line"]
-              ])
-
-              if contains_banned(spoken):
-
-                  print(
-                      f"OBJECTIVE REJECT "
-                      f"{candidate['id']}: banned content"
-                  )
-
-                  continue
-
-              word_count = len(
-                  spoken.split()
-              )
-
-              if word_count < 20:
-
-                  print(
-                      f"OBJECTIVE REJECT "
-                      f"{candidate['id']}: "
-                      f"only {word_count} words"
-                  )
-
-                  continue
-
-              if word_count > 50:
-
-                  print(
-                      f"OBJECTIVE REJECT "
-                      f"{candidate['id']}: "
-                      f"{word_count} words"
-                  )
-
-                  continue
-
-              clean_candidates.append(
+              passed, reason = hard_filter(
                   candidate
               )
 
+              if passed:
+
+                  survivors.append(
+                      candidate
+                  )
+
+              else:
+
+                  rejected.append(
+                      {
+                          "id":
+                          candidate["id"],
+
+                          "title":
+                          candidate["title"],
+
+                          "reason":
+                          reason
+                      }
+                  )
+
+
           print("")
-          print(
-              f"Usable concepts: "
-              f"{len(clean_candidates)}"
-          )
+          print("==========================================")
+          print("HARD FILTER")
+          print("==========================================")
+          print("Generated:", len(candidates))
+          print("Survived:", len(survivors))
+          print("Rejected:", len(rejected))
 
-          if len(clean_candidates) < 3:
 
-              raise RuntimeError(
-                  "Fewer than 3 usable concepts were generated."
-              )
-
-          # ============================================================
-          # SELECT THREE
-          # ============================================================
-
-          selected = clean_candidates[:3]
-
-          print("")
-          print("SELECTED:")
-
-          for candidate in selected:
+          for item in rejected:
 
               print(
-                  f"  {candidate['id']} - "
-                  f"{candidate['title']}"
+                  "REJECTED:",
+                  item["id"],
+                  item["title"],
+                  "->",
+                  item["reason"]
               )
 
+
+          if len(survivors) < 6:
+
+              raise RuntimeError(
+                  "Too few strong visual concepts survived. "
+                  "This run is intentionally rejected rather than "
+                  "filling the batch with weak stories."
+              )
+
+
           # ============================================================
-          # RATE LIMIT BUFFER
+          # STAGE 2 — STRICT CREATIVE JUDGE
+          # ============================================================
+
+          judge_schema = {
+              "type": "object",
+              "properties": {
+                  "judgements": {
+                      "type": "array",
+                      "items": {
+                          "type": "object",
+                          "properties": {
+
+                              "id": {
+                                  "type": "integer"
+                              },
+
+                              "hook": {
+                                  "type": "integer"
+                              },
+
+                              "visible_threat": {
+                                  "type": "integer"
+                              },
+
+                              "clarity": {
+                                  "type": "integer"
+                              },
+
+                              "contradiction": {
+                                  "type": "integer"
+                              },
+
+                              "ending": {
+                                  "type": "integer"
+                              },
+
+                              "flow": {
+                                  "type": "integer"
+                              },
+
+                              "rewatch": {
+                                  "type": "integer"
+                              },
+
+                              "originality": {
+                                  "type": "integer"
+                              },
+
+                              "pass": {
+                                  "type": "boolean"
+                              },
+
+                              "reason": {
+                                  "type": "string"
+                              }
+
+                          },
+
+                          "required": [
+                              "id",
+                              "hook",
+                              "visible_threat",
+                              "clarity",
+                              "contradiction",
+                              "ending",
+                              "flow",
+                              "rewatch",
+                              "originality",
+                              "pass",
+                              "reason"
+                          ],
+
+                          "additionalProperties": False
+                      }
+                  }
+              },
+
+              "required": [
+                  "judgements"
+              ],
+
+              "additionalProperties": False
+          }
+
+
+          judge_prompt = f"""
+
+          You are the FINAL CREATIVE GATE for The Quiet Vault.
+
+          {CREATIVE_DNA}
+
+          Judge every candidate harshly.
+
+          This is NOT a writing contest.
+
+          A clever premise with a weak opening FAILS.
+
+          ============================================================
+          SCORE EACH 1-10
+          ============================================================
+
+          HOOK
+
+          Look ONLY at static_frame_1.
+
+          Would a viewer scrolling Shorts immediately see something wrong?
+
+          9-10 = instantly disturbing visual
+
+          7-8 = clearly unusual
+
+          5-6 = needs narration
+
+          1-4 = normal frame
+
+          Anything below 8 FAILS.
+
+
+
+          VISIBLE THREAT
+
+          Is an adult human threat or disturbing adult situation physically
+          visible?
+
+          Anything below 8 FAILS.
+
+
+
+          CLARITY
+
+          Can the viewer understand the basic problem immediately?
+
+          Anything below 8 FAILS.
+
+
+
+          CONTRADICTION
+
+          Is there ONE simple impossible contradiction?
+
+          Anything below 8 FAILS.
+
+
+
+          ENDING
+
+          Does the ending create a second realization?
+
+          Anything below 8 FAILS.
+
+
+
+          FLOW
+
+          Could Google Flow realistically create this with:
+
+          2-3 adults
+          one location
+          simple movements
+          realistic faces
+          minimal visual effects
+
+          Anything below 8 FAILS.
+
+
+
+          REWATCH
+
+          Does replay reveal another clue?
+
+          Anything below 7 FAILS.
+
+
+
+          ORIGINALITY
+
+          Does this feel different from our recent failed outputs?
+
+          Anything below 7 FAILS.
+
+
+
+          ============================================================
+          PASS RULE
+          ============================================================
+
+          A candidate passes ONLY when:
+
+          hook >= 8
+          visible_threat >= 8
+          clarity >= 8
+          contradiction >= 8
+          ending >= 8
+          flow >= 8
+          rewatch >= 7
+          originality >= 7
+
+          AND
+
+          the concept is genuinely scary rather than merely mysterious.
+
+          Return ONLY JSON.
+
+          CANDIDATES:
+
+          {json.dumps(survivors, ensure_ascii=False)}
+          """
+
+
+          judged = groq_request(
+              [
+                  {
+                      "role": "system",
+                      "content":
+                      "You are a ruthless horror Shorts editor."
+                  },
+                  {
+                      "role": "user",
+                      "content":
+                      judge_prompt
+                  }
+              ],
+              "quiet_vault_judgement",
+              judge_schema,
+              0.25,
+              6500
+          )
+
+
+          judgements = judged["judgements"]
+
+
+          passed_ids = [
+              item["id"]
+              for item in judgements
+              if item["pass"]
+          ]
+
+
+          judgement_map = {
+              item["id"]: item
+              for item in judgements
+          }
+
+
+          finalists = [
+              candidate
+              for candidate in survivors
+              if candidate["id"] in passed_ids
+          ]
+
+
+          # Sort by weighted score
+
+          def weighted_score(candidate):
+
+              j = judgement_map[candidate["id"]]
+
+              return (
+                  j["hook"] * 4
+                  + j["visible_threat"] * 3
+                  + j["clarity"] * 2
+                  + j["contradiction"] * 2
+                  + j["ending"] * 3
+                  + j["flow"]
+                  + j["rewatch"] * 2
+                  + j["originality"]
+              )
+
+
+          finalists = sorted(
+              finalists,
+              key=weighted_score,
+              reverse=True
+          )
+
+
+          print("")
+          print("==========================================")
+          print("CREATIVE GATE")
+          print("==========================================")
+
+
+          for item in judgements:
+
+              print(
+                  "ID:",
+                  item["id"],
+                  "PASS:",
+                  item["pass"],
+                  "Hook:",
+                  item["hook"],
+                  "Threat:",
+                  item["visible_threat"],
+                  "Clarity:",
+                  item["clarity"],
+                  "Ending:",
+                  item["ending"],
+                  "Rewatch:",
+                  item["rewatch"]
+              )
+
+
+          if len(finalists) < 3:
+
+              raise RuntimeError(
+                  "Fewer than 3 concepts passed the strict "
+                  "Quiet Vault creative gate."
+              )
+
+
+          finalists = finalists[:3]
+
+
+          print("")
+          print("==========================================")
+          print("FINALISTS")
+          print("==========================================")
+
+
+          for item in finalists:
+
+              print(
+                  item["id"],
+                  item["title"]
+              )
+
+
+          # ============================================================
+          # WAIT BEFORE FINALIZATION
           # ============================================================
 
           print("")
-          print(
-              "Waiting 65 seconds before finalization..."
-          )
+          print("Waiting before finalization to protect Groq TPM limits...")
 
           time.sleep(65)
+
 
           # ============================================================
           # FINAL PACKAGE SCHEMA
           # ============================================================
 
           final_schema = {
-              "name": "quiet_vault_final_short",
-              "schema": {
-                  "type": "object",
-                  "properties": {
-                      "id": {
-                          "type": "integer"
-                      },
-                      "title": {
-                          "type": "string"
-                      },
-                      "short_script": {
-                          "type": "string"
-                      },
-                      "flow_prompt": {
-                          "type": "string"
-                      },
-                      "final_twist": {
-                          "type": "string"
-                      },
-                      "description": {
-                          "type": "string"
-                      },
-                      "keywords": {
-                          "type": "string"
-                      },
-                      "hashtags": {
-                          "type": "string"
-                      },
-                      "thumbnail_frame": {
-                          "type": "string"
-                      },
-                      "thumbnail_text": {
-                          "type": "string"
-                      },
-                      "sound_design": {
-                          "type": "string"
-                      },
-                      "pinned_comment": {
-                          "type": "string"
-                      }
+              "type": "object",
+              "properties": {
+
+                  "id": {
+                      "type": "integer"
                   },
-                  "required": [
-                      "id",
-                      "title",
-                      "short_script",
-                      "flow_prompt",
-                      "final_twist",
-                      "description",
-                      "keywords",
-                      "hashtags",
-                      "thumbnail_frame",
-                      "thumbnail_text",
-                      "sound_design",
-                      "pinned_comment"
-                  ],
-                  "additionalProperties": False
-              }
+
+                  "title": {
+                      "type": "string"
+                  },
+
+                  "short_script": {
+                      "type": "string"
+                  },
+
+                  "visual_hook": {
+                      "type": "string"
+                  },
+
+                  "flow_prompt": {
+                      "type": "string"
+                  },
+
+                  "final_twist": {
+                      "type": "string"
+                  },
+
+                  "description": {
+                      "type": "string"
+                  },
+
+                  "keywords": {
+                      "type": "string"
+                  },
+
+                  "hashtags": {
+                      "type": "string"
+                  },
+
+                  "thumbnail_frame": {
+                      "type": "string"
+                  },
+
+                  "thumbnail_text": {
+                      "type": "string"
+                  },
+
+                  "sound_design": {
+                      "type": "string"
+                  },
+
+                  "pinned_comment": {
+                      "type": "string"
+                  }
+
+              },
+
+              "required": [
+                  "id",
+                  "title",
+                  "short_script",
+                  "visual_hook",
+                  "flow_prompt",
+                  "final_twist",
+                  "description",
+                  "keywords",
+                  "hashtags",
+                  "thumbnail_frame",
+                  "thumbnail_text",
+                  "sound_design",
+                  "pinned_comment"
+              ],
+
+              "additionalProperties": False
           }
 
+
           # ============================================================
-          # FINALIZE THREE SHORTS
+          # FINALIZE EACH SHORT SEPARATELY
           # ============================================================
 
-          final_outputs = []
+          final_shorts = []
 
-          for index, candidate in enumerate(
-              selected
+
+          for index, finalist in enumerate(
+              finalists,
+              start=1
           ):
 
               print("")
               print(
-                  f"STAGE 2: FINALIZING "
-                  f"{index + 1}/3 - "
-                  f"{candidate['title']}"
+                  f"Finalizing Short {index}/3..."
               )
 
+
               final_prompt = f"""
-          Create the final production package for this realistic
-          9–12 second horror YouTube Short.
 
-          FIXED STORY:
+              You are the senior writer for The Quiet Vault.
 
-          TITLE:
-          {candidate['title']}
+              Turn this APPROVED horror mechanism into ONE complete
+              YouTube Short.
 
-          HOOK:
-          {candidate['hook_line']}
+              DO NOT change the underlying mechanism.
 
-          MIDDLE:
-          {candidate['middle_line']}
+              APPROVED CONCEPT:
 
-          ENDING:
-          {candidate['ending_line']}
+              {json.dumps(finalist, ensure_ascii=False, indent=2)}
 
-          FIXED FIRST FRAME:
-          {candidate['static_frame_1']}
+              ============================================================
+              HISTORICAL PERFORMANCE RULES
+              ============================================================
 
-          FIXED MECHANISM:
-          {candidate['fixed_mechanism']}
+              The channel performs best when the viewer understands the
+              visual problem immediately and then receives a second
+              realization.
 
-          FIXED PAYOFF:
-          {candidate['fixed_payoff']}
+              The first frame matters more than elaborate storytelling.
 
-          ============================================================
-          SCRIPT
-          ============================================================
+              ============================================================
+              VIDEO
 
-          Write the final spoken script.
+              9-12 seconds.
 
-          Maximum 45 words.
+              Vertical 9:16.
 
-          Keep the supplied three-part story.
+              Photorealistic live action.
 
-          Do not add characters.
+              Fictional adults only.
 
-          Do not add plot points.
+              One recognizable location.
 
-          Do not explain the backstory.
+              Maximum 3 adults.
 
-          The first sentence must immediately establish the problem.
+              Natural human movement.
 
-          The final sentence must be the disturbing payoff.
+              Realistic lighting.
 
-          Cut immediately after the payoff.
+              ============================================================
+              FIRST FRAME
 
-          ============================================================
-          GOOGLE FLOW PROMPT
-          ============================================================
+              The first frame MUST already contain the disturbing situation.
 
-          Create ONE Google Flow-ready prompt.
+              Do NOT start with:
 
-          Requirements:
+              someone entering
+              someone walking
+              an empty room
+              establishing shot
+              normal conversation
+              slow reveal
 
-          - vertical 9:16
-          - photorealistic live action
-          - fictional adults only
-          - no celebrity likeness
-          - no real-person likeness
-          - realistic faces
-          - realistic movement
-          - realistic lighting
-          - believable cinematic camera
-          - consistent characters
-          - preserve the exact first frame
-          - no children
-          - no mirrors
-          - no reflections
-          - no CCTV
-          - no ghosts
-          - no monsters
-          - no gore
-          - no supernatural effects
+              The first frame must be strong enough to work as a thumbnail.
 
-          EXACT FIRST FRAME:
+              ============================================================
+              SCRIPT
 
-          {candidate['static_frame_1']}
+              Maximum approximately 35 spoken words.
 
-          Do not replace this visual.
+              Prefer 2-4 short spoken lines.
 
-          The rest of the clip should simply act out
-          the three supplied spoken lines.
+              Do not explain the horror.
 
-          ============================================================
-          FINAL TWIST
-          ============================================================
+              Let the visual contradiction do the work.
 
-          State the actual final reveal in one or two sentences.
+              ============================================================
+              STRUCTURE
 
-          ============================================================
-          DESCRIPTION
-          ============================================================
+              0-3 seconds:
+              Show the impossible situation immediately.
 
-          Write a short natural YouTube description.
+              3-6 seconds:
+              One character identifies or questions the contradiction.
 
-          ============================================================
-          KEYWORDS
-          ============================================================
+              6-9/12 seconds:
+              The other character reveals one additional piece of information.
 
-          Give comma-separated relevant keywords.
+              Final moment:
+              hard cut or loop-friendly visual.
 
-          ============================================================
-          HASHTAGS
-          ============================================================
+              ============================================================
+              GOOGLE FLOW PROMPT
 
-          Give 4–6 relevant hashtags.
+              Give ONE complete copy/paste prompt.
 
-          ============================================================
-          THUMBNAIL
-          ============================================================
+              It must specify:
 
-          Choose the strongest frame.
+              - 9:16 vertical
+              - photorealistic live action
+              - fictional adults
+              - consistent character appearance
+              - recognizable location
+              - exact first frame
+              - camera framing
+              - 0-3 second action
+              - 3-6 second action
+              - 6-9/12 second action
+              - final reveal
+              - hard cut
+              - realistic lighting
+              - natural movement
+              - no subtitles
+              - no text overlays
+              - no celebrity likeness
+              - no real-person likeness
 
-          Give:
-          - exact moment
-          - optional thumbnail text
+              ============================================================
+              HARD BANS
 
-          Thumbnail text must be 2–4 words maximum.
+              No children.
+              No minors.
+              No mirrors.
+              No reflections.
+              No doppelgängers.
+              No twins.
+              No CCTV.
+              No elevators.
+              No hotels.
+              No trains.
+              No phone-screen horror.
+              No video-call horror.
+              No printers.
+              No empty-chair horror.
+              No monsters.
+              No demons.
+              No zombies.
+              No ghosts as the explanation.
+              No gore.
+              No blood.
+              No face distortion.
+              No body transformation.
+              No complicated CGI.
 
-          Do not reveal the twist.
+              ============================================================
+              THUMBNAIL
 
-          ============================================================
-          SOUND DESIGN
-          ============================================================
+              Choose a frame that visually explains the horror.
 
-          Give simple realistic sound cues.
+              Give approximate timing.
 
-          ============================================================
-          PINNED COMMENT
-          ============================================================
+              Thumbnail text:
+              maximum 3 words
+              or NONE.
 
-          Ask a question that encourages comments
-          without revealing the ending.
-          """
+              ============================================================
+              DESCRIPTION
 
-              final_result = groq_call(
+              Natural and short.
+
+              Do not write generic AI marketing language.
+
+              ============================================================
+              KEYWORDS
+
+              Comma-separated.
+
+              ============================================================
+              HASHTAGS
+
+              Compact.
+
+              Return ONLY JSON.
+              """
+
+
+              final_data = groq_request(
                   [
                       {
                           "role": "system",
-                          "content": (
-                              "You are the final production editor "
-                              "for The Quiet Vault. Preserve the "
-                              "supplied story and visual."
-                          )
+                          "content":
+                          "You are the final production writer for a realistic horror Shorts channel."
                       },
                       {
                           "role": "user",
-                          "content": final_prompt
+                          "content":
+                          final_prompt
                       }
                   ],
+                  f"quiet_vault_final_{index}",
                   final_schema,
-                  max_tokens=1700
+                  0.65,
+                  3000
               )
 
-              final_outputs.append(
-                  final_result
+
+              final_shorts.append(
+                  final_data
               )
 
-              if index < len(selected) - 1:
+
+              if index < len(finalists):
 
                   print(
-                      "Waiting 12 seconds..."
+                      "Waiting 15 seconds before next final call..."
                   )
 
-                  time.sleep(12)
+                  time.sleep(15)
+
 
           # ============================================================
-          # SAVE OUTPUT
+          # FINAL OUTPUT
           # ============================================================
 
           os.makedirs(
-              "output",
+              "quiet-vault-output",
               exist_ok=True
           )
 
+
+          output = {
+
+              "creative_dna":
+              "Evidence-based Quiet Vault formula",
+
+              "generated_candidates":
+              candidates,
+
+              "hard_filter_rejected":
+              rejected,
+
+              "hard_filter_survivors":
+              survivors,
+
+              "ai_judgements":
+              judgements,
+
+              "approved_finalists":
+              finalists,
+
+              "final_shorts":
+              final_shorts
+          }
+
+
           with open(
-              "output/quiet-vault-shorts.json",
+              "quiet-vault-output/batch.json",
               "w",
               encoding="utf-8"
-          ) as output_file:
+          ) as f:
 
               json.dump(
-                  {
-                      "generated_at": time.strftime(
-                          "%Y-%m-%d %H:%M:%S UTC"
-                      ),
-                      "shorts": final_outputs
-                  },
-                  output_file,
-                  ensure_ascii=False,
-                  indent=2
+                  output,
+                  f,
+                  indent=2,
+                  ensure_ascii=False
               )
 
-          with open(
-              "output/quiet-vault-shorts.txt",
-              "w",
-              encoding="utf-8"
-          ) as output_file:
 
-              for number, short in enumerate(
-                  final_outputs,
-                  1
-              ):
+          # ============================================================
+          # MARKDOWN PACKAGES
+          # ============================================================
 
-                  output_file.write(
-                      "=" * 70 + "\n"
-                  )
+          for index, short in enumerate(
+              final_shorts,
+              start=1
+          ):
 
-                  output_file.write(
-                      f"SHORT {number}\n"
-                  )
+              markdown = f"""# THE QUIET VAULT — SHORT {index}
 
-                  output_file.write(
-                      "=" * 70 + "\n\n"
-                  )
+          ## TITLE
 
-                  output_file.write(
-                      "TITLE:\n"
-                      + short["title"]
-                      + "\n\n"
-                  )
+          {short["title"]}
 
-                  output_file.write(
-                      "SCRIPT:\n"
-                      + short["short_script"]
-                      + "\n\n"
-                  )
+          ## SCRIPT
 
-                  output_file.write(
-                      "GOOGLE FLOW PROMPT:\n"
-                      + short["flow_prompt"]
-                      + "\n\n"
-                  )
+          {short["short_script"]}
 
-                  output_file.write(
-                      "FINAL TWIST:\n"
-                      + short["final_twist"]
-                      + "\n\n"
-                  )
+          ## VISUAL HOOK
 
-                  output_file.write(
-                      "DESCRIPTION:\n"
-                      + short["description"]
-                      + "\n\n"
-                  )
+          {short["visual_hook"]}
 
-                  output_file.write(
-                      "KEYWORDS:\n"
-                      + short["keywords"]
-                      + "\n\n"
-                  )
+          ## GOOGLE FLOW PROMPT
 
-                  output_file.write(
-                      "HASHTAGS:\n"
-                      + short["hashtags"]
-                      + "\n\n"
-                  )
+          {short["flow_prompt"]}
 
-                  output_file.write(
-                      "THUMBNAIL FRAME:\n"
-                      + short["thumbnail_frame"]
-                      + "\n\n"
-                  )
+          ## FINAL TWIST
 
-                  output_file.write(
-                      "THUMBNAIL TEXT:\n"
-                      + short["thumbnail_text"]
-                      + "\n\n"
-                  )
+          {short["final_twist"]}
 
-                  output_file.write(
-                      "SOUND DESIGN:\n"
-                      + short["sound_design"]
-                      + "\n\n"
-                  )
+          ## DESCRIPTION
 
-                  output_file.write(
-                      "PINNED COMMENT:\n"
-                      + short["pinned_comment"]
-                      + "\n\n"
-                  )
+          {short["description"]}
+
+          ## KEYWORDS
+
+          {short["keywords"]}
+
+          ## HASHTAGS
+
+          {short["hashtags"]}
+
+          ## THUMBNAIL FRAME
+
+          {short["thumbnail_frame"]}
+
+          ## THUMBNAIL TEXT
+
+          {short["thumbnail_text"]}
+
+          ## SOUND DESIGN
+
+          {short["sound_design"]}
+
+          ## PINNED COMMENT
+
+          {short["pinned_comment"]}
+          """
+
+
+              with open(
+                  f"quiet-vault-output/short_{index:02d}.md",
+                  "w",
+                  encoding="utf-8"
+              ) as f:
+
+                  f.write(markdown)
+
+
+          # ============================================================
+          # CONSOLE SUMMARY
+          # ============================================================
 
           print("")
-          print("==============================================")
-          print("QUIET VAULT AI GENERATION SUCCESS")
-          print("==============================================")
+          print("==========================================")
+          print("QUIET VAULT — EVIDENCE BASED PIPELINE")
+          print("==========================================")
+
           print(
-              f"Generated {len(final_outputs)} Shorts."
+              "Candidates generated:",
+              len(candidates)
           )
-          print("==============================================")
+
+          print(
+              "Hard-filter survivors:",
+              len(survivors)
+          )
+
+          print(
+              "Creative-gate finalists:",
+              len(finalists)
+          )
+
+          print(
+              "Final Shorts:",
+              len(final_shorts)
+          )
+
+          print("")
+
+          for index, short in enumerate(
+              final_shorts,
+              start=1
+          ):
+
+              print(
+                  f"{index}. {short['title']}"
+              )
+
+          print("")
+          print("==========================================")
+          print("PIPELINE COMPLETE")
+          print("==========================================")
+
+
           PY
 
-      - name: Upload generated Shorts package
+          python generate.py
+
+
+      # ============================================================
+      # UPLOAD ARTIFACT
+      # ============================================================
+
+      - name: Upload Quiet Vault Shorts
         uses: actions/upload-artifact@v4
         with:
           name: quiet-vault-3-shorts
-          path: output/
-          if-no-files-found: error
+          path: quiet-vault-output/
+          retention-days: 7
