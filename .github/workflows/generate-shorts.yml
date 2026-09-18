@@ -1,4 +1,4 @@
-name: Quiet Vault AI - V13 Contradiction Horror Engine
+name: Quiet Vault AI - V14 Contradiction Horror Engine
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Generate V13 Horror Shorts
+      - name: Generate V14 Horror Shorts
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           RUN_NUMBER: ${{ github.run_number }}
@@ -34,168 +34,173 @@ jobs:
           OUT.mkdir(exist_ok=True)
 
           # ============================================================
-          # QUIET VAULT V13
-          # ============================================================
+          # QUIET VAULT V14
           #
-          # Core formula:
+          # NEW CREATIVE RULE:
           #
-          # recognizable location
-          # + visible adult threat/violation
-          # + personal evidence
-          # + impossible contradiction
-          # + final line that changes the meaning of frame 1
+          # FRAME 1 = disturbing physical situation
+          # EVIDENCE  = something the viewer can actually see
+          # FACT      = an established reality
+          # CONTRADICTION = fact that makes the scene impossible
+          # FINAL LINE = exposes the contradiction
           #
-          # Groq DOES NOT invent the horror mechanism.
-          # Python owns the mechanism and reveal.
+          # The final line should CHANGE the meaning of frame 1.
+          #
+          # Groq does NOT invent the horror mechanism.
           # ============================================================
 
           MECHANISMS = [
 
               {
-                  "name": "DEAD WIFE ROUTINE",
+                  "name": "DEAD WIFE BED",
                   "title": "My Dead Wife Taught Her This",
                   "location": "realistic apartment bedroom at night",
-                  "hook": "An unfamiliar adult woman is already making the man's bed exactly the way his dead wife used to.",
-                  "evidence": "The woman is arranging the pillow, blanket and bedside glass in the dead wife's very specific bedtime arrangement.",
-                  "contradiction": "The man's wife died two years ago.",
-                  "reveal": "The stranger calmly says the wife showed her the routine yesterday.",
-                  "final_line": "She showed me yesterday.",
-                  "visual_action": "The stranger calmly finishes the bed while the man stands frozen in the doorway.",
+                  "frame1": "An unfamiliar adult woman is already making the man's bed exactly the way his dead wife used to.",
+                  "evidence": "She places the pillow, blanket and bedside glass in the dead wife's unmistakable bedtime arrangement.",
+                  "fact": "His wife died two years ago.",
+                  "contradiction": "The stranger claims the dead wife personally taught her the routine.",
+                  "final_line": "I know. She taught me last night.",
+                  "action": "The stranger calmly finishes arranging the bed while the man stands frozen in the doorway."
               },
 
               {
-                  "name": "PRIVATE NICKNAME",
+                  "name": "BURIED WATCH",
+                  "title": "That Watch Was Buried With Him",
+                  "location": "realistic apartment hallway at night",
+                  "frame1": "An unfamiliar adult man is standing inside the apartment wearing the protagonist's deceased father's old wristwatch.",
+                  "evidence": "The distinctive scratched watch is clearly visible on the stranger's wrist.",
+                  "fact": "The protagonist buried the watch with his father two years ago.",
+                  "contradiction": "The stranger claims the father gave him the watch.",
+                  "final_line": "Your father gave it to me this morning.",
+                  "action": "The stranger casually checks the watch while the protagonist stares at it."
+              },
+
+              {
+                  "name": "BURNED PHOTOGRAPH",
+                  "title": "I Burned That Photo",
+                  "location": "realistic apartment kitchen at night",
+                  "frame1": "An unfamiliar adult woman is holding a photograph of the protagonist that he destroyed the previous night.",
+                  "evidence": "The photograph is visibly damaged exactly where he remembers tearing and burning it.",
+                  "fact": "He burned the only copy in his kitchen sink last night.",
+                  "contradiction": "The stranger says she found the photograph in his bedroom this morning.",
+                  "final_line": "You left it on your bed this morning.",
+                  "action": "The stranger calmly holds the damaged photograph toward him."
+              },
+
+              {
+                  "name": "FUTURE PHOTO",
+                  "title": "That Photo Was Taken Tomorrow",
+                  "location": "realistic apartment entryway at night",
+                  "frame1": "An unfamiliar adult man is holding a photograph showing the protagonist standing in the exact doorway wearing the exact clothes he is wearing now.",
+                  "evidence": "The photograph clearly shows the same clothes, same doorway and same person.",
+                  "fact": "The photograph is dated tomorrow.",
+                  "contradiction": "The photograph supposedly shows an event that has not happened.",
+                  "final_line": "Don't worry. You haven't opened the door yet.",
+                  "action": "The stranger calmly studies the photograph while the protagonist stands in the doorway."
+              },
+
+              {
+                  "name": "DEAD SISTER NICKNAME",
                   "title": "Only My Sister Called Me That",
                   "location": "realistic apartment kitchen at night",
-                  "hook": "An unfamiliar adult man is calmly preparing coffee in the protagonist's kitchen.",
-                  "evidence": "He uses the protagonist's exact private coffee routine and casually calls him by a childhood nickname.",
-                  "contradiction": "That nickname was used only by the protagonist's deceased sister.",
-                  "reveal": "The stranger says the sister told him to use it.",
-                  "visual_action": "The stranger calmly prepares the coffee while using the private nickname.",
-                  "final_line": "Your sister told me you'd answer to it.",
+                  "frame1": "An unfamiliar adult man is calmly making coffee in the protagonist's kitchen and calls him by a private childhood nickname.",
+                  "evidence": "The stranger uses the exact nickname that only the protagonist's sister used.",
+                  "fact": "His sister died three years ago.",
+                  "contradiction": "The stranger says the sister told him the nickname.",
+                  "final_line": "She said you'd still answer to it.",
+                  "action": "The stranger calmly pours coffee while looking directly at the protagonist."
               },
 
               {
-                  "name": "DISCARDED OBJECT",
-                  "title": "I Threw That Away Yesterday",
-                  "location": "realistic apartment living room at night",
-                  "hook": "An unfamiliar adult woman is sitting on the sofa holding a personal object the protagonist threw away yesterday.",
-                  "evidence": "The object is unmistakably the protagonist's old watch, with its distinctive cracked strap.",
-                  "contradiction": "The protagonist personally threw the broken watch into a sealed outside garbage bin the previous night.",
-                  "reveal": "The woman says she found it on his bedside table this morning.",
-                  "visual_action": "The stranger calmly holds the damaged watch in plain sight.",
-                  "final_line": "You left it beside your bed this morning.",
-              },
-
-              {
-                  "name": "FUTURE NOTE",
-                  "title": "That Date Is Tomorrow",
-                  "location": "realistic apartment dining table at night",
-                  "hook": "An unfamiliar adult man is calmly writing a note at the protagonist's dining table.",
-                  "evidence": "The note visibly contains the protagonist's name, tomorrow's date and the exact time he is standing there.",
-                  "contradiction": "The event described on the note has not happened yet.",
-                  "reveal": "The stranger says he is only finishing the note before the event happens.",
-                  "visual_action": "The stranger writes while the protagonist can clearly see the future date and time.",
-                  "final_line": "I'm just finishing it before you arrive tomorrow.",
-              },
-
-              {
-                  "name": "WRONG INVITATION",
-                  "title": "I Never Invited Him",
-                  "location": "realistic apartment dining room at night",
-                  "hook": "An unfamiliar adult man is already seated at the protagonist's dinner table, eating from a freshly prepared plate.",
-                  "evidence": "There are two plates, and the stranger has prepared the protagonist's exact favorite meal.",
-                  "contradiction": "The protagonist lives alone and never invited anyone.",
-                  "reveal": "The stranger says the protagonist invited him the previous night.",
-                  "visual_action": "The stranger calmly eats while a second untouched plate sits opposite him.",
-                  "final_line": "You invited me last night.",
-              },
-
-              {
-                  "name": "PRIVATE DRAWER",
-                  "title": "He Knew Where I Hid It",
-                  "location": "realistic apartment bedroom",
-                  "hook": "An unfamiliar adult man is already reaching into the protagonist's locked bedside drawer.",
-                  "evidence": "He is removing a sentimental item from a hidden compartment that nobody should know exists.",
-                  "contradiction": "The protagonist has never told anyone about the compartment.",
-                  "reveal": "The stranger says the protagonist himself showed him the hiding place yesterday.",
-                  "visual_action": "The stranger holds the hidden item up while the open drawer remains clearly visible.",
-                  "final_line": "You showed me the hiding place yesterday.",
-              },
-
-              {
-                  "name": "FRESH PHOTOGRAPH",
-                  "title": "That Photo Was Taken Tonight",
-                  "location": "realistic apartment hallway at night",
-                  "hook": "An unfamiliar adult woman stands inside the protagonist's apartment holding a photograph of him standing in the same doorway.",
-                  "evidence": "The photograph shows the protagonist wearing exactly what he is wearing now.",
-                  "contradiction": "The photograph appears to have been taken only moments earlier, from inside the locked apartment.",
-                  "reveal": "The stranger says she took it before he arrived.",
-                  "visual_action": "The photograph is held visibly toward camera while the protagonist stands in the exact position shown.",
-                  "final_line": "I took it before you came home.",
-              },
-
-              {
-                  "name": "LOCKED APARTMENT ROUTINE",
-                  "title": "You Showed Me Yesterday",
-                  "location": "realistic apartment entryway at night",
-                  "hook": "An unfamiliar adult woman is already inside the locked apartment, barefoot, with the protagonist's keys placed in their exact bowl.",
-                  "evidence": "She has completed his private arrival routine exactly.",
-                  "contradiction": "The protagonist was away all day yesterday and never showed anyone the routine.",
-                  "reveal": "She calmly says he showed her yesterday.",
-                  "visual_action": "The stranger finishes placing the keys into the private bowl as the protagonist enters.",
-                  "final_line": "You showed me yesterday.",
-              },
-
-              {
-                  "name": "DEAD PERSON'S WATCH",
-                  "title": "That Watch Stopped Two Years Ago",
-                  "location": "realistic apartment hallway at night",
-                  "hook": "An unfamiliar adult man is wearing the protagonist's deceased father's old watch.",
-                  "evidence": "The watch is unmistakably the father's and has been locked away since his death.",
-                  "contradiction": "The protagonist has never given the watch to anyone.",
-                  "reveal": "The stranger says the father gave it to him yesterday.",
-                  "visual_action": "The stranger casually checks the old watch while standing inside the apartment.",
-                  "final_line": "Your father gave it to me yesterday.",
-              },
-
-              {
-                  "name": "UNFINISHED TASK",
-                  "title": "He Finished What I Hadn't Started",
-                  "location": "realistic apartment kitchen at night",
-                  "hook": "An unfamiliar adult woman is already cleaning a stain from the kitchen counter.",
-                  "evidence": "The stain is exactly where the protagonist planned to clean something that happened only minutes earlier.",
-                  "contradiction": "The protagonist has not told anyone about the spill.",
-                  "reveal": "The stranger says she was told to clean it before he arrived.",
-                  "visual_action": "The stranger actively wipes the fresh stain while the protagonist watches.",
-                  "final_line": "He told me to clean it before you came home.",
-              },
-
-              {
-                  "name": "PRIVATE BEDROOM KNOWLEDGE",
-                  "title": "She Knew Which Side Was Mine",
+                  "name": "LOCKED DRAWER",
+                  "title": "Nobody Knows That Compartment",
                   "location": "realistic apartment bedroom at night",
-                  "hook": "An unfamiliar adult woman is sitting on the exact side of the protagonist's bed, wearing the room slippers reserved for that side.",
-                  "evidence": "She has placed the protagonist's personal items exactly where he leaves them every night.",
-                  "contradiction": "Nobody else knows the routine because the protagonist lives alone.",
-                  "reveal": "She says he showed her yesterday.",
-                  "visual_action": "The stranger calmly follows the private bedtime routine.",
-                  "final_line": "You showed me where everything goes yesterday.",
+                  "frame1": "An unfamiliar adult man is already removing a sentimental item from a hidden compartment inside the protagonist's locked bedside drawer.",
+                  "evidence": "The hidden compartment is visible and the stranger has the exact item in his hand.",
+                  "fact": "The protagonist has never told anyone the compartment exists.",
+                  "contradiction": "The stranger claims the protagonist showed him the hiding place.",
+                  "final_line": "You showed me this place before you went to sleep.",
+                  "action": "The stranger calmly closes his fingers around the hidden item."
+              },
+
+              {
+                  "name": "EMPTY HOUSE DINNER",
+                  "title": "I Live Alone",
+                  "location": "realistic apartment dining room at night",
+                  "frame1": "An unfamiliar adult woman is already sitting at the protagonist's dining table eating a freshly prepared dinner.",
+                  "evidence": "Two plates are set, and the stranger has prepared the protagonist's exact favorite meal.",
+                  "fact": "The protagonist lives alone and did not invite anyone.",
+                  "contradiction": "The stranger says the protagonist asked her to prepare dinner.",
+                  "final_line": "You asked me to make your favorite before you came home.",
+                  "action": "The stranger calmly takes another bite while the protagonist stands at the doorway."
+              },
+
+              {
+                  "name": "PRIVATE ROUTINE",
+                  "title": "Nobody Taught Her My Routine",
+                  "location": "realistic apartment entryway at night",
+                  "frame1": "An unfamiliar adult woman is already inside the protagonist's locked apartment, barefoot, placing his keys into their exact private bowl.",
+                  "evidence": "She has removed her shoes and completed the exact sequence the protagonist follows every night.",
+                  "fact": "He was away all day and has never shown the routine to anyone.",
+                  "contradiction": "She says he taught her the routine.",
+                  "final_line": "You taught me this before you left.",
+                  "action": "The stranger calmly places the keys into the bowl as the protagonist enters."
+              },
+
+              {
+                  "name": "FRESH BED",
+                  "title": "Someone Slept Here",
+                  "location": "realistic apartment bedroom at night",
+                  "frame1": "An unfamiliar adult man is already lying on the protagonist's bed in the exact position where the protagonist sleeps.",
+                  "evidence": "His shoes are removed and the protagonist's blanket is pulled into its normal sleeping position.",
+                  "fact": "The apartment was locked and empty when the protagonist left.",
+                  "contradiction": "The stranger says he was waiting for the protagonist to come back.",
+                  "final_line": "You told me to wait here.",
+                  "action": "The stranger remains completely calm in the protagonist's bed."
+              },
+
+              {
+                  "name": "UNOPENED LETTER",
+                  "title": "I Hadn't Written It Yet",
+                  "location": "realistic apartment desk at night",
+                  "frame1": "An unfamiliar adult woman is sitting at the protagonist's desk holding a handwritten letter addressed to him.",
+                  "evidence": "The letter is written in the protagonist's handwriting and contains a sentence he has not yet written.",
+                  "fact": "The letter describes something that will happen later tonight.",
+                  "contradiction": "The stranger says she was told to deliver it before he writes it.",
+                  "final_line": "You haven't written it yet. I was told to bring it first.",
+                  "action": "The stranger calmly holds the handwritten letter out to him."
+              },
+
+              {
+                  "name": "PRIVATE SECRET",
+                  "title": "Only One Person Knew",
+                  "location": "realistic apartment living room at night",
+                  "frame1": "An unfamiliar adult man is sitting calmly in the protagonist's living room holding an object connected to a secret from his childhood.",
+                  "evidence": "The object is an unmistakable personal item nobody else has ever seen.",
+                  "fact": "Only the protagonist's deceased brother knew where it was hidden.",
+                  "contradiction": "The stranger says the brother told him where to find it.",
+                  "final_line": "Your brother told me where you hid it.",
+                  "action": "The stranger places the secret object on the table between them."
+              },
+
+              {
+                  "name": "WRONG MORNING",
+                  "title": "She Wasn't Here This Morning",
+                  "location": "realistic apartment kitchen at night",
+                  "frame1": "An unfamiliar adult woman is washing a coffee cup in the protagonist's kitchen.",
+                  "evidence": "The cup is the one the protagonist used that morning and left in the sink before leaving.",
+                  "fact": "The apartment was locked and empty after he left.",
+                  "contradiction": "The stranger says she watched him leave that morning.",
+                  "final_line": "I watched you leave this morning.",
+                  "action": "The stranger calmly dries the cup while the protagonist watches."
               }
           ]
 
-          # Rotate mechanisms between workflow runs.
-          start = ((RUN_NUMBER - 1) * 3) % len(MECHANISMS)
-
-          ordered = []
-          for i in range(len(MECHANISMS)):
-              ordered.append(MECHANISMS[(start + i) % len(MECHANISMS)])
-
           # ============================================================
-          # GROQ REQUEST
+          # GROQ CALL
           # ============================================================
 
-          def call_groq(prompt, max_tokens=900):
+          def call_groq(prompt, max_tokens=650):
 
               payload = {
                   "model": MODEL,
@@ -205,13 +210,13 @@ jobs:
                           "content": prompt
                       }
                   ],
-                  "temperature": 0.55,
+                  "temperature": 0.45,
                   "max_completion_tokens": max_tokens,
                   "reasoning_effort": "low",
                   "response_format": {
                       "type": "json_schema",
                       "json_schema": {
-                          "name": "quiet_vault_short",
+                          "name": "quiet_vault_v14",
                           "strict": True,
                           "schema": {
                               "type": "object",
@@ -253,8 +258,8 @@ jobs:
                   try:
                       with urllib.request.urlopen(req, timeout=90) as response:
                           raw = response.read().decode("utf-8")
-                          result = json.loads(raw)
 
+                      result = json.loads(raw)
                       content = result["choices"][0]["message"]["content"]
 
                       if not content:
@@ -267,6 +272,7 @@ jobs:
                       body = e.read().decode("utf-8", errors="ignore")
 
                       if e.code == 429:
+
                           retry = e.headers.get("retry-after")
 
                           try:
@@ -292,89 +298,118 @@ jobs:
                       raise
 
           # ============================================================
-          # GENERATION PROMPT
+          # NATURALIZATION PROMPT
           # ============================================================
 
           def make_prompt(m):
 
               return f"""
-          You are writing one 9–12 second horror Short for The Quiet Vault.
+          Write ONE realistic 9–12 second horror Short for The Quiet Vault.
 
-          IMPORTANT:
-          The horror mechanism is ALREADY FIXED.
-          Do NOT invent another mechanism.
-          Do NOT change the contradiction.
-          Do NOT add mythology.
-          Do NOT add a monster.
-          Do NOT add a second twist.
+          You are NOT inventing the horror idea.
 
-          FIXED MECHANISM:
+          The visual situation, evidence, fact, contradiction and final line
+          are already fixed below.
+
+          Your only job is to turn them into extremely natural, concise
+          spoken dialogue.
+
+          ============================================================
+          FIXED STORY
+          ============================================================
+
+          MECHANISM:
           {m['name']}
 
           LOCATION:
           {m['location']}
 
-          FIRST-FRAME VISUAL:
-          {m['hook']}
+          FRAME 1:
+          {m['frame1']}
 
           VISIBLE EVIDENCE:
           {m['evidence']}
 
-          FIXED CONTRADICTION:
+          ESTABLISHED FACT:
+          {m['fact']}
+
+          CONTRADICTION:
           {m['contradiction']}
 
-          FIXED VISUAL ACTION:
-          {m['visual_action']}
+          ACTION:
+          {m['action']}
 
-          FIXED FINAL REVEAL:
-          {m['reveal']}
-
-          FIXED FINAL LINE:
+          REQUIRED FINAL LINE:
           {m['final_line']}
 
-          TITLE SEED:
-          {m['title']}
+          ============================================================
+          WRITING RULES
+          ============================================================
 
-          WRITE A VERY SHORT SCRIPT.
+          1. Start immediately inside the disturbing situation.
 
-          Requirements:
+          2. Do NOT use:
+          "I never expected..."
+          "It was a normal night..."
+          "One night..."
+          "I couldn't believe..."
+          "That's when..."
+          or any generic setup.
 
-          - 22–55 spoken words maximum.
-          - Start directly inside the disturbing situation.
-          - No "one night", "it was a normal day", "I never expected".
-          - No exposition.
-          - No narrator explaining the horror.
-          - Use short natural adult dialogue.
-          - The stranger must remain calm.
-          - The protagonist must react naturally.
-          - The final line must be the fixed final line or an extremely natural
-            grammatical equivalent.
-          - The final line must reveal the contradiction.
-          - The first visual frame and final line must connect.
-          - No children or teenagers.
-          - Fictional adults only.
-          - No mirrors, reflections, twins or doppelgängers.
-          - No ghosts, demons, monsters or supernatural creatures.
-          - No gore, blood or corpses.
-          - No CCTV or surveillance.
-          - No phone/video-call horror.
-          - No celebrity or real-person likeness.
-          - No extra characters.
+          3. Maximum 50 spoken words.
 
-          The script should feel like something that could happen in a real
-          apartment, house, office or other recognizable location.
+          4. Prefer 3–5 short lines.
 
-          Do not make the ending vague.
+          5. The first line should identify what the protagonist sees.
 
-          BAD:
+          6. The viewer should understand the disturbing visual BEFORE
+             the final reveal.
+
+          7. Establish the necessary fact naturally and quickly.
+
+          8. The final line MUST introduce the contradiction.
+
+          9. Do not explain the contradiction after the final line.
+
+          10. End immediately on the final line.
+
+          11. The final line must be specific.
+
+          12. Never use vague endings such as:
+          "You'll find out."
+          "You will understand."
           "Someone told me."
-          "You'll understand soon."
-          "He knows."
           "It's complicated."
+          "He knows."
+          "She knows."
+          "You'll see."
 
-          GOOD:
-          A specific contradiction that immediately makes the viewer rethink
-          what they saw in frame one.
+          13. Do not add another twist.
+
+          14. Do not introduce supernatural creatures.
+
+          15. Fictional adults only.
+
+          16. No children, teenagers or minors.
+
+          17. No mirrors or reflections.
+
+          18. No twins, doppelgängers or clones.
+
+          19. No ghosts, demons, monsters or zombies.
+
+          20. No gore, blood or corpses.
+
+          21. No CCTV, surveillance or phone-screen horror.
+
+          22. No celebrity or real-person likeness.
+
+          ============================================================
+          IMPORTANT
+          ============================================================
+
+          The final line must make the viewer rethink what they saw
+          in FRAME 1.
 
           Return JSON only.
           """
@@ -404,66 +439,59 @@ jobs:
               "cctv",
               "surveillance",
               "video call",
+              "phone screen",
               "blood",
               "gore",
               "corpse",
               "celebrity"
           ]
 
+          WEAK = [
+              "you'll understand",
+              "you will understand",
+              "someone told me",
+              "it's complicated",
+              "he knows",
+              "she knows",
+              "you'll see",
+              "you will see"
+          ]
+
           def validate(short):
 
-              required = [
+              for field in [
                   "title",
                   "script",
                   "description",
                   "keywords",
                   "hashtags"
-              ]
-
-              for field in required:
+              ]:
                   if not short.get(field):
                       return False, f"missing {field}"
 
               script = short["script"].strip()
-
               words = script.split()
 
-              if len(words) < 18:
-                  return False, "script too short"
+              if len(words) < 15:
+                  return False, "too short"
 
-              if len(words) > 65:
-                  return False, "script too long"
+              if len(words) > 55:
+                  return False, "too long"
 
               low = script.lower()
 
-              for word in BANNED:
-                  if word in low:
-                      return False, f"banned content: {word}"
+              for item in BANNED:
+                  if item in low:
+                      return False, f"banned: {item}"
 
-              # Reject generic endings.
-              weak_endings = [
-                  "someone told me",
-                  "you'll understand",
-                  "you will understand",
-                  "it's complicated",
-                  "he knows",
-                  "she knows",
-                  "you'll see",
-                  "you will see",
-                  "that's why",
-                  "i know"
-              ]
-
-              ending = low[-90:]
-
-              for phrase in weak_endings:
-                  if phrase in ending:
-                      return False, f"weak ending: {phrase}"
+              for item in WEAK:
+                  if item in low[-100:]:
+                      return False, f"weak ending: {item}"
 
               return True, "ok"
 
           # ============================================================
-          # LOCAL FLOW PACKAGE
+          # FLOW PROMPT
           # ============================================================
 
           def build_flow(m, script):
@@ -473,57 +501,106 @@ jobs:
           psychological horror short.
 
           FICTIONAL ADULT ACTORS ONLY.
-          No children, teenagers, celebrities or resemblance to real people.
+
+          No children, teenagers, minors, celebrities or resemblance
+          to real people.
 
           LOCATION:
           {m['location']}
 
-          FIRST FRAME — CRITICAL:
-          {m['hook']}
+          ============================================================
+          FIRST FRAME — MOST IMPORTANT
+          ============================================================
 
-          The disturbing action must already be happening in frame one.
+          {m['frame1']}
 
-          VISIBLE EVIDENCE:
+          This must already be visible in the FIRST FRAME.
+
+          Do NOT begin with an empty room.
+          Do NOT begin with walking toward the room.
+          Do NOT spend the first seconds establishing the location.
+
+          The viewer must immediately see the disturbing situation.
+
+          ============================================================
+          VISIBLE EVIDENCE
+          ============================================================
+
           {m['evidence']}
 
-          Keep the evidence clearly visible.
+          Keep this evidence clearly visible in the same shot whenever
+          physically possible.
 
-          FIXED ACTION:
-          {m['visual_action']}
+          Do not replace it with a character reaction.
 
-          The unfamiliar adult remains calm and matter-of-fact.
+          ============================================================
+          ACTION
+          ============================================================
 
-          The protagonist reacts with restrained, believable fear.
+          {m['action']}
 
-          DIALOGUE:
+          The unfamiliar adult remains calm and completely matter-of-fact.
+
+          The protagonist reacts with restrained, realistic fear.
+
+          No exaggerated screaming.
+
+          ============================================================
+          DIALOGUE
+          ============================================================
+
           Use exactly this dialogue:
 
           {script}
 
-          FINAL REVEAL:
-          {m['reveal']}
+          ============================================================
+          ENDING
+          ============================================================
 
-          End immediately after the final line.
+          The final line is the contradiction.
 
-          HARD CUT.
+          HARD CUT immediately after the final line.
+
           NO fade to black.
 
-          CAMERA:
-          Medium-wide cinematic framing.
-          Keep the protagonist, unfamiliar adult and evidence visible together.
-          Minimal natural camera movement.
-          Realistic handheld feel.
+          Do not add another line.
 
-          STYLE:
+          Do not add another twist.
+
+          ============================================================
+          CAMERA
+          ============================================================
+
+          Medium-wide cinematic composition.
+
+          Keep protagonist, unfamiliar adult and key evidence visible.
+
+          Minimal natural camera movement.
+
+          Realistic handheld live-action feel.
+
+          ============================================================
+          STYLE
+          ============================================================
+
           Photorealistic live action.
+
           Realistic adult humans.
+
           Natural lighting.
-          Natural skin texture.
-          Realistic movement.
+
+          Realistic skin texture.
+
+          Natural body movement.
+
           Grounded psychological horror.
+
           No fantasy aesthetic.
 
-          STRICTLY DO NOT INCLUDE:
+          ============================================================
+          STRICTLY DO NOT INCLUDE
+          ============================================================
+
           children,
           teenagers,
           minors,
@@ -552,53 +629,75 @@ jobs:
           face distortion,
           body distortion.
 
-          Do not change the visual evidence.
+          Do not change the evidence.
+
           Do not change the action.
-          Do not add another twist.
+
+          Do not change the final contradiction.
+
           Do not make the unfamiliar adult supernatural.
+
           HARD CUT.
           """
 
           # ============================================================
-          # GENERATE
+          # ROTATION
+          # ============================================================
+
+          start = ((RUN_NUMBER - 1) * 3) % len(MECHANISMS)
+
+          ordered = []
+
+          for i in range(len(MECHANISMS)):
+              ordered.append(
+                  MECHANISMS[(start + i) % len(MECHANISMS)]
+              )
+
+          # ============================================================
+          # RUN
           # ============================================================
 
           approved = []
 
           print("============================================================")
-          print("QUIET VAULT V13 CONTRADICTION HORROR ENGINE")
+          print("QUIET VAULT V14 CONTRADICTION HORROR ENGINE")
           print("============================================================")
           print(f"RUN: {RUN_NUMBER}")
           print(f"MODEL: {MODEL}")
-          print("TARGET: 3 publishable Shorts")
+          print("TARGET: 3 Shorts")
           print("")
 
-          for index, mechanism in enumerate(ordered):
+          for mechanism in ordered:
 
               if len(approved) >= 3:
                   break
 
-              print(f"MECHANISM {index + 1}: {mechanism['name']}")
-              print(f"TITLE SEED: {mechanism['title']}")
-              print("Generating...")
+              print("------------------------------------------------------------")
+              print("MECHANISM:", mechanism["name"])
+              print("TITLE:", mechanism["title"])
+              print("GENERATING...")
+              print("")
 
               try:
-                  short = call_groq(make_prompt(mechanism), 750)
+
+                  short = call_groq(
+                      make_prompt(mechanism),
+                      650
+                  )
 
                   ok, reason = validate(short)
 
                   if not ok:
                       print("REJECTED:", reason)
-                      print("")
                       continue
 
-                  # Force deterministic title seed if Groq returns nonsense.
                   title = short.get("title", "").strip()
 
+                  # Prevent another "The Quiet Vault" title.
                   if (
                       not title
                       or title.lower() == "the quiet vault"
-                      or len(title.split()) < 2
+                      or len(title.split()) < 3
                   ):
                       title = mechanism["title"]
 
@@ -607,28 +706,29 @@ jobs:
                       "mechanism": mechanism["name"],
                       "title": title,
                       "short_script": short["script"].strip(),
-                      "visual_hook": mechanism["hook"],
+                      "visual_hook": mechanism["frame1"],
                       "visible_evidence": mechanism["evidence"],
+                      "fixed_fact": mechanism["fact"],
                       "flow_prompt": build_flow(
                           mechanism,
                           short["script"].strip()
                       ),
-                      "final_twist": mechanism["reveal"],
+                      "final_twist": mechanism["contradiction"],
                       "description": short["description"].strip(),
                       "keywords": short["keywords"].strip(),
                       "hashtags": short["hashtags"].strip(),
                       "thumbnail_frame": (
                           "Use approximately 0.5–1.5 seconds. "
-                          "Choose the frame where the unfamiliar adult, "
-                          "protagonist and disturbing evidence are all "
-                          "clearly visible together."
+                          "Choose the strongest frame where the "
+                          "unfamiliar adult, protagonist and disturbing "
+                          "evidence are clearly visible together."
                       ),
                       "thumbnail_text": "",
                       "sound_design": (
-                          "Natural location room tone, realistic footsteps "
-                          "and object sounds, restrained tension bed, "
-                          "clear adult dialogue. Hard cut immediately "
-                          "after the final line."
+                          "Natural room tone, realistic footsteps and "
+                          "object sounds, restrained tension bed, clear "
+                          "adult dialogue. Hard cut immediately after "
+                          "the final line."
                       ),
                       "pinned_comment": "What would you do if you saw this?"
                   }
@@ -639,19 +739,20 @@ jobs:
                   print("")
 
               except Exception as e:
-                  print("MECHANISM FAILED:", repr(e))
+
+                  print("FAILED:", repr(e))
                   print("Moving to next mechanism...")
                   print("")
 
           # ============================================================
-          # OUTPUT
+          # SAVE
           # ============================================================
 
           batch = {
               "run": RUN_NUMBER,
               "provider": "groq",
               "model": MODEL,
-              "engine": "V13 Contradiction Horror Engine",
+              "engine": "V14 Contradiction Horror Engine",
               "generated": len(ordered),
               "approved": len(approved),
               "shorts": approved
@@ -664,7 +765,7 @@ jobs:
 
           for i, short in enumerate(approved, 1):
 
-              text = f"""# {short['title']}
+              content = f"""# {short['title']}
 
           ## Mechanism
 
@@ -681,6 +782,10 @@ jobs:
           ## Visible Evidence
 
           {short['visible_evidence']}
+
+          ## Fixed Fact
+
+          {short['fixed_fact']}
 
           ## Google Flow Prompt
 
@@ -727,13 +832,14 @@ jobs:
           """
 
               (OUT / f"short_{i:02d}.md").write_text(
-                  text,
+                  content,
                   encoding="utf-8"
               )
 
           print("============================================================")
-          print(f"GENERATED: {len(ordered)}")
-          print(f"APPROVED:  {len(approved)}")
+          print("V14 COMPLETE")
+          print("GENERATED:", len(ordered))
+          print("APPROVED:", len(approved))
           print("============================================================")
 
           if len(approved) < 3:
@@ -744,8 +850,8 @@ jobs:
 
           PY
 
-      - name: Upload generated Shorts
+      - name: Upload V14 Shorts
         uses: actions/upload-artifact@v4
         with:
-          name: quiet-vault-v13-shorts
+          name: quiet-vault-v14-shorts
           path: quiet-vault-output/
